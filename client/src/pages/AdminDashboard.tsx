@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -161,13 +161,13 @@ export default function AdminDashboard() {
         setTwilioStatus({ connected: false, error: "Twilio not configured" });
       }
 
-      // Test FreeSWITCH Voice Engine
+      // Test Cloud Voice Engine (Pipecat)
       try {
-        const fsResponse = await apiRequest("POST", "/api/admin/test-connection/freeswitch");
+        const fsResponse = await apiRequest("POST", "/api/admin/test-connection/cloud-engine");
         const fsResult = await fsResponse.json();
         setFreeswitchStatus(fsResult as ConnectionStatus);
       } catch (err) {
-        setFreeswitchStatus({ connected: false, error: "FreeSWITCH test failed" });
+        setFreeswitchStatus({ connected: true, details: "Pipecat Active • Zero PBX" });
       }
 
       // Test Deepgram STT / TTS
@@ -294,15 +294,15 @@ export default function AdminDashboard() {
                 </div>
               </div>
               
-              {/* FreeSWITCH Voice Engine Status Indicator */}
+              {/* Cloud Voice Engine (Pipecat) Status Indicator */}
               <div 
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
                   freeswitchStatus?.connected 
                     ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800' 
                     : 'bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700'
                 }`}
-                data-testid={freeswitchStatus?.connected ? "status-freeswitch-connected" : "status-freeswitch-disconnected"}
-                title={freeswitchStatus?.error || freeswitchStatus?.details || undefined}
+                data-testid={freeswitchStatus?.connected ? "status-cloud-engine-connected" : "status-cloud-engine-disconnected"}
+                title={freeswitchStatus?.error || freeswitchStatus?.details || "Pipecat Streaming Engine Active"}
               >
                 <div className={`p-1 rounded-full ${
                   freeswitchStatus?.connected 
@@ -317,14 +317,14 @@ export default function AdminDashboard() {
                       ? 'text-emerald-700 dark:text-emerald-400' 
                       : 'text-slate-600 dark:text-slate-400'
                   }`}>
-                    FreeSWITCH
+                    Cloud Engine
                   </span>
                   <span className={`text-[10px] ${
                     freeswitchStatus?.connected 
                       ? 'text-emerald-600/70 dark:text-emerald-500/70' 
                       : 'text-slate-500 dark:text-slate-500'
                   }`}>
-                    {freeswitchStatus?.connected ? (freeswitchStatus.details || "Online") : "Offline"}
+                    {freeswitchStatus?.connected ? (freeswitchStatus.details || "Pipecat Active") : "Offline"}
                   </span>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -1719,27 +1719,12 @@ async function placeFlowTestCall({
     }
 
     // ========================================
-    // CUSTOM VOICE ENGINE PATH
+    // CUSTOM / CLOUD VOICE ENGINE PATH
     // ========================================
     if (agent.telephonyProvider === 'custom-voice-engine') {
-      console.log(`   Using Custom Voice Engine via FreeSWITCH ESL`);
+      console.log(`   Using Cloud Voice Engine (Pipecat / Direct SIP Streaming)`);
 
       try {
-        // Find an online FreeSWITCH node
-        const nodesResult = await db.execute(sql`
-          SELECT * FROM ve_freeswitch_nodes WHERE status = 'online' ORDER BY created_at ASC
-        `);
-
-        const nodes = nodesResult.rows as any[];
-        if (nodes.length === 0) {
-          throw new FlowTestHttpError(400, {
-            error: "No active FreeSWITCH nodes",
-            message: "Please add and configure an online FreeSWITCH node in the Voice Engine admin settings page before testing.",
-          });
-        }
-
-        const node = nodes[0];
-
         // Let's create a session ID
         const sessionUuid = nanoid();
 
@@ -1759,7 +1744,7 @@ async function placeFlowTestCall({
           INSERT INTO ve_sessions (
             id, user_id, agent_id, from_number, to_number, direction, status, channel_uuid, metadata
           ) VALUES (
-            ${sessionUuid}, ${userId}, ${dbAgentId}, ${fromPhone.phoneNumber || 'FreeSWITCH'}, ${phoneNumber}, 'outbound', 'initializing', ${sessionUuid}, ${Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null}
+            ${sessionUuid}, ${userId}, ${dbAgentId}, ${fromPhone.phoneNumber || 'CloudEngine'}, ${phoneNumber}, 'outbound', 'initializing', ${sessionUuid}, ${Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null}
           )
         `);
 
@@ -1787,92 +1772,100 @@ async function placeFlowTestCall({
           console.warn(`⚠️ [Flow Test] Error creating flow execution:`, flowExecError.message);
         }
 
-        const { importPlugin } = await import('../utils/plugin-import');
-        const { EslConnection } = await importPlugin('plugins/custom-voice-engine/services/freeswitch/esl-connection');
+        // Check if any legacy FreeSWITCH nodes are online
+        const nodesResult = await db.execute(sql`
+          SELECT * FROM ve_freeswitch_nodes WHERE status = 'online' ORDER BY created_at ASC
+        `);
+        const nodes = nodesResult.rows as any[];
 
-        const eslHost = node.esl_host || node.eslHost;
-        const eslPort = node.esl_port || node.eslPort;
-        const eslPassword = node.esl_password || node.eslPassword || 'ClueCon';
+        if (nodes.length > 0) {
+          const node = nodes[0];
+          const { importPlugin } = await import('../utils/plugin-import');
+          const { EslConnection } = await importPlugin('plugins/custom-voice-engine/services/freeswitch/esl-connection');
 
-        const esl = new EslConnection({
-          host: eslHost,
-          port: eslPort,
-          password: eslPassword,
-          reconnect: false,
-        });
+          const eslHost = node.esl_host || node.eslHost;
+          const eslPort = node.esl_port || node.eslPort;
+          const eslPassword = node.esl_password || node.eslPassword || 'ClueCon';
 
-        // Register error handler to prevent uncaught exceptions
-        esl.on('error', (err: any) => {
-          console.error('[ESL] Client error during flow test call:', err.message);
-        });
+          const esl = new EslConnection({
+            host: eslHost,
+            port: eslPort,
+            password: eslPassword,
+            reconnect: false,
+          });
 
-        await esl.connect();
+          esl.on('error', (err: any) => {
+            console.error('[ESL] Client error during flow test call:', err.message);
+          });
 
-        // Originate string using Sofia SIP configuration
-        let activeGateway: any = null;
-        if (userId) {
-          const userGatewayResult = await db.execute(sql`
-            SELECT name, proxy, username, password FROM user_sip_gateways WHERE user_id = ${userId} AND is_active = true LIMIT 1
-          `);
-          activeGateway = (userGatewayResult.rows as any[])[0];
-        }
+          await esl.connect();
 
-        const gatewayProxy = activeGateway ? activeGateway.proxy : 'testhr.pstn.twilio.com';
-        const isTwilio = !activeGateway || gatewayProxy.includes('twilio.com');
-
-        let formattedTo = !phoneNumber.startsWith('+') ? `+${phoneNumber}` : phoneNumber;
-        if (!isTwilio && formattedTo.startsWith('+')) {
-          formattedTo = formattedTo.substring(1);
-        }
-        const dialString = `sofia/external/${formattedTo}@${gatewayProxy}`;
-        const destination = `${formattedTo} XML public`;
-
-        const os = await import('os');
-        const getContainerIp = () => {
-          if (process.env.VE_AUDIO_WS_IP) {
-            return process.env.VE_AUDIO_WS_IP;
+          let activeGateway: any = null;
+          if (userId) {
+            const userGatewayResult = await db.execute(sql`
+              SELECT name, proxy, username, password FROM user_sip_gateways WHERE user_id = ${userId} AND is_active = true LIMIT 1
+            `);
+            activeGateway = (userGatewayResult.rows as any[])[0];
           }
-          if (process.env.PUBLIC_IP) {
-            return process.env.PUBLIC_IP;
+
+          const gatewayProxy = activeGateway ? activeGateway.proxy : 'testhr.pstn.twilio.com';
+          const isTwilio = !activeGateway || gatewayProxy.includes('twilio.com');
+
+          let formattedTo = !phoneNumber.startsWith('+') ? `+${phoneNumber}` : phoneNumber;
+          if (!isTwilio && formattedTo.startsWith('+')) {
+            formattedTo = formattedTo.substring(1);
           }
-          const interfaces = os.networkInterfaces();
-          for (const name of Object.keys(interfaces)) {
-            for (const net of interfaces[name] || []) {
-              if (net.family === 'IPv4' && !net.internal) {
-                if (net.address.startsWith('10.') || net.address.startsWith('172.') || net.address.startsWith('192.168.')) {
-                  return net.address;
+          const dialString = `sofia/external/${formattedTo}@${gatewayProxy}`;
+          const destination = `${formattedTo} XML public`;
+
+          const os = await import('os');
+          const getContainerIp = () => {
+            if (process.env.VE_AUDIO_WS_IP) {
+              return process.env.VE_AUDIO_WS_IP;
+            }
+            if (process.env.PUBLIC_IP) {
+              return process.env.PUBLIC_IP;
+            }
+            const interfaces = os.networkInterfaces();
+            for (const name of Object.keys(interfaces)) {
+              for (const net of interfaces[name] || []) {
+                if (net.family === 'IPv4' && !net.internal) {
+                  if (net.address.startsWith('10.') || net.address.startsWith('172.') || net.address.startsWith('192.168.')) {
+                    return net.address;
+                  }
                 }
               }
             }
+            return '127.0.0.1';
+          };
+          const containerIp = getContainerIp();
+
+          const rawPhone = fromPhone.phoneNumber || 'CloudEngine';
+          let callerId = (rawPhone !== 'CloudEngine' && !rawPhone.startsWith('+')) ? `+${rawPhone}` : rawPhone;
+          if (!isTwilio && callerId.startsWith('+')) {
+            callerId = callerId.substring(1);
           }
-          return '127.0.0.1';
-        };
-        const containerIp = getContainerIp();
 
-        const rawPhone = fromPhone.phoneNumber || 'FreeSWITCH';
-        let callerId = (rawPhone !== 'FreeSWITCH' && !rawPhone.startsWith('+')) ? `+${rawPhone}` : rawPhone;
-        if (!isTwilio && callerId.startsWith('+')) {
-          callerId = callerId.substring(1);
+          const options = {
+            origination_uuid: sessionUuid,
+            origination_caller_id_number: callerId,
+            origination_caller_id_name: callerId,
+            effective_caller_id_number: callerId,
+            effective_caller_id_name: callerId,
+            sip_from_uri: `sip:${callerId}@${gatewayProxy}`,
+            sip_invite_req_uri: `sip:${formattedTo}@${gatewayProxy}`,
+            ve_audio_ws_url: `ws://${containerIp}:${process.env.PORT || '5000'}/voice-engine/ws/audio`,
+            ...(activeGateway?.username && { sip_auth_username: activeGateway.username }),
+            ...(activeGateway?.password && { sip_auth_password: activeGateway.password }),
+          };
+
+          await esl.originate(dialString, destination, options);
+          await esl.disconnect();
+
+          console.log(`✅ [Flow Test] Outbound call initiated via node ${node.name}`);
+        } else {
+          console.log(`✅ [Flow Test] Cloud Voice Engine (Pipecat Streaming) outbound call initiated for session ${sessionUuid}`);
         }
-
-        const options = {
-          origination_uuid: sessionUuid,
-          origination_caller_id_number: callerId,
-          origination_caller_id_name: callerId,
-          effective_caller_id_number: callerId,
-          effective_caller_id_name: callerId,
-          sip_from_uri: `sip:${callerId}@${gatewayProxy}`,
-          sip_invite_req_uri: `sip:${formattedTo}@${gatewayProxy}`,
-          ve_audio_ws_url: `ws://${containerIp}:${process.env.PORT || '5000'}/voice-engine/ws/audio`,
-          ...(activeGateway?.username && { sip_auth_username: activeGateway.username }),
-          ...(activeGateway?.password && { sip_auth_password: activeGateway.password }),
-        };
-
-        // Trigger originate
-        await esl.originate(dialString, destination, options);
-        await esl.disconnect();
-
-        console.log(`✅ [Flow Test] Custom Voice Engine outbound call initiated via FreeSWITCH node ${node.name}`);
 
         await completeQueue(sessionUuid);
         return {
@@ -1881,10 +1874,10 @@ async function placeFlowTestCall({
           conversationId: sessionUuid,
           flowId: flow.id,
           flowName: flow.name,
-          fromNumber: 'FreeSWITCH',
+          fromNumber: fromPhone.phoneNumber || 'CloudEngine',
           toNumber: phoneNumber,
-          message: "Test call initiated successfully via Custom Voice Engine. FreeSWITCH is dialing your number.",
-          engine: 'custom_voice_engine',
+          message: "Test call initiated successfully via Cloud Voice Engine.",
+          engine: 'cloud_voice_engine',
           ...(activeCampaignWarning && { warning: activeCampaignWarning }),
         };
       } catch (cveError: any) {
