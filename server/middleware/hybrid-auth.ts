@@ -50,7 +50,11 @@ export interface HybridAuthRequest extends Request {
  */
 export async function authenticateHybrid(req: HybridAuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  let token = authHeader && authHeader.split(" ")[1];
+
+  if (!token && (req as any).cookies) {
+    token = (req as any).cookies.auth_token || (req as any).cookies.token || (req as any).cookies.access_token;
+  }
 
   if (!token) {
     return res.status(401).json({ error: "Authentication required" });
@@ -147,7 +151,11 @@ export async function authenticateHybrid(req: HybridAuthRequest, res: Response, 
  */
 export async function optionalHybridAuth(req: HybridAuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  let token = authHeader && authHeader.split(" ")[1];
+
+  if (!token && (req as any).cookies) {
+    token = (req as any).cookies.auth_token || (req as any).cookies.token || (req as any).cookies.access_token;
+  }
 
   if (!token) {
     return next();

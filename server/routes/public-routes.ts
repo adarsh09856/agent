@@ -421,7 +421,8 @@ export function createPublicRoutes(ctx: RouteContext): Router {
 
   router.get("/api/settings/voice-engine", async (_req: Request, res: Response) => {
     try {
-      const toBool = (value: any): boolean => {
+      const toBool = (value: any, defaultVal = false): boolean => {
+        if (value === undefined || value === null) return defaultVal;
         if (value === true || value === 'true') return true;
         if (value === false || value === 'false') return false;
         return Boolean(value);
@@ -436,13 +437,13 @@ export function createPublicRoutes(ctx: RouteContext): Router {
       const creditsRequired = await storage.getGlobalSetting('credits_required');
 
       res.json({
-        plivo_openai_engine_enabled: toBool(plivoEngineEnabled?.value) || false,
-        twilio_openai_engine_enabled: toBool(twilioOpenaiEngineEnabled?.value) || false,
-        twilio_kyc_required: toBool(twilioKycRequired?.value) ?? true,
-        plivo_kyc_required: toBool(plivoKycRequired?.value) ?? true,
-        default_tts_model: (defaultTtsModel?.value as string) || 'eleven_v3_conversational',
-        allow_user_byok: toBool(allowUserByok?.value) ?? true,
-        credits_required: toBool(creditsRequired?.value) ?? true,
+        plivo_openai_engine_enabled: toBool(plivoEngineEnabled?.value, false),
+        twilio_openai_engine_enabled: toBool(twilioOpenaiEngineEnabled?.value, false),
+        twilio_kyc_required: toBool(twilioKycRequired?.value, true),
+        plivo_kyc_required: toBool(plivoKycRequired?.value, true),
+        default_tts_model: (defaultTtsModel?.value as string) || 'aura-asteria-en',
+        allow_user_byok: toBool(allowUserByok?.value, true),
+        credits_required: toBool(creditsRequired?.value, true),
       });
     } catch (error) {
       console.error('Error fetching voice engine settings:', error);

@@ -1920,6 +1920,8 @@ export default function VoiceEngineSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/voice-engine/admin/provider-keys"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/settings/voice-engine"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/provider-credentials"] });
       toast({ title: "Settings saved", description: "Provider settings updated successfully." });
     },
     onError: (err: any) => {

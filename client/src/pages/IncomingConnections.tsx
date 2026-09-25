@@ -175,7 +175,7 @@ export default function IncomingConnectionsPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState<EngineTab>('twilio-elevenlabs');
+  const [activeTab, setActiveTab] = useState<EngineTab>('custom-voice');
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteConnection, setDeleteConnection] = useState<IncomingConnection | null>(null);
   const [selectedAgentId, setSelectedAgentId] = useState("");
@@ -237,13 +237,13 @@ export default function IncomingConnectionsPage() {
     return count;
   }, [isCustomVoiceEngineEnabled, plivoEnabled, twilioOpenaiEnabled]);
 
-  // Reset activeTab to always-enabled engine if current tab becomes disabled
+  // Reset activeTab to default custom-voice if current tab becomes disabled
   useEffect(() => {
     if (activeTab === 'plivo-openai' && !plivoEnabled) {
-      setActiveTab('twilio-elevenlabs');
+      setActiveTab('custom-voice');
     }
     if (activeTab === 'twilio-openai' && !twilioOpenaiEnabled) {
-      setActiveTab('twilio-elevenlabs');
+      setActiveTab('custom-voice');
     }
   }, [activeTab, plivoEnabled, twilioOpenaiEnabled]);
 
@@ -577,7 +577,28 @@ export default function IncomingConnectionsPage() {
           enabledEngineCount === 3 ? 'md:grid-cols-3' : 
           'md:grid-cols-4'
         }`}>
-          {/* Twilio + ElevenLabs Summary - Always shown */}
+          {/* Master AI / Custom Voice Engine Summary - Primary */}
+          <div 
+            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+              activeTab === 'custom-voice' 
+                ? 'border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20' 
+                : 'border-border bg-background/50 hover:border-indigo-300'
+            }`}
+            onClick={() => setActiveTab('custom-voice')}
+            data-testid="engine-card-custom-voice"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Mic className="h-4 w-4 text-indigo-600" />
+              <span className="font-semibold text-sm">Master AI (FreeSWITCH)</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span><strong className="text-indigo-600">{cveConnections.length}</strong> active</span>
+              <span><strong>{allAvailableNumbersForCve.length}</strong> available</span>
+              <span><strong>{cveAgents.length}</strong> agents</span>
+            </div>
+          </div>
+
+          {/* Twilio + ElevenLabs Summary */}
           <div 
             className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
               activeTab === 'twilio-elevenlabs' 
@@ -599,29 +620,6 @@ export default function IncomingConnectionsPage() {
               <span><strong>{agents.length}</strong> agents</span>
             </div>
           </div>
-
-          {/* Custom Voice Engine Summary - Only shown when enabled */}
-          {isCustomVoiceEngineEnabled && (
-            <div 
-              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                activeTab === 'custom-voice' 
-                  ? 'border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20' 
-                  : 'border-border bg-background/50 hover:border-indigo-300'
-              }`}
-              onClick={() => setActiveTab('custom-voice')}
-              data-testid="engine-card-custom-voice"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Mic className="h-4 w-4 text-indigo-600" />
-                <span className="font-semibold text-sm">Custom Voice</span>
-              </div>
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <span><strong className="text-indigo-600">{cveConnections.length}</strong> active</span>
-                <span><strong>{allAvailableNumbersForCve.length}</strong> available</span>
-                <span><strong>{cveAgents.length}</strong> agents</span>
-              </div>
-            </div>
-          )}
 
           {/* Plivo + OpenAI Summary - Only shown when enabled */}
           {plivoEnabled && (
@@ -683,17 +681,15 @@ export default function IncomingConnectionsPage() {
           enabledEngineCount === 3 ? 'grid-cols-3' : 
           'grid-cols-4'
         }`}>
+          <TabsTrigger value="custom-voice" className="flex items-center gap-2" data-testid="tab-custom-voice">
+            <Mic className="h-3.5 w-3.5 text-indigo-600" />
+            <span className="hidden sm:inline">Master AI (FreeSWITCH)</span>
+          </TabsTrigger>
           <TabsTrigger value="twilio-elevenlabs" className="flex items-center gap-2" data-testid="tab-twilio-elevenlabs">
             <SiTwilio className="h-3.5 w-3.5 text-red-500" />
             <ElevenLabsIcon className="h-3.5 w-3.5 text-violet-600" />
             <span className="hidden sm:inline">Twilio + ElevenLabs</span>
           </TabsTrigger>
-          {isCustomVoiceEngineEnabled && (
-            <TabsTrigger value="custom-voice" className="flex items-center gap-2" data-testid="tab-custom-voice">
-              <Mic className="h-3.5 w-3.5 text-indigo-600" />
-              <span className="hidden sm:inline">Custom Voice</span>
-            </TabsTrigger>
-          )}
           {plivoEnabled && (
             <TabsTrigger value="plivo-openai" className="flex items-center gap-2" data-testid="tab-plivo-openai">
               <Phone className="h-3.5 w-3.5 text-green-600" />
@@ -709,6 +705,71 @@ export default function IncomingConnectionsPage() {
             </TabsTrigger>
           )}
         </TabsList>
+
+        {/* Twilio + ElevenLabs Content */}
+        {/* Custom Voice Content */}
+        <TabsContent value="custom-voice">
+          <Card>
+            <CardContent className="pt-6">
+              {connectionsLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
+                  ))}
+                </div>
+              ) : cveConnections.length === 0 ? (
+                <div className="text-center py-12" data-testid="cve-empty-state">
+                  <LinkIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Custom Voice Connections Yet</h3>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Connect any phone number to a Custom Voice Engine agent.
+                  </p>
+                  <Button 
+                    onClick={() => setCveCreateDialogOpen(true)}
+                    disabled={allAvailableNumbersForCve.length === 0 || cveAgents.length === 0}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create First Connection
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cveConnections.map((connection) => (
+                    <div
+                      key={connection.id}
+                      className="flex items-center justify-between p-4 border rounded-lg hover-elevate bg-card"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Badge variant="secondary" className="font-mono text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
+                          {connection.phoneNumber.phoneNumber}
+                        </Badge>
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Mic className="h-4 w-4 text-indigo-600" />
+                            <span className="font-medium">{connection.agent.name}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {connection.phoneNumber.friendlyName && `${connection.phoneNumber.friendlyName} • `}
+                            Language: {connection.agent.language || 'en'}
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setCveDeleteConnection(connection)}
+                      >
+                        <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Twilio + ElevenLabs Content */}
         <TabsContent value="twilio-elevenlabs">
@@ -776,71 +837,6 @@ export default function IncomingConnectionsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* Custom Voice Content */}
-        {isCustomVoiceEngineEnabled && (
-        <TabsContent value="custom-voice">
-          <Card>
-            <CardContent className="pt-6">
-              {connectionsLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-20 bg-muted animate-pulse rounded-lg" />
-                  ))}
-                </div>
-              ) : cveConnections.length === 0 ? (
-                <div className="text-center py-12" data-testid="cve-empty-state">
-                  <LinkIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Custom Voice Connections Yet</h3>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Connect any phone number to a Custom Voice Engine agent.
-                  </p>
-                  <Button 
-                    onClick={() => setCveCreateDialogOpen(true)}
-                    disabled={allAvailableNumbersForCve.length === 0 || cveAgents.length === 0}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create First Connection
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cveConnections.map((connection) => (
-                    <div
-                      key={connection.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover-elevate bg-card"
-                    >
-                      <div className="flex items-center gap-4">
-                        <Badge variant="secondary" className="font-mono text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300">
-                          {connection.phoneNumber.phoneNumber}
-                        </Badge>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <Mic className="h-4 w-4 text-indigo-600" />
-                            <span className="font-medium">{connection.agent.name}</span>
-                          </div>
-                          <div className="text-xs text-muted-foreground mt-0.5">
-                            {connection.phoneNumber.friendlyName && `${connection.phoneNumber.friendlyName} • `}
-                            Language: {connection.agent.language || 'en'}
-                          </div>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setCveDeleteConnection(connection)}
-                      >
-                        <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>)}
 
         {/* Plivo + OpenAI Content */}
         {plivoEnabled && (

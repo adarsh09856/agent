@@ -325,8 +325,8 @@ export default function UserSipGatewaysTab() {
               <Server className="h-4.5 w-4.5 text-white h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Custom Voice Engine Gateways</h2>
-              <p className="text-sm text-muted-foreground">Your Custom Voice Engine credentials for outbound calls</p>
+              <h2 className="text-lg font-semibold">SIP Gateways & Wholesale Trunks</h2>
+              <p className="text-sm text-muted-foreground">Your wholesale SIP credentials (Telnyx, Twilio BYOC, Tata, Airtel, DIDLogic, VoipMS) routed through FreeSWITCH</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -338,9 +338,9 @@ export default function UserSipGatewaysTab() {
             >
               <RefreshCw className={`h-4 w-4 ${gatewaysLoading ? "animate-spin" : ""}`} />
             </Button>
-            <Button size="sm" onClick={openAddGateway}>
+            <Button size="sm" id="add-sip-gateway-btn" onClick={openAddGateway}>
               <Plus className="h-4 w-4 mr-1.5" />
-              Add Custom Voice Engine Gateway
+              Add SIP Gateway / Trunk
             </Button>
           </div>
         </div>

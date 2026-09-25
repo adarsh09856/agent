@@ -865,6 +865,33 @@ function VoiceAIPanel() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="border-indigo-200 dark:border-indigo-800 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20 md:col-span-2">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md">
+                  <Server className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg">Master AI Engine (FreeSWITCH Core)</CardTitle>
+                  <CardDescription>
+                    Self-hosted SIP PBX with Deepgram Aura, Sarvam AI, and Gemini Flash LLM. Zero third-party telephony markups.
+                  </CardDescription>
+                </div>
+              </div>
+              <Badge className="bg-emerald-600 text-white hover:bg-emerald-700">
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                Active Core
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-0 text-sm text-muted-foreground flex flex-wrap gap-4">
+            <div><strong>Audio Routing:</strong> FreeSWITCH ESL Port 8021</div>
+            <div><strong>Native STT:</strong> Deepgram Nova-2 / Sarvam Saaras</div>
+            <div><strong>Native TTS:</strong> Deepgram Aura / Sarvam Bulbul</div>
+            <div><strong>BYOT Trunks:</strong> Telnyx, Airtel, Tata, Twilio BYOC</div>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-4">

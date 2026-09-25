@@ -38,7 +38,11 @@ export interface AuthRequest extends Request {
 
 export function authenticateToken(req: AuthRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  let token = authHeader && authHeader.split(" ")[1];
+
+  if (!token && (req as any).cookies) {
+    token = (req as any).cookies.auth_token || (req as any).cookies.token || (req as any).cookies.access_token;
+  }
 
   if (!token) {
     return res.status(401).json({ error: "Authentication required" });
@@ -353,9 +357,9 @@ export function setRefreshTokenCookie(res: Response, token: string): void {
   res.cookie(REFRESH_TOKEN_COOKIE, token, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: 'strict' as const,
+    sameSite: 'lax' as const,
     maxAge: maxAge,
-    path: '/api/auth',
+    path: '/',
   });
 }
 
@@ -368,9 +372,9 @@ export function clearRefreshTokenCookie(res: Response): void {
   res.cookie(REFRESH_TOKEN_COOKIE, '', {
     httpOnly: true,
     secure: isProduction,
-    sameSite: 'strict' as const,
+    sameSite: 'lax' as const,
     maxAge: 0,
-    path: '/api/auth',
+    path: '/',
   });
 }
 
@@ -387,5 +391,5 @@ export function getRefreshTokenFromCookie(req: Request): string | undefined {
 export const AUTH_CONSTANTS = {
   REFRESH_TOKEN_EXPIRY_DAYS,
   ACTIVITY_TIMEOUT_MINUTES,
-  ACCESS_TOKEN_EXPIRY_MINUTES: 15
+  ACCESS_TOKEN_EXPIRY_MINUTES: 1440 // 24 hours
 };

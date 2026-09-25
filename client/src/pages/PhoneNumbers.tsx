@@ -113,6 +113,8 @@ interface VoiceEngineSettings {
 interface UserWithKyc {
   id: string;
   kycStatus?: 'pending' | 'submitted' | 'approved' | 'rejected' | null;
+  credits?: number;
+  subscriptionMinutes?: number;
 }
 
 interface PlivoPhoneNumber {
@@ -158,6 +160,7 @@ export default function PhoneNumbers() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [currentTab, setCurrentTab] = useState("my-sip-gateways");
   const [buyDialogOpen, setBuyDialogOpen] = useState(false);
   const [searchCountry, setSearchCountry] = useState("");
   const [searchContains, setSearchContains] = useState("");
@@ -586,7 +589,22 @@ export default function PhoneNumbers() {
               <p className="text-muted-foreground mt-0.5">{t('phoneNumbers.subtitle')}</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setCurrentTab("my-sip-gateways");
+                setTimeout(() => {
+                  const el = document.getElementById("add-sip-gateway-btn");
+                  if (el) el.click();
+                }, 50);
+              }}
+              className="bg-white/80 dark:bg-white/10 border-emerald-200 dark:border-emerald-800"
+              data-testid="button-connect-sip"
+            >
+              <Server className="h-4 w-4 mr-2 text-emerald-600 dark:text-emerald-400" />
+              + Connect SIP Number / Trunk
+            </Button>
             <Button 
               variant="outline" 
               onClick={() => setLocation("/app/incoming-connections")}
@@ -632,21 +650,21 @@ export default function PhoneNumbers() {
           <div className="bg-white/80 dark:bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-cyan-100/50 dark:border-cyan-800/30">
             <div className="flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
-              <div className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">{MONTHLY_CREDITS}</div>
+              <div className="text-2xl font-bold text-cyan-700 dark:text-cyan-300">
+                {currentUser?.subscriptionMinutes ?? 0}m / {currentUser?.credits ?? 0} cr
+              </div>
             </div>
-            <div className="text-cyan-600/70 dark:text-cyan-400/70 text-sm">{t('phoneNumbers.stats.creditsPerMonth')}</div>
+            <div className="text-cyan-600/70 dark:text-cyan-400/70 text-sm">Included Minutes & Credits</div>
           </div>
         </div>
       </div>
 
-      <Tabs defaultValue="my-sip-gateways" className="space-y-6">
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
         <TabsList>
-          {isCustomVoiceEngineEnabled && (
-            <TabsTrigger value="my-sip-gateways" data-testid="tab-my-sip-gateways">
-              <Server className="h-4 w-4 mr-1 text-primary" />
-              My SIP Gateways & Numbers
-            </TabsTrigger>
-          )}
+          <TabsTrigger value="my-sip-gateways" data-testid="tab-my-sip-gateways">
+            <Server className="h-4 w-4 mr-1 text-primary" />
+            SIP Gateways & Wholesale DIDs
+          </TabsTrigger>
           <TabsTrigger value="owned" data-testid="tab-owned-numbers">
             Twilio Numbers ({ownedNumbers.length})
           </TabsTrigger>
@@ -662,6 +680,10 @@ export default function PhoneNumbers() {
             </TabsTrigger>
           ))}
         </TabsList>
+
+        <TabsContent value="my-sip-gateways" className="space-y-4">
+          <UserSipGatewaysTab />
+        </TabsContent>
 
         <TabsContent value="owned" className="space-y-4">
           {ownedLoading ? (
@@ -983,12 +1005,6 @@ export default function PhoneNumbers() {
             </Suspense>
           </TabsContent>
         ))}
-
-        {isCustomVoiceEngineEnabled && (
-          <TabsContent value="my-sip-gateways" className="space-y-4">
-            <UserSipGatewaysTab />
-          </TabsContent>
-        )}
       </Tabs>
 
       <Dialog open={buyDialogOpen} onOpenChange={setBuyDialogOpen}>

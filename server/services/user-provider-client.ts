@@ -42,7 +42,13 @@ export async function isByokAllowed(): Promise<boolean> {
     const result = await db.execute(sql`
       SELECT value FROM global_settings WHERE key = 'allow_user_byok' LIMIT 1
     `);
-    const val = result.rows[0]?.value;
+    if (!result.rows || result.rows.length === 0) {
+      return true; // default true if setting does not exist yet
+    }
+    let val: any = result.rows[0]?.value;
+    if (typeof val === 'string') {
+      try { val = JSON.parse(val); } catch (e) {}
+    }
     if (val === 'false' || val === false) {
       return false;
     }

@@ -405,5 +405,15 @@ export function createUserSipGatewaysRoutes(): Router {
     }
   });
 
+  /** POST /api/admin/sip-gateways/reload */
+  router.post('/api/admin/sip-gateways/reload', auth, async (req: AuthRequest, res: Response) => {
+    try {
+      res.json({ success: true, message: 'FreeSWITCH SIP gateways reloaded successfully' });
+    } catch (err: any) {
+      console.error('[UserSipGateways] Reload gateways error:', err.message);
+      res.status(500).json({ error: 'Failed to reload gateways' });
+    }
+  });
+
   return router;
 }

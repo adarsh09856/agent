@@ -744,7 +744,7 @@ export default function Agents() {
     sttProvider: "deepgram",
     sttModel: "nova-2",
     ttsProvider: "deepgram",
-    ttsModel: "aura-asteria-en",
+    ttsModel: "aura",
     // SIP phone number selection (for SIP engines)
     sipPhoneNumberId: "",
     // Agent-specific BYOK override options
@@ -851,22 +851,26 @@ export default function Agents() {
 
   const sarvamSupportedLanguages = ['en', 'hi', 'bn', 'ta', 'te', 'kn', 'ml', 'mr', 'gu', 'pa', 'or', 'od'];
 
-  const rawDeepgramAllowed = cveSettings?.data?.tts?.deepgramAllowedModels || ['aura-2', 'aura'];
+  const rawDeepgramAllowed = (cveSettings?.data?.tts?.deepgramAllowedModels && cveSettings.data.tts.deepgramAllowedModels.length > 0)
+    ? cveSettings.data.tts.deepgramAllowedModels
+    : ['aura', 'aura-2'];
   const mappedDeepgramAllowed = Array.from(new Set(rawDeepgramAllowed.map(m => m.startsWith('aura-2') ? 'aura-2' : 'aura')));
+  const safeDeepgramAllowed = mappedDeepgramAllowed.length > 0 ? mappedDeepgramAllowed : ['aura', 'aura-2'];
 
   const currentTtsAllowedModels = (formData.ttsProvider === 'deepgram'
-    ? mappedDeepgramAllowed
-    : (cveSettings?.data?.tts?.sarvamAllowedModels || ['bulbul:v3', 'bulbul:v2']))
+    ? safeDeepgramAllowed
+    : (cveSettings?.data?.tts?.sarvamAllowedModels?.length ? cveSettings.data.tts.sarvamAllowedModels : ['bulbul:v3', 'bulbul:v2']))
     .filter(m => {
       if (!formData.language) return true;
       if (formData.ttsProvider === 'deepgram') {
-        if (formData.language.toLowerCase() !== 'en') {
+        const langPrefix = formData.language.toLowerCase().split(/[-_]/)[0];
+        if (langPrefix !== 'en') {
           return m === 'aura-2';
         }
         return true;
       }
       if (formData.ttsProvider === 'sarvam') {
-        return sarvamSupportedLanguages.includes(formData.language.toLowerCase());
+        return sarvamSupportedLanguages.includes(formData.language.toLowerCase().split(/[-_]/)[0]);
       }
       return true;
     });
@@ -1247,7 +1251,7 @@ export default function Agents() {
       sttProvider: "deepgram",
       sttModel: "nova-2",
       ttsProvider: "deepgram",
-      ttsModel: "aura-asteria-en",
+      ttsModel: "aura",
       useCustomByok: false,
       agentDeepgramKey: "",
       agentGeminiKey: "",
@@ -1389,7 +1393,7 @@ export default function Agents() {
       sttProvider: (agent as any).stt_provider || (agent as any).config?.sttProvider || "deepgram",
       ttsProvider: (agent as any).tts_provider || (agent as any).config?.ttsProvider || "deepgram",
       sttModel: (agent as any).stt_model || (agent as any).config?.sttModel || (((agent as any).stt_provider || (agent as any).config?.sttProvider) === 'sarvam' ? (currentSttAllowedModels[0] || 'saaras:v3') : "nova-2"),
-      ttsModel: (agent as any).tts_model || (agent as any).config?.ttsModel || (((agent as any).tts_provider || (agent as any).config?.ttsProvider) === 'sarvam' ? (currentTtsAllowedModels[0] || 'bulbul:v3') : "aura-asteria-en"),
+      ttsModel: ((agent as any).tts_model?.startsWith("aura-2") ? "aura-2" : ((agent as any).tts_model?.startsWith("aura") ? "aura" : ((agent as any).tts_model || (agent as any).config?.ttsModel || (((agent as any).tts_provider || (agent as any).config?.ttsProvider) === 'sarvam' ? (currentTtsAllowedModels[0] || 'bulbul:v3') : "aura")))),
       sipPhoneNumberId: (agent as any).sipPhoneNumberId || "",
       useCustomByok: !!((agent as any).config?.byok?.deepgramKey || (agent as any).config?.byok?.geminiKey),
       agentDeepgramKey: (agent as any).config?.byok?.deepgramKey || "",
@@ -2298,31 +2302,32 @@ export default function Agents() {
                             <Label className="text-sm font-semibold text-amber-700 dark:text-amber-300">Voice Engine</Label>
                           </div>
                           <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                            {/* ElevenLabs + Twilio - Purple theme */}
+                            {/* Master AI / Custom Voice Engine - Indigo theme */}
                             <div
-                              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.telephonyProvider === "twilio"
-                                ? "border-violet-500 bg-violet-500/10 dark:bg-violet-500/20"
-                                : "border-border hover:border-violet-400/50 hover:bg-violet-500/5"
+                              className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.telephonyProvider === "custom-voice-engine"
+                                ? "border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20"
+                                : "border-border hover:border-indigo-400/50 hover:bg-indigo-500/5"
                                 }`}
                               onClick={() => setFormData({
                                 ...formData,
-                                telephonyProvider: "twilio",
-                                type: formData.type === "custom_engine" ? "incoming" : formData.type,
-                                llmModel: availableLLMModels.length > 0 ? availableLLMModels[0].modelId : "gpt-4o-mini"
+                                telephonyProvider: "custom-voice-engine",
+                                type: "custom_engine",
+                                llmModel: "openai/gpt-4o-mini"
                               })}
-                              data-testid="flow-provider-twilio"
+                              data-testid="flow-provider-custom-voice-engine"
                             >
                               <div className="flex items-center justify-between">
                                 <div>
                                   <div className="flex items-center gap-1.5">
-                                    <span className="font-medium text-violet-700 dark:text-violet-300">ElevenLabs + Twilio</span>
+                                    <span className="font-medium text-indigo-700 dark:text-indigo-300">Master AI (FreeSWITCH)</span>
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-indigo-300 text-indigo-600 dark:border-indigo-600 dark:text-indigo-400">Primary</Badge>
                                   </div>
                                   <p className="text-xs text-muted-foreground mt-0.5">
-                                    Premium voice, 30+ languages
+                                    Self-hosted Deepgram & Sarvam pipeline
                                   </p>
                                 </div>
-                                {formData.telephonyProvider === "twilio" && (
-                                  <Check className="h-4 w-4 text-violet-600" />
+                                {formData.telephonyProvider === "custom-voice-engine" && (
+                                  <Check className="h-4 w-4 text-indigo-600" />
                                 )}
                               </div>
                             </div>
@@ -2444,37 +2449,6 @@ export default function Agents() {
                                   </div>
                                   {formData.telephonyProvider === "openai-sip" && (
                                     <Check className="h-4 w-4 text-pink-600" />
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                            {/* Custom Voice Engine - Indigo/Indigo theme */}
-                            {isCustomVoiceEngineEnabled && (
-                              <div
-                                className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.telephonyProvider === "custom-voice-engine"
-                                  ? "border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20"
-                                  : "border-border hover:border-indigo-400/50 hover:bg-indigo-500/5"
-                                  }`}
-                                onClick={() => setFormData({
-                                  ...formData,
-                                  telephonyProvider: "custom-voice-engine",
-                                  type: "custom_engine",
-                                  llmModel: "openai/gpt-4o-mini"
-                                })}
-                                data-testid="flow-provider-custom-voice-engine"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="font-medium text-indigo-700 dark:text-indigo-300">Custom Voice Engine</span>
-                                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-indigo-300 text-indigo-600 dark:border-indigo-600 dark:text-indigo-400">Plugin</Badge>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mt-0.5">
-                                      Self-hosted FreeSWITCH pipeline
-                                    </p>
-                                  </div>
-                                  {formData.telephonyProvider === "custom-voice-engine" && (
-                                    <Check className="h-4 w-4 text-indigo-600" />
                                   )}
                                 </div>
                               </div>
@@ -3102,31 +3076,32 @@ export default function Agents() {
                     <div className="space-y-2">
                       <Label>Telephony Provider</Label>
                       <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                        {/* ElevenLabs + Twilio - Purple theme */}
+                        {/* Master AI / Custom Voice Engine - Indigo theme */}
                         <div
-                          className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.telephonyProvider === "twilio"
-                            ? "border-violet-500 bg-violet-500/10 dark:bg-violet-500/20"
-                            : "border-border hover:border-violet-400/50 hover:bg-violet-500/5"
+                          className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.telephonyProvider === "custom-voice-engine"
+                            ? "border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20"
+                            : "border-border hover:border-indigo-400/50 hover:bg-indigo-500/5"
                             }`}
                           onClick={() => setFormData({
                             ...formData,
-                            telephonyProvider: "twilio",
-                            type: formData.type === "custom_engine" ? "incoming" : formData.type,
-                            llmModel: availableLLMModels.length > 0 ? availableLLMModels[0].modelId : "gpt-4o-mini"
+                            telephonyProvider: "custom-voice-engine",
+                            type: "custom_engine",
+                            llmModel: "openai/gpt-4o-mini"
                           })}
-                          data-testid="provider-twilio"
+                          data-testid="provider-custom-voice-engine"
                         >
                           <div className="flex items-center justify-between">
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-violet-700 dark:text-violet-300">ElevenLabs + Twilio</span>
+                                <span className="font-medium text-indigo-700 dark:text-indigo-300">Master AI (FreeSWITCH)</span>
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-indigo-300 text-indigo-600 dark:border-indigo-600 dark:text-indigo-400">Primary</Badge>
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Premium voice quality, 30+ languages
+                                Self-hosted Deepgram & Sarvam pipeline
                               </p>
                             </div>
-                            {formData.telephonyProvider === "twilio" && (
-                              <Check className="h-4 w-4 text-violet-600" />
+                            {formData.telephonyProvider === "custom-voice-engine" && (
+                              <Check className="h-4 w-4 text-indigo-600" />
                             )}
                           </div>
                         </div>
@@ -3248,37 +3223,6 @@ export default function Agents() {
                               </div>
                               {formData.telephonyProvider === "openai-sip" && (
                                 <Check className="h-4 w-4 text-pink-600" />
-                              )}
-                            </div>
-                          </div>
-                        )}
-                        {/* Custom Voice Engine - Indigo/Indigo theme */}
-                        {isCustomVoiceEngineEnabled && (
-                          <div
-                            className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${formData.telephonyProvider === "custom-voice-engine"
-                              ? "border-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20"
-                              : "border-border hover:border-indigo-400/50 hover:bg-indigo-500/5"
-                              }`}
-                            onClick={() => setFormData({
-                              ...formData,
-                              telephonyProvider: "custom-voice-engine",
-                              type: "custom_engine",
-                              llmModel: "openai/gpt-4o-mini"
-                            })}
-                            data-testid="provider-custom-voice-engine"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="font-medium text-indigo-700 dark:text-indigo-300">Custom Voice Engine</span>
-                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-indigo-300 text-indigo-600 dark:border-indigo-600 dark:text-indigo-400">Plugin</Badge>
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-0.5">
-                                  Self-hosted FreeSWITCH pipeline
-                                </p>
-                              </div>
-                              {formData.telephonyProvider === "custom-voice-engine" && (
-                                <Check className="h-4 w-4 text-indigo-600" />
                               )}
                             </div>
                           </div>

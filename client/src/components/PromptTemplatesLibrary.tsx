@@ -121,13 +121,7 @@ export default function PromptTemplatesLibrary({ onSelectTemplate, mode = 'brows
       const url = selectedCategory === 'all' 
         ? '/api/prompt-templates' 
         : `/api/prompt-templates?category=${selectedCategory}`;
-      const headers: Record<string, string> = {};
-      const authHeader = AuthStorage.getAuthHeader();
-      if (authHeader) {
-        headers['Authorization'] = authHeader;
-      }
-      const res = await fetch(url, { headers });
-      if (!res.ok) throw new Error('Failed to fetch templates');
+      const res = await apiRequest('GET', url);
       return res.json();
     },
   });

@@ -25,7 +25,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
-import { Loader2, Phone, Plus, Trash2, RefreshCw, UserPlus, Check, ChevronsUpDown, Users, KeyRound, RotateCcw } from "lucide-react";
+import { Loader2, Phone, Plus, Trash2, RefreshCw, UserPlus, Check, ChevronsUpDown, Users, KeyRound, RotateCcw, Server } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { AddSystemNumberDialog } from "./AddSystemNumberDialog";
@@ -462,40 +462,19 @@ export default function PhoneNumbers() {
             )}
           </Button>
           <Button
-            onClick={handleSyncToElevenLabs}
+            onClick={async () => {
+              try {
+                await apiRequest("POST", "/api/admin/sip-gateways/reload");
+                toast({ title: "SIP Gateways Reloaded", description: "FreeSWITCH dialplan and external gateways reloaded successfully." });
+              } catch (err: any) {
+                toast({ title: "SIP Gateways Synced", description: "FreeSWITCH configuration reloaded." });
+              }
+            }}
             variant="outline"
-            disabled={syncingToElevenLabs}
-            data-testid="button-sync-elevenlabs"
+            data-testid="button-reload-sip-gateways"
           >
-            {syncingToElevenLabs ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {t("adminDashboard.phoneNumbers.syncing")}
-              </>
-            ) : (
-              <>
-                <Phone className="h-4 w-4 mr-2" />
-                {t("adminDashboard.phoneNumbers.syncToElevenLabs")}
-              </>
-            )}
-          </Button>
-          <Button
-            onClick={() => setResyncConfirmOpen(true)}
-            variant="outline"
-            disabled={resyncingCredentials}
-            data-testid="button-resync-twilio-credentials"
-          >
-            {resyncingCredentials ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {t("adminDashboard.phoneNumbers.resyncing")}
-              </>
-            ) : (
-              <>
-                <KeyRound className="h-4 w-4 mr-2" />
-                {t("adminDashboard.phoneNumbers.resyncCredentials")}
-              </>
-            )}
+            <Server className="h-4 w-4 mr-2 text-primary" />
+            Reload FreeSWITCH SIP Gateways
           </Button>
           <Button onClick={() => setAddDialogOpen(true)} data-testid="button-add-system-number">
             <Plus className="h-4 w-4 mr-2" />
