@@ -2140,22 +2140,21 @@ export default function VoiceEngineSettings() {
               <Server className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">FS Nodes</p>
-              <p className="text-xs text-muted-foreground">{nodes.filter(n => n.status === 'online').length} / {nodes.length} Online</p>
+              <p className="text-sm font-medium">Cloud Engine</p>
+              <p className="text-xs text-muted-foreground">Pipecat Streaming • Zero PBX</p>
             </div>
-            <Badge variant="outline" className="border-emerald-500 text-emerald-600">Active</Badge>
+            <Badge variant="outline" className="border-emerald-500 text-emerald-600 bg-emerald-50/50 dark:bg-emerald-950/30">Active</Badge>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 mb-4 h-auto p-1 bg-muted/60">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 mb-4 h-auto p-1 bg-muted/60">
           <TabsTrigger value="speech" className="py-2.5"><Mic className="h-4 w-4 mr-2" />Speech (STT/TTS)</TabsTrigger>
           <TabsTrigger value="llm" className="py-2.5"><Brain className="h-4 w-4 mr-2" />LLM</TabsTrigger>
           <TabsTrigger value="master-ai" className="py-2.5"><Sparkles className="h-4 w-4 mr-2" />Master AI & BYOK</TabsTrigger>
-          <TabsTrigger value="nodes" className="py-2.5"><Server className="h-4 w-4 mr-2" />FreeSWITCH Nodes</TabsTrigger>
-          <TabsTrigger value="telephony" className="py-2.5"><Phone className="h-4 w-4 mr-2" />Telephony / SIP</TabsTrigger>
+          <TabsTrigger value="telephony" className="py-2.5"><Phone className="h-4 w-4 mr-2" />Telephony & SIP</TabsTrigger>
           <TabsTrigger value="storage" className="py-2.5"><Database className="h-4 w-4 mr-2" />Storage</TabsTrigger>
         </TabsList>
 
@@ -2895,87 +2894,30 @@ export default function VoiceEngineSettings() {
           </Card>
         </TabsContent>
 
-        {/* FreeSWITCH Nodes Tab */}
-        <TabsContent value="nodes" className="space-y-4 mt-4">
-          <div className="flex justify-between items-center">
-            <div>
-              <h3 className="text-lg font-semibold">FreeSWITCH Cluster Nodes</h3>
-              <p className="text-sm text-muted-foreground">Register FreeSWITCH instances used to process inbound/outbound SIP calls.</p>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => refetchNodes()}><RefreshCw className="h-4 w-4 mr-1" /> Refresh</Button>
-              <Button size="sm" onClick={() => {  handleOpenAddDialog(); }}><Plus className="h-4 w-4 mr-1" /> Add Node</Button>
-            </div>
-          </div>
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Node Name</TableHead>
-                  <TableHead>ESL Host</TableHead>
-                  <TableHead>SIP Host</TableHead>
-                  <TableHead>WS Port</TableHead>
-                  <TableHead>Concurrency</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {nodes.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                      No FreeSWITCH nodes registered. Click "Add Node" to add your first server.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  nodes.map((node) => (
-                    <TableRow key={node.id}>
-                      <TableCell className="font-medium">{node.name}</TableCell>
-                      <TableCell className="font-mono text-xs">{node.esl_host}:{node.esl_port}</TableCell>
-                      <TableCell className="font-mono text-xs">{node.sip_host}:{node.sip_port}</TableCell>
-                      <TableCell className="font-mono text-xs">{node.ws_port}</TableCell>
-                      <TableCell>{node.active_calls} / {node.max_calls}</TableCell>
-                      <TableCell><NodeStatusBadge status={node.status} /></TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => {  handleOpenEditDialog(node); }}><Edit className="h-4 w-4" /></Button>
-                          <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700"
-                            onClick={() => {  if (confirm("Are you sure you want to delete this FreeSWITCH node?")) deleteNodeMutation.mutate(node.id); }}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
         {/* Telephony Tab */}
         <TabsContent value="telephony" className="space-y-4 mt-4">
           <Card className="border border-indigo-100 dark:border-indigo-950 bg-indigo-50/20 dark:bg-indigo-950/10">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Info className="h-5 w-5 text-indigo-500" />
-                <CardTitle className="text-lg text-indigo-900 dark:text-indigo-200">Decoupled Telephony Architecture</CardTitle>
+                <CardTitle className="text-lg text-indigo-900 dark:text-indigo-200">Direct Cloud Telephony & Media Streaming</CardTitle>
               </div>
               <CardDescription>
-                The Custom Voice Engine decouples telephony from the AI pipeline. Your SIP Providers send/receive calls through <strong>FreeSWITCH</strong> directly. FreeSWITCH streams live audio to this backend over WebSockets.
+                High-performance voice AI architecture powered by Dograh/Pipecat cloud streaming. Telecom carriers connect live audio directly to your platform over secure WebSockets (WSS). No FreeSWITCH PBX, no ESL port 8021, and zero PBX server maintenance.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2 items-center justify-between text-sm py-2 px-3 bg-background rounded-lg border border-border/80">
                 <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-                  <Badge variant="outline">SIP Provider</Badge>
+                  <Badge variant="outline">Carrier DID (CallHippo / TeleCMI / VoiceLink / Twilio)</Badge>
                   <span>→</span>
-                  <Badge variant="secondary">FreeSWITCH Node</Badge>
+                  <Badge className="bg-emerald-600 text-white">Direct WebSocket (WSS)</Badge>
                   <span>→</span>
-                  <Badge className="bg-indigo-600">mod_audio_fork</Badge>
+                  <Badge variant="secondary">Pipecat Audio Stream</Badge>
                   <span>→</span>
-                  <Badge variant="secondary">WebSocket (Port 8089)</Badge>
+                  <Badge className="bg-indigo-600 text-white">STT + LLM + Indic TTS</Badge>
                   <span>→</span>
-                  <Badge className="bg-indigo-600">AI Voice Engine</Badge>
+                  <Badge variant="outline">Caller Handset / Browser Mic</Badge>
                 </div>
               </div>
             </CardContent>
