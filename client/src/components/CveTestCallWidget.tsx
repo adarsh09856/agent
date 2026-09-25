@@ -39,23 +39,32 @@ const LANGUAGES = [
 
 const AUDIO_VOICES = [
   { label: "Default (Agent Config)", value: "default", provider: "default", voice: "default" },
+  // Navana AI Bodhi Indic
+  { label: "🇮🇳 Navana - Aarav (Male Hindi Indic)", value: "nav:bodhi-aarav", provider: "navana", voice: "bodhi-aarav" },
+  { label: "🇮🇳 Navana - Diya (Female Hindi Indic)", value: "nav:bodhi-diya", provider: "navana", voice: "bodhi-diya" },
+  { label: "🇮🇳 Navana - Karthik (Male Tamil Indic)", value: "nav:bodhi-karthik", provider: "navana", voice: "bodhi-karthik" },
+  { label: "🇮🇳 Navana - Sravani (Female Telugu Indic)", value: "nav:bodhi-sravani", provider: "navana", voice: "bodhi-sravani" },
+  // Cartesia Sonic 90ms
+  { label: "⚡ Cartesia - Katie (Female 90ms)", value: "cart:sonic-katie", provider: "cartesia", voice: "sonic-katie" },
+  { label: "⚡ Cartesia - Barbershop (Male 90ms)", value: "cart:sonic-barbershop", provider: "cartesia", voice: "sonic-barbershop" },
   // Deepgram
   { label: "Deepgram - Asteria (Female English)", value: "dg:aura-asteria-en", provider: "deepgram", voice: "aura-asteria-en" },
   { label: "Deepgram - Luna (Female English)", value: "dg:aura-luna-en", provider: "deepgram", voice: "aura-luna-en" },
   { label: "Deepgram - Orion (Male English)", value: "dg:aura-orion-en", provider: "deepgram", voice: "aura-orion-en" },
   { label: "Deepgram - Helios (Male English)", value: "dg:aura-helios-en", provider: "deepgram", voice: "aura-helios-en" },
   // Sarvam
-  { label: "Sarvam - Neha (Female Hindi/Indian)", value: "sv:neha", provider: "sarvam", voice: "neha" },
-  { label: "Sarvam - Priya (Female Hindi/Indian)", value: "sv:priya", provider: "sarvam", voice: "priya" },
-  { label: "Sarvam - Amit (Male Hindi/Indian)", value: "sv:amit", provider: "sarvam", voice: "amit" },
+  { label: "🇮🇳 Sarvam - Neha (Female Hindi/Indian)", value: "sv:neha", provider: "sarvam", voice: "neha" },
+  { label: "🇮🇳 Sarvam - Priya (Female Hindi/Indian)", value: "sv:priya", provider: "sarvam", voice: "priya" },
+  { label: "🇮🇳 Sarvam - Amit (Male Hindi/Indian)", value: "sv:amit", provider: "sarvam", voice: "amit" },
 ];
 
 const LLM_MODELS = [
   { label: "Default (Agent Config)", value: "default" },
-  { label: "OpenAI GPT-4o Mini", value: "openai/gpt-4o-mini" },
-  { label: "Google Gemini 2.5 Flash", value: "google/gemini-2.5-flash" },
-  { label: "Anthropic Claude 3.5 Sonnet", value: "anthropic/claude-3.5-sonnet" },
-  { label: "Meta Llama 3.1 70B", value: "meta-llama/llama-3.1-70b-instruct" },
+  { label: "⚡ Google Gemini 2.0 Flash (Fast & Low Cost)", value: "gemini-2.0-flash" },
+  { label: "⚡ Groq Llama 3.3 70B (Sub-150ms)", value: "llama-3.3-70b-versatile" },
+  { label: "🧠 DeepSeek V3 (Affordable Reasoning)", value: "deepseek-chat" },
+  { label: "OpenAI GPT-4o Mini", value: "gpt-4o-mini" },
+  { label: "Anthropic Claude 3.5 Sonnet", value: "claude-3-5-sonnet" },
 ];
 
 export function CveTestCallWidget() {
