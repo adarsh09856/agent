@@ -238,16 +238,21 @@ install_system_packages() {
         gnupg \
         lsb-release \
         ufw \
-        nginx \
-        certbot \
-        python3-certbot-nginx \
         postgresql-client \
         jq \
         unzip \
         htop \
         net-tools
 
-    log_success "Core system packages installed."
+    # If Nginx is not installed (e.g. not using aaPanel Nginx), install it safely
+    if ! command -v nginx >/dev/null 2>&1; then
+        log_info "Installing Nginx web server..."
+        apt-get install -y nginx certbot python3-certbot-nginx
+    else
+        log_success "Nginx is already installed ($(nginx -v 2>&1 | cut -d'/' -f2)). Preserving existing web server."
+    fi
+
+    log_success "Core system packages verified."
 }
 
 # 6. Install Node.js v20 LTS & PM2
@@ -436,10 +441,16 @@ start_freeswitch_cluster() {
 setup_nginx() {
     log_info "Configuring isolated Nginx virtual host for ${DOMAIN_NAME}..."
 
-    # Ensure sites-available and sites-enabled directories exist
-    mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
-
-    NGINX_CONF="/etc/nginx/sites-available/agentlabs.conf"
+    # Detect aaPanel environment
+    IS_AAPANEL=false
+    if [ -d "/www/server/panel/vhost/nginx" ]; then
+        IS_AAPANEL=true
+        NGINX_CONF="/www/server/panel/vhost/nginx/agentlabs.conf"
+        log_info "aaPanel detected! Writing isolated virtual host to: ${NGINX_CONF}"
+    else
+        mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
+        NGINX_CONF="/etc/nginx/sites-available/agentlabs.conf"
+    fi
 
     # Match exact domain/IP (NEVER wildcard _ which would intercept other sites!)
     if [ "$DOMAIN_NAME" = "localhost" ] || [ "$DOMAIN_NAME" = "127.0.0.1" ]; then
@@ -490,18 +501,24 @@ server {
 }
 EOF
 
-    # Symlink our isolated config into sites-enabled
-    ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/agentlabs.conf
+    if [ "$IS_AAPANEL" = false ]; then
+        # Standard Ubuntu/Debian: Symlink to sites-enabled
+        ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/agentlabs.conf
+    fi
 
     # SAFE TEST: Test Nginx configuration before reloading
     if nginx -t 2>/dev/null; then
-        systemctl reload nginx || systemctl restart nginx || true
+        /etc/init.d/nginx reload 2>/dev/null || systemctl reload nginx 2>/dev/null || true
         log_success "Nginx virtual host active for ${DOMAIN_NAME} on Port 80 -> 127.0.0.1:${APP_PORT}."
     else
-        log_warn "Nginx syntax test failed. Removing agentlabs.conf symlink to protect existing sites."
-        rm -f /etc/nginx/sites-enabled/agentlabs.conf
-        nginx -t 2>/dev/null && systemctl reload nginx || true
-        log_warn "Existing websites remain protected and running. Check /etc/nginx/sites-available/agentlabs.conf manually."
+        log_warn "Nginx syntax test failed. Removing agentlabs.conf to protect existing sites."
+        if [ "$IS_AAPANEL" = false ]; then
+            rm -f /etc/nginx/sites-enabled/agentlabs.conf
+        else
+            rm -f "$NGINX_CONF"
+        fi
+        nginx -t 2>/dev/null && (/etc/init.d/nginx reload 2>/dev/null || systemctl reload nginx 2>/dev/null || true)
+        log_warn "Existing websites remain protected and running. Check configuration manually."
     fi
 }
 
