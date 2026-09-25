@@ -23,8 +23,7 @@ RUN git clone --depth 1 -b v1.10.12 https://github.com/signalwire/freeswitch.git
 WORKDIR /usr/src/freeswitch
 
 # Clone and add mod_audio_fork
-RUN git clone --depth 1 https://github.com/drachtio/drachtio-freeswitch-modules.git /usr/src/drachtio-modules && \
-    cp -r /usr/src/drachtio-modules/modules/mod_audio_fork src/mod/applications/mod_audio_fork
+RUN git clone --depth 1 https://github.com/W1ck3dZA/mod_audio_fork.git src/mod/applications/mod_audio_fork
 
 # Copy fixed parser and memory safety files
 COPY lws_glue.cpp src/mod/applications/mod_audio_fork/lws_glue.cpp

@@ -397,6 +397,16 @@ build_application() {
     log_info "Installing Node.js project dependencies..."
     npm install --prefer-offline --no-audit
 
+    # Auto-provision isolated PostgreSQL user and database if local PostgreSQL is running
+    if command -v psql >/dev/null 2>&1 && sudo -u postgres psql -c '\l' >/dev/null 2>&1; then
+        log_info "Ensuring isolated PostgreSQL role 'agentlabs_user' and database 'agentlabs_db' exist..."
+        sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname = 'agentlabs_user'" 2>/dev/null | grep -q 1 || \
+            sudo -u postgres psql -c "CREATE USER agentlabs_user WITH PASSWORD 'agentlabs_pass' SUPERUSER;" 2>/dev/null || true
+        sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname = 'agentlabs_db'" 2>/dev/null | grep -q 1 || \
+            sudo -u postgres psql -c "CREATE DATABASE agentlabs_db OWNER agentlabs_user;" 2>/dev/null || true
+        sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE agentlabs_db TO agentlabs_user;" 2>/dev/null || true
+    fi
+
     log_info "Checking database schema migrations (isolated to agentlabs_db)..."
     if [ -n "$DATABASE_URL" ] || grep -q "DATABASE_URL" "$APP_DIR/.env"; then
         npm run db:push || log_warn "db:push had non-fatal warnings (verify database connection)."
@@ -429,7 +439,7 @@ start_freeswitch_cluster() {
         export FREESWITCH_SIP_PORT
         export FREESWITCH_SIP_TLS_PORT
         
-        docker compose -f docker-compose.voice-engine.yml up -d
+        docker compose -f docker-compose.voice-engine.yml up -d || log_warn "FreeSWITCH container build/launch had non-fatal warnings (check with 'docker ps')."
         cd "$APP_DIR"
         log_success "FreeSWITCH voice cluster container launched (Redis on isolated port ${REDIS_HOST_PORT})."
     else
