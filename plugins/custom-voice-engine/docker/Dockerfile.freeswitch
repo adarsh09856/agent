@@ -7,7 +7,7 @@ FROM debian:bookworm-slim AS builder
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake git ca-certificates wget \
-    autoconf automake libtool m4 pkg-config \
+    autoconf automake libtool libtool-bin m4 pkg-config \
     libssl-dev libedit-dev libsqlite3-dev libcurl4-openssl-dev \
     libspeex-dev libspeexdsp-dev libopus-dev libsndfile1-dev \
     liblua5.2-dev libpcre3-dev uuid-dev zlib1g-dev \

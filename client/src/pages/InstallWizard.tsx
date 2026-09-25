@@ -65,7 +65,11 @@ export default function InstallWizard() {
 
   useEffect(() => {
     if (checkData && !isChecking) {
-      setStep("form");
+      if (checkData.canInstall) {
+        setStep("form");
+      } else {
+        setStep("checking");
+      }
     }
   }, [checkData, isChecking]);
 
@@ -195,12 +199,21 @@ export default function InstallWizard() {
                   ))}
 
                   {!checkData.canInstall && (
-                    <Alert variant="destructive">
-                      <XCircle className="h-4 w-4" />
-                      <AlertDescription>
-                        {t("install.checking.fixErrors")}
-                      </AlertDescription>
-                    </Alert>
+                    <div className="space-y-3 pt-2">
+                      <Alert variant="destructive">
+                        <XCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          {t("install.checking.fixErrors")}
+                        </AlertDescription>
+                      </Alert>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/installer/check"] })}
+                      >
+                        Re-check Requirements
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}
