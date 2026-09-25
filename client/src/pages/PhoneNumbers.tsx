@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -21,7 +21,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Phone, ShoppingCart, Check, Trash2, CreditCard, Link as LinkIcon, Smartphone, Globe, MapPin, Upload, FileText, AlertCircle, Shield, Server, Loader2, RefreshCw, Video, Play } from "lucide-react";
+import { Plus, Search, Phone, ShoppingCart, Check, Trash2, CreditCard, Link as LinkIcon, Smartphone, Globe, MapPin, Upload, FileText, AlertCircle, Shield, Server, Loader2, RefreshCw, Video, Play, KeyRound } from "lucide-react";
 import { usePluginRegistry } from "@/contexts/plugin-registry";
 import { AuthStorage } from "@/lib/auth-storage";
 import { usePluginStatus } from "@/hooks/use-plugin-status";
@@ -594,15 +594,30 @@ export default function PhoneNumbers() {
               onClick={() => {
                 setCurrentTab("my-sip-gateways");
                 setTimeout(() => {
+                  const el = document.getElementById("import-twilio-number-btn");
+                  if (el) el.click();
+                }, 100);
+              }}
+              variant="outline"
+              className="bg-white/80 dark:bg-white/10 border-emerald-200 dark:border-emerald-800 text-foreground"
+              data-testid="button-import-twilio"
+            >
+              <KeyRound className="h-4 w-4 mr-2 text-indigo-600" />
+              Import from Twilio
+            </Button>
+            <Button 
+              onClick={() => {
+                setCurrentTab("my-sip-gateways");
+                setTimeout(() => {
                   const el = document.getElementById("add-phone-number-btn");
                   if (el) el.click();
-                }, 50);
+                }, 100);
               }}
               className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
               data-testid="button-connect-phone"
             >
               <Plus className="h-4 w-4 mr-2" />
-              + Connect Phone Number
+              + Connect SIP Number
             </Button>
             <Button 
               variant="outline" 

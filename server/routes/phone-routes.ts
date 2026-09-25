@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 /**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
@@ -19,7 +19,7 @@
 import { Router, Request, Response } from "express";
 import { RouteContext, AuthRequest } from "./common";
 import { eq, and, isNull, sql } from "drizzle-orm";
-import { phoneNumbers, creditTransactions, phoneNumberRentals } from "@shared/schema";
+import { phoneNumbers, creditTransactions, phoneNumberRentals, incomingConnections } from "@shared/schema";
 
 export function createPhoneRoutes(ctx: RouteContext): Router {
   const router = Router();
@@ -748,6 +748,141 @@ export function createPhoneRoutes(ctx: RouteContext): Router {
       }
       
       res.status(500).json({ error: "Failed to add system number" });
+    }
+  });
+
+  /**
+   * POST /api/phone-numbers/import-twilio
+   * Import an existing Twilio phone number using tenant's Twilio Account SID & Auth Token.
+   * Auto-configures Voice & SMS webhooks, attaches to user, and routes to selected agent.
+   */
+  router.post("/api/phone-numbers/import-twilio", authenticateToken, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId!;
+      const { phoneNumber, accountSid, authToken, label, smsEnabled, agentId } = req.body;
+
+      if (!phoneNumber || !accountSid || !authToken) {
+        return res.status(400).json({ success: false, error: "Phone number, Account SID, and Auth Token are required." });
+      }
+
+      const rawNumber = String(phoneNumber).trim();
+      const formattedNumber = rawNumber.startsWith('+') ? rawNumber : `+${rawNumber}`;
+      const sid = String(accountSid).trim();
+      const token = String(authToken).trim();
+
+      // Check if already in system
+      const [existing] = await db
+        .select()
+        .from(phoneNumbers)
+        .where(eq(phoneNumbers.phoneNumber, formattedNumber))
+        .limit(1);
+
+      if (existing) {
+        return res.status(400).json({ success: false, error: "This phone number is already imported or registered on the platform." });
+      }
+
+      // Initialize Twilio client with user provided credentials
+      const twilio = (await import('twilio')).default;
+      const client = twilio(sid, token);
+
+      // Search for the number in the user's Twilio account
+      let incomingList: any[] = [];
+      try {
+        incomingList = await client.incomingPhoneNumbers.list({ phoneNumber: formattedNumber, limit: 1 });
+      } catch (authErr: any) {
+        return res.status(401).json({ success: false, error: `Twilio authentication failed: ${authErr.message}` });
+      }
+
+      let twilioPhone = incomingList && incomingList.length > 0 ? incomingList[0] : null;
+
+      // If not found by exact string, list up to 50 numbers to match stripped digits
+      if (!twilioPhone) {
+        try {
+          const allNumbers = await client.incomingPhoneNumbers.list({ limit: 50 });
+          const targetDigits = formattedNumber.replace(/\D/g, '');
+          twilioPhone = allNumbers.find(n => n.phoneNumber.replace(/\D/g, '') === targetDigits) || null;
+        } catch (e) {}
+      }
+
+      if (!twilioPhone) {
+        return res.status(404).json({
+          success: false,
+          error: `Phone number ${formattedNumber} was not found in your Twilio account (${sid}). Please verify the number exists in your Twilio Console.`,
+        });
+      }
+
+      // Determine webhook domain
+      const domain = process.env.BASE_URL || (req.headers.host ? `${req.protocol}://${req.headers.host}` : 'https://kodewaves.in');
+      const voiceWebhookUrl = `${domain}/api/webhooks/twilio/incoming`;
+      const smsWebhookUrl = `${domain}/api/webhooks/twilio/sms`;
+
+      // Update Twilio number with Voice Webhook and optionally SMS Webhook
+      const updatePayload: Record<string, any> = {
+        voiceUrl: voiceWebhookUrl,
+        voiceMethod: 'POST',
+        voiceFallbackUrl: voiceWebhookUrl,
+        voiceFallbackMethod: 'POST',
+      };
+
+      if (smsEnabled) {
+        updatePayload.smsUrl = smsWebhookUrl;
+        updatePayload.smsMethod = 'POST';
+      }
+
+      try {
+        await client.incomingPhoneNumbers(twilioPhone.sid).update(updatePayload);
+      } catch (webhookErr: any) {
+        console.warn(`[Twilio Import] Warning: Could not update Twilio webhook (${webhookErr.message}). Saving number anyway.`);
+      }
+
+      // Detect country
+      let detectedCountry = 'US';
+      if (formattedNumber.startsWith('+91')) detectedCountry = 'IN';
+      else if (formattedNumber.startsWith('+44')) detectedCountry = 'GB';
+      else if (formattedNumber.startsWith('+61')) detectedCountry = 'AU';
+      else if (formattedNumber.startsWith('+1')) detectedCountry = 'US';
+
+      // Save into phone_numbers table
+      const created = await storage.createPhoneNumber({
+        userId,
+        phoneNumber: formattedNumber,
+        twilioSid: twilioPhone.sid,
+        friendlyName: label?.trim() || twilioPhone.friendlyName || formattedNumber,
+        country: detectedCountry,
+        capabilities: {
+          voice: true,
+          SMS: !!smsEnabled,
+          mms: false,
+        },
+        status: "active",
+        isSystemPool: false,
+        purchasePrice: "0",
+        monthlyPrice: "0",
+        monthlyCredits: 0,
+        nextBillingDate: null,
+      });
+
+      // Link to agent if agentId provided
+      if (agentId && agentId !== 'none') {
+        try {
+          await db.insert(incomingConnections).values({
+            userId,
+            agentId,
+            phoneNumberId: created.id,
+          }).onConflictDoNothing();
+        } catch (linkErr) {
+          console.error('[Twilio Import] Error linking to agent:', linkErr);
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Phone number ${formattedNumber} successfully imported from Twilio.`,
+        data: created,
+      });
+    } catch (err: any) {
+      console.error('[Twilio Import] Error importing phone number:', err);
+      res.status(500).json({ success: false, error: err.message || 'Failed to import phone number' });
     }
   });
 
