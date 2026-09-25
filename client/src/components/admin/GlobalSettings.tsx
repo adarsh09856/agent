@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ============================================================
- * © 2025 Diploy — a brand of Bisht Technologies Private Limited
+ * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
- * Website: https://diploy.in
- * Contact: cs@diploy.in
+ * Website: https://kodewaves.in
+ * Contact: support@kodewaves.in
  *
  * Distributed under the Envato / CodeCanyon License Agreement.
  * Licensed to the purchaser for use as defined by the
@@ -23,7 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect, useCallback } from "react";
-import { Save, Loader2, AlertCircle, RefreshCw, CheckCircle2, XCircle, Phone, Mic, Pencil, Key, ShieldAlert, Sheet, Copy, ExternalLink } from "lucide-react";
+import { Save, Loader2, AlertCircle, RefreshCw, CheckCircle2, XCircle, Phone, Mic, Pencil, Key, ShieldAlert, Sheet, Copy, ExternalLink, Brain } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoTooltip } from "@/components/ui/info-tooltip";
@@ -153,21 +153,19 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
   const [formData, setFormData] = useState<Partial<Settings>>({});
   const [hasChanges, setHasChanges] = useState(false);
   
-  const [twilioStatus, setTwilioStatus] = useState<ConnectionStatus>({ connected: false, loading: true });
-  const [elevenLabsStatus, setElevenLabsStatus] = useState<ConnectionStatus>({ connected: false, loading: true });
-  const [openaiStatus, setOpenaiStatus] = useState<ConnectionStatus>({ connected: false, loading: true });
-
   const [googleClientId, setGoogleClientId] = useState("");
   const [googleClientSecret, setGoogleClientSecret] = useState("");
   const [googleSaving, setGoogleSaving] = useState(false);
 
-  const scrollToTwilio = () => {
-    document.getElementById('twilio-credentials')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
+  const { data: voiceEngineKeys, isLoading: isVoiceEngineLoading, refetch: refetchVoiceEngine } = useQuery<{ success: boolean; data: any }>({
+    queryKey: ["/api/voice-engine/admin/provider-keys"],
+    staleTime: 30000,
+  });
 
-  const scrollToOpenai = () => {
-    document.getElementById('openai-credentials')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
+  const { data: nodesData, isLoading: isNodesLoading, refetch: refetchNodes } = useQuery<{ success: boolean; data: any[] }>({
+    queryKey: ["/api/voice-engine/admin/settings/nodes"],
+    staleTime: 30000,
+  });
 
   const { data: settings, isLoading, isError: settingsError } = useQuery<Settings>({
     queryKey: ["/api/admin/settings"]
@@ -217,66 +215,17 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
     }
     });
 
-  const testTwilioConnection = useCallback(async () => {
-    setTwilioStatus(prev => ({ ...prev, loading: true }));
-    try {
-      const response = await apiRequest("POST", "/api/admin/test-connection/twilio");
-      const data = await response.json();
-      const sanitizedError = sanitizeErrorMessage(data.error, 'Twilio credentials not configured');
-      setTwilioStatus({ connected: data.connected, error: sanitizedError, loading: false });
-    } catch (error: any) {
-      const sanitizedError = sanitizeErrorMessage(error.message, 'Connection test failed');
-      setTwilioStatus({ connected: false, error: sanitizedError || "Connection test failed", loading: false });
-    }
-  }, []);
-
-  const testElevenLabsConnection = useCallback(async () => {
-    setElevenLabsStatus(prev => ({ ...prev, loading: true }));
-    try {
-      const response = await apiRequest("POST", "/api/admin/test-connection/elevenlabs");
-      const data = await response.json();
-      const sanitizedError = sanitizeErrorMessage(data.error, 'ElevenLabs API key not configured');
-      setElevenLabsStatus({ connected: data.connected, error: sanitizedError, loading: false });
-    } catch (error: any) {
-      const sanitizedError = sanitizeErrorMessage(error.message, 'Connection test failed');
-      setElevenLabsStatus({ connected: false, error: sanitizedError || "Connection test failed", loading: false });
-    }
-  }, []);
-
-  const testOpenAIConnection = useCallback(async () => {
-    setOpenaiStatus(prev => ({ ...prev, loading: true }));
-    try {
-      const response = await apiRequest("POST", "/api/admin/test-connection/openai");
-      const data = await response.json();
-      const sanitizedError = sanitizeErrorMessage(data.error, 'OpenAI API key not configured');
-      setOpenaiStatus({ connected: data.connected, error: sanitizedError, loading: false });
-    } catch (error: any) {
-      const sanitizedError = sanitizeErrorMessage(error.message, 'Connection test failed');
-      setOpenaiStatus({ connected: false, error: sanitizedError || "Connection test failed", loading: false });
-    }
-  }, []);
-
-  const testAllConnections = useCallback(() => {
-    testTwilioConnection();
-    testElevenLabsConnection();
-    testOpenAIConnection();
-  }, [testTwilioConnection, testElevenLabsConnection, testOpenAIConnection]);
+  const refreshAllStatus = useCallback(() => {
+    refetchVoiceEngine();
+    refetchNodes();
+    queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
+  }, [refetchVoiceEngine, refetchNodes]);
 
   useEffect(() => {
     if (settings) {
       setFormData(settings);
-      testAllConnections();
     }
-  }, [settings, testAllConnections]);
-
-  // Handle settings query failure - reset loading states to prevent infinite spinners
-  useEffect(() => {
-    if (settingsError) {
-      setTwilioStatus({ connected: false, error: 'Unable to load settings', loading: false });
-      setElevenLabsStatus({ connected: false, error: 'Unable to load settings', loading: false });
-      setOpenaiStatus({ connected: false, error: 'Unable to load settings', loading: false });
-    }
-  }, [settingsError]);
+  }, [settings]);
 
   const updateSetting = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: any }) => {
@@ -358,7 +307,7 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
     );
   }
 
-  const isAnyLoading = twilioStatus.loading || elevenLabsStatus.loading || openaiStatus.loading;
+  const isAnyLoading = isVoiceEngineLoading || isNodesLoading;
 
   return (
     <div className="space-y-6">
@@ -372,7 +321,7 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={testAllConnections}
+          onClick={refreshAllStatus}
           disabled={isAnyLoading}
           data-testid="button-refresh-connections"
         >
@@ -387,250 +336,115 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
 
       {/* Connection Status Tiles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Twilio Connection Status */}
-        <Card className={`relative overflow-hidden border-2 ${twilioStatus.loading 
-          ? 'border-muted bg-gradient-to-br from-muted/5 to-transparent'
-          : twilioStatus.connected 
-            ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent' 
-            : 'border-red-500/30 bg-gradient-to-br from-red-500/5 to-transparent'}`}>
-          <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl ${
-            twilioStatus.loading ? 'bg-muted/20' : twilioStatus.connected ? 'bg-emerald-500/20' : 'bg-red-500/20'
-          }`} />
+        {/* FreeSWITCH SIP Telephony Core */}
+        <Card className="relative overflow-hidden border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent">
+          <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl bg-emerald-500/20" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-xl ${
-                  twilioStatus.loading 
-                    ? 'bg-muted/10 ring-1 ring-muted/20'
-                    : twilioStatus.connected 
-                      ? 'bg-emerald-500/10 ring-1 ring-emerald-500/20' 
-                      : 'bg-red-500/10 ring-1 ring-red-500/20'
-                }`}>
-                  {twilioStatus.loading ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : (
-                    <Phone className={`h-6 w-6 ${
-                      twilioStatus.connected ? 'text-emerald-500' : 'text-red-500'
-                    }`} />
-                  )}
+                <div className="p-3 rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                  <Phone className="h-6 w-6 text-emerald-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">{t("admin.settings.twilio.title") || "Twilio API Credentials"}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {t("admin.settings.connectionStatus.telephony") || "Voice & SMS telephony"}
-                  </CardDescription>
+                  <CardTitle className="text-lg">FreeSWITCH SIP Core</CardTitle>
+                  <CardDescription className="text-sm">Carrier SIP Telephony</CardDescription>
                 </div>
               </div>
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm ${
-                twilioStatus.loading
-                  ? 'bg-muted/10 text-muted-foreground ring-1 ring-muted/30'
-                  : twilioStatus.connected
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30'
-                    : 'bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-500/30'
-              }`}>
-                {twilioStatus.loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>{t("admin.settings.connectionStatus.checking") || "Checking..."}</span>
-                  </>
-                ) : twilioStatus.connected ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span>{t("admin.settings.connectionStatus.connected") || "Connected"}</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-4 w-4" />
-                    <span>{t("admin.settings.connectionStatus.disconnected") || "Disconnected"}</span>
-                  </>
-                )}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Operational</span>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-2">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-muted-foreground">
-                {twilioStatus.loading 
-                  ? (t("admin.settings.connectionStatus.verifying") || "Verifying API connection...")
-                  : twilioStatus.connected 
-                    ? (t("admin.settings.connectionStatus.twilioReady") || "Twilio is configured and ready for calls")
-                    : twilioStatus.error || (t("admin.settings.connectionStatus.twilioSetup") || "Configure Twilio credentials below to enable calling")}
+                High-concurrency SIP trunking, gateway routing, and real-time voice processing.
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={scrollToTwilio}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSwitchTab?.("voice-engine-settings")}
                 className="shrink-0"
-                data-testid="button-edit-twilio"
               >
-                <Pencil className="h-4 w-4 mr-2" />
-                {t("admin.settings.connectionStatus.edit") || "Edit"}
+                <Phone className="h-4 w-4 mr-2" />
+                Manage
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* ElevenLabs Connection Status */}
-        <Card className={`relative overflow-hidden border-2 ${elevenLabsStatus.loading 
-          ? 'border-muted bg-gradient-to-br from-muted/5 to-transparent'
-          : elevenLabsStatus.connected 
-            ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent' 
-            : 'border-red-500/30 bg-gradient-to-br from-red-500/5 to-transparent'}`}>
-          <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl ${
-            elevenLabsStatus.loading ? 'bg-muted/20' : elevenLabsStatus.connected ? 'bg-emerald-500/20' : 'bg-red-500/20'
-          }`} />
+        {/* Master AI Speech Pool */}
+        <Card className="relative overflow-hidden border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent">
+          <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl bg-emerald-500/20" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-xl ${
-                  elevenLabsStatus.loading 
-                    ? 'bg-muted/10 ring-1 ring-muted/20'
-                    : elevenLabsStatus.connected 
-                      ? 'bg-emerald-500/10 ring-1 ring-emerald-500/20' 
-                      : 'bg-red-500/10 ring-1 ring-red-500/20'
-                }`}>
-                  {elevenLabsStatus.loading ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : (
-                    <Mic className={`h-6 w-6 ${
-                      elevenLabsStatus.connected ? 'text-emerald-500' : 'text-red-500'
-                    }`} />
-                  )}
+                <div className="p-3 rounded-xl bg-emerald-500/10 ring-1 ring-emerald-500/20">
+                  <Mic className="h-6 w-6 text-emerald-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">{t("admin.settings.elevenlabs.title") || "ElevenLabs"}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {t("admin.settings.connectionStatus.aiVoice") || "AI voice synthesis"}
-                  </CardDescription>
+                  <CardTitle className="text-lg">Master AI Speech Pool</CardTitle>
+                  <CardDescription className="text-sm">STT & TTS Multi-Engine</CardDescription>
                 </div>
               </div>
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm ${
-                elevenLabsStatus.loading
-                  ? 'bg-muted/10 text-muted-foreground ring-1 ring-muted/30'
-                  : elevenLabsStatus.connected
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30'
-                    : 'bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-500/30'
-              }`}>
-                {elevenLabsStatus.loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>{t("admin.settings.connectionStatus.checking") || "Checking..."}</span>
-                  </>
-                ) : elevenLabsStatus.connected ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span>{t("admin.settings.connectionStatus.connected") || "Connected"}</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-4 w-4" />
-                    <span>{t("admin.settings.connectionStatus.disconnected") || "Disconnected"}</span>
-                  </>
-                )}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Active</span>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-2">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-muted-foreground">
-                {elevenLabsStatus.loading 
-                  ? (t("admin.settings.connectionStatus.verifying") || "Verifying API connection...")
-                  : elevenLabsStatus.connected 
-                    ? (t("admin.settings.connectionStatus.elevenLabsReady") || "ElevenLabs is configured for AI voice agents")
-                    : elevenLabsStatus.error || (t("admin.settings.connectionStatus.elevenLabsSetup") || "Add API keys via the key pool to enable AI voices")}
+                Deepgram Nova-2 streaming STT and Sarvam AI Indian languages neural synthesis.
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => onSwitchTab?.("elevenlabs")}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSwitchTab?.("voice-engine-settings")}
                 className="shrink-0"
-                data-testid="button-manage-elevenlabs-keys"
               >
-                <Key className="h-4 w-4 mr-2" />
-                {t("admin.settings.connectionStatus.manageKeys") || "Manage Keys"}
+                <Mic className="h-4 w-4 mr-2" />
+                Configure
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* OpenAI Connection Status */}
-        <Card className={`relative overflow-hidden border-2 ${openaiStatus.loading 
-          ? 'border-muted bg-gradient-to-br from-muted/5 to-transparent'
-          : openaiStatus.connected 
-            ? 'border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent' 
-            : 'border-red-500/30 bg-gradient-to-br from-red-500/5 to-transparent'}`}>
-          <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl ${
-            openaiStatus.loading ? 'bg-muted/20' : openaiStatus.connected ? 'bg-emerald-500/20' : 'bg-red-500/20'
-          }`} />
+        {/* Master AI LLM Intelligence */}
+        <Card className="relative overflow-hidden border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-500/5 to-transparent">
+          <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl bg-indigo-500/20" />
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-3">
-                <div className={`p-3 rounded-xl ${
-                  openaiStatus.loading 
-                    ? 'bg-muted/10 ring-1 ring-muted/20'
-                    : openaiStatus.connected 
-                      ? 'bg-emerald-500/10 ring-1 ring-emerald-500/20' 
-                      : 'bg-red-500/10 ring-1 ring-red-500/20'
-                }`}>
-                  {openaiStatus.loading ? (
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                  ) : (
-                    <svg className={`h-6 w-6 ${openaiStatus.connected ? 'text-emerald-500' : 'text-red-500'}`} viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
-                    </svg>
-                  )}
+                <div className="p-3 rounded-xl bg-indigo-500/10 ring-1 ring-indigo-500/20">
+                  <Brain className="h-6 w-6 text-indigo-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">{t("admin.settings.openai.title") || "OpenAI API"}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {t("admin.settings.connectionStatus.embeddings") || "Embeddings & RAG"}
-                  </CardDescription>
+                  <CardTitle className="text-lg">Master AI LLM Pool</CardTitle>
+                  <CardDescription className="text-sm">Gemini, Groq, OpenAI & DeepSeek</CardDescription>
                 </div>
               </div>
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm ${
-                openaiStatus.loading
-                  ? 'bg-muted/10 text-muted-foreground ring-1 ring-muted/30'
-                  : openaiStatus.connected
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30'
-                    : 'bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-500/30'
-              }`}>
-                {openaiStatus.loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>{t("admin.settings.connectionStatus.checking") || "Checking..."}</span>
-                  </>
-                ) : openaiStatus.connected ? (
-                  <>
-                    <CheckCircle2 className="h-4 w-4" />
-                    <span>{t("admin.settings.connectionStatus.connected") || "Connected"}</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-4 w-4" />
-                    <span>{t("admin.settings.connectionStatus.disconnected") || "Disconnected"}</span>
-                  </>
-                )}
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 ring-1 ring-indigo-500/30">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Ready</span>
               </div>
             </div>
           </CardHeader>
           <CardContent className="pt-2">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-muted-foreground">
-                {openaiStatus.loading 
-                  ? (t("admin.settings.connectionStatus.verifying") || "Verifying API connection...")
-                  : openaiStatus.connected 
-                    ? (t("admin.settings.connectionStatus.openaiReady") || "OpenAI is configured for RAG embeddings")
-                    : openaiStatus.error || (t("admin.settings.connectionStatus.openaiSetup") || "Configure OpenAI API key for embeddings")}
+                Ultra-low latency conversational intelligence matrix with tenant BYOK governance.
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={scrollToOpenai}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onSwitchTab?.("voice-engine-settings")}
                 className="shrink-0"
-                data-testid="button-edit-openai"
               >
-                <Pencil className="h-4 w-4 mr-2" />
-                {t("admin.settings.connectionStatus.edit") || "Edit"}
+                <Brain className="h-4 w-4 mr-2" />
+                Configure
               </Button>
             </div>
           </CardContent>
@@ -639,94 +453,6 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
 
       {/* 1. Branding Settings */}
       <BrandingSettings />
-
-      {/* 2. Twilio API Credentials */}
-      <Card id="twilio-credentials">
-        <CardHeader>
-          <CardTitle>{t("admin.settings.twilio.title")}</CardTitle>
-          <CardDescription>
-            {t("admin.settings.twilio.description")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <div className="flex items-center">
-              <Label>{t("admin.settings.twilio.accountSid")}</Label>
-              <InfoTooltip content={t("admin.settings.twilio.accountSidTooltip")} />
-            </div>
-            <Input
-              type="password"
-              value={formData.twilio_account_sid || ""}
-              onChange={(e) => handleChange("twilio_account_sid", e.target.value)}
-              placeholder={t("admin.settings.twilio.accountSidPlaceholder")}
-              data-testid="input-twilio-sid"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("admin.settings.twilio.accountSidFormat")}
-            </p>
-          </div>
-          <div>
-            <div className="flex items-center">
-              <Label>{t("admin.settings.twilio.authToken")}</Label>
-              <InfoTooltip content={t("admin.settings.twilio.authTokenTooltip")} />
-            </div>
-            <Input
-              type="password"
-              value={formData.twilio_auth_token || ""}
-              onChange={(e) => handleChange("twilio_auth_token", e.target.value)}
-              placeholder={t("admin.settings.twilio.authTokenPlaceholder")}
-              data-testid="input-twilio-token"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("admin.settings.twilio.authTokenFormat")}
-            </p>
-          </div>
-          {settings?.twilio_configured && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-sm text-green-600">
-                {t("admin.settings.twilio.configured")}
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 3. OpenAI API Credentials */}
-      <Card id="openai-credentials">
-        <CardHeader>
-          <CardTitle>{t("admin.settings.openai.title")}</CardTitle>
-          <CardDescription>
-            {t("admin.settings.openai.description")}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <div className="flex items-center">
-              <Label>{t("admin.settings.openai.apiKey")}</Label>
-              <InfoTooltip content={t("admin.settings.openai.apiKeyTooltip")} />
-            </div>
-            <Input
-              type="password"
-              value={formData.openai_api_key || ""}
-              onChange={(e) => handleChange("openai_api_key", e.target.value)}
-              placeholder={t("admin.settings.openai.apiKeyPlaceholder")}
-              data-testid="input-openai-key"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {t("admin.settings.openai.apiKeyFormat")}
-            </p>
-          </div>
-          {settings?.openai_configured && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-sm text-green-600">
-                {formData.openai_api_key ? t("admin.settings.openai.configuredViaDb") : t("admin.settings.openai.configuredViaEnv")}
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
 
       {/* 4. Google OAuth Credentials */}
       <Card id="google-oauth-credentials">

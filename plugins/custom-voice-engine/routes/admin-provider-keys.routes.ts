@@ -59,6 +59,10 @@ const SETTINGS_KEYS = {
   sarvamApiKey: 've_sarvam_api_key',
   openrouterApiKey: 've_openrouter_api_key',
   geminiApiKey: 've_gemini_api_key',
+  groqApiKey: 've_groq_api_key',
+  openaiApiKey: 've_openai_api_key',
+  deepseekApiKey: 've_deepseek_api_key',
+  anthropicApiKey: 've_anthropic_api_key',
   elevenlabsApiKey: 've_elevenlabs_api_key',
 
   // Models (per-provider, so switching providers doesn't lose the other's selection)
@@ -86,6 +90,15 @@ const SETTINGS_KEYS = {
   // Master BYOK Switch
   allowUserByok: 'allow_user_byok',
 };
+
+/** Strict boolean parser for database-stored values */
+function toBool(val: any, defaultVal = true): boolean {
+  if (val === undefined || val === null) return defaultVal;
+  if (val === false || val === 'false' || val === 0 || val === '0') return false;
+  if (val === true || val === 'true' || val === 1 || val === '1') return true;
+  return Boolean(val);
+}
+
 /** Mask an API key for display: show only last 4 characters */
 function maskKey(key: string | null | undefined): string {
   if (!key) return '';
@@ -240,19 +253,39 @@ export function createAdminProviderKeysRouter(): Router {
           },
         },
         llm: {
-          activeProvider: settingsMap[SETTINGS_KEYS.llmActiveProvider] || 'openrouter',
-          defaultModel: settingsMap[SETTINGS_KEYS.llmDefaultModel] || 'openai/gpt-4o-mini',
-          allowedModels: parseAllowedArray(SETTINGS_KEYS.llmAllowedModels, ['openai/gpt-4o-mini', 'anthropic/claude-3-haiku', 'google/gemini-flash-1.5']),
+          activeProvider: settingsMap[SETTINGS_KEYS.llmActiveProvider] || 'gemini',
+          defaultModel: settingsMap[SETTINGS_KEYS.llmDefaultModel] || 'gemini-2.0-flash',
+          allowedModels: parseAllowedArray(SETTINGS_KEYS.llmAllowedModels, ['gemini-2.0-flash', 'llama-3.3-70b-versatile', 'gpt-4o-mini', 'claude-3-5-sonnet', 'deepseek-chat']),
           providers: {
-            openrouter: {
-              name: 'OpenRouter',
-              hasKey: !!settingsMap[SETTINGS_KEYS.openrouterApiKey],
-              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.openrouterApiKey] as string),
-            },
             gemini: {
               name: 'Google Gemini',
               hasKey: !!settingsMap[SETTINGS_KEYS.geminiApiKey],
               maskedKey: maskKey(settingsMap[SETTINGS_KEYS.geminiApiKey] as string),
+            },
+            groq: {
+              name: 'Groq',
+              hasKey: !!settingsMap[SETTINGS_KEYS.groqApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.groqApiKey] as string),
+            },
+            openai: {
+              name: 'OpenAI',
+              hasKey: !!settingsMap[SETTINGS_KEYS.openaiApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.openaiApiKey] as string),
+            },
+            deepseek: {
+              name: 'DeepSeek',
+              hasKey: !!settingsMap[SETTINGS_KEYS.deepseekApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.deepseekApiKey] as string),
+            },
+            anthropic: {
+              name: 'Anthropic',
+              hasKey: !!settingsMap[SETTINGS_KEYS.anthropicApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.anthropicApiKey] as string),
+            },
+            openrouter: {
+              name: 'OpenRouter',
+              hasKey: !!settingsMap[SETTINGS_KEYS.openrouterApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.openrouterApiKey] as string),
             },
           },
         },
@@ -295,7 +328,7 @@ export function createAdminProviderKeysRouter(): Router {
           eslPassword: settingsMap[SETTINGS_KEYS.freeswitchEslPassword] ? '••••••' : '',
         },
         pluginEnabled: settingsMap[SETTINGS_KEYS.pluginEnabled] ?? true,
-        allowUserByok: settingsMap['allow_user_byok'] !== 'false',
+        allowUserByok: toBool(settingsMap['allow_user_byok'], true),
       };
 
       res.json({ success: true, data: response });
@@ -322,6 +355,10 @@ export function createAdminProviderKeysRouter(): Router {
         sarvamApiKey,
         openrouterApiKey,
         geminiApiKey,
+        groqApiKey,
+        openaiApiKey,
+        deepseekApiKey,
+        anthropicApiKey,
         elevenlabsApiKey,
         sttDeepgramModel,
         sttDeepgramAllowedModels,
@@ -414,6 +451,34 @@ export function createAdminProviderKeysRouter(): Router {
           key: SETTINGS_KEYS.geminiApiKey,
           value: geminiApiKey || '',
           description: 'Voice Engine: Gemini API key',
+        });
+      }
+      if (groqApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.groqApiKey,
+          value: groqApiKey || '',
+          description: 'Voice Engine: Groq API key',
+        });
+      }
+      if (openaiApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.openaiApiKey,
+          value: openaiApiKey || '',
+          description: 'Voice Engine: OpenAI API key',
+        });
+      }
+      if (deepseekApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.deepseekApiKey,
+          value: deepseekApiKey || '',
+          description: 'Voice Engine: DeepSeek API key',
+        });
+      }
+      if (anthropicApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.anthropicApiKey,
+          value: anthropicApiKey || '',
+          description: 'Voice Engine: Anthropic API key',
         });
       }
       if (elevenlabsApiKey !== undefined) {
@@ -642,6 +707,18 @@ router.get('/openrouter-models', async (_req: Request, res: Response) => {
         case 'gemini':
           keyName = SETTINGS_KEYS.geminiApiKey;
           break;
+        case 'groq':
+          keyName = SETTINGS_KEYS.groqApiKey;
+          break;
+        case 'openai':
+          keyName = SETTINGS_KEYS.openaiApiKey;
+          break;
+        case 'deepseek':
+          keyName = SETTINGS_KEYS.deepseekApiKey;
+          break;
+        case 'anthropic':
+          keyName = SETTINGS_KEYS.anthropicApiKey;
+          break;
         case 'elevenlabs':
           keyName = SETTINGS_KEYS.elevenlabsApiKey;
           break;
@@ -693,6 +770,33 @@ router.get('/openrouter-models', async (_req: Request, res: Response) => {
           const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash?key=${apiKey}`);
           connected = response.ok;
           details = connected ? 'Connected to Google Gemini' : `HTTP ${response.status}`;
+        } else if (provider === 'groq') {
+          const response = await fetch('https://api.groq.com/openai/v1/models', {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
+          connected = response.ok;
+          details = connected ? 'Connected to Groq' : `HTTP ${response.status}`;
+        } else if (provider === 'openai') {
+          const response = await fetch('https://api.openai.com/v1/models', {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
+          connected = response.ok;
+          details = connected ? 'Connected to OpenAI' : `HTTP ${response.status}`;
+        } else if (provider === 'deepseek') {
+          const response = await fetch('https://api.deepseek.com/models', {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
+          connected = response.ok;
+          details = connected ? 'Connected to DeepSeek' : `HTTP ${response.status}`;
+        } else if (provider === 'anthropic') {
+          const response = await fetch('https://api.anthropic.com/v1/models', {
+            headers: {
+              'x-api-key': apiKey,
+              'anthropic-version': '2023-06-01',
+            },
+          });
+          connected = response.ok;
+          details = connected ? 'Connected to Anthropic' : `HTTP ${response.status}`;
         } else if (provider === 'elevenlabs') {
           const response = await fetch('https://api.elevenlabs.io/v1/voices', {
             headers: { 'xi-api-key': apiKey },

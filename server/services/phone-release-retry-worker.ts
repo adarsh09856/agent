@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 /**
  * ============================================================
- * © 2025 Diploy — a brand of Bisht Technologies Private Limited
+ * © 2026 KodeWaves. All rights reserved.
  * Distributed under the Envato / CodeCanyon License Agreement.
  * ============================================================
  */

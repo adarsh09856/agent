@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ============================================================
- * © 2025 Diploy — a brand of Bisht Technologies Private Limited
+ * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
- * Website: https://diploy.in
- * Contact: cs@diploy.in
+ * Website: https://kodewaves.in
+ * Contact: support@kodewaves.in
  *
  * Distributed under the Envato / CodeCanyon License Agreement.
  * Licensed to the purchaser for use as defined by the
@@ -24,7 +24,6 @@ import { usePluginRegistry } from "@/contexts/plugin-registry";
 import GlobalSettings from "./GlobalSettings";
 import SEOModule from "./SEOModule";
 import AnalyticsModule from "./AnalyticsModule";
-import ElevenLabsPool from "./ElevenLabsPool";
 import AutoRestartModule from "./AutoRestartModule";
 import SystemSettings from "./SystemSettings";
 import AdminApiKeysModule from "./AdminApiKeysModule";
@@ -155,11 +154,6 @@ export default function SettingsPage({ onSwitchTab, initialSubTab }: SettingsPag
             <span className="hidden sm:inline">{t("adminDashboard.settings.tabs.update")}</span>
             <span className="sm:hidden">Upd</span>
           </TabsTrigger>
-          <TabsTrigger value="elevenlabs" data-testid="settings-tab-elevenlabs" className="flex items-center gap-2 text-muted-foreground">
-            <Server className="h-4 w-4" />
-            <span className="hidden sm:inline">ElevenLabs (Legacy)</span>
-            <span className="sm:hidden">11L</span>
-          </TabsTrigger>
           {(Array.isArray(adminSettingsTabs) ? adminSettingsTabs : []).map((tab) => {
             const IconComp = (tab.icon ? pluginIconMap[tab.icon] : undefined) || Settings;
             return (
@@ -187,17 +181,7 @@ export default function SettingsPage({ onSwitchTab, initialSubTab }: SettingsPag
         </div>
 
         <TabsContent value="master" className="space-y-4">
-          <GlobalSettings onSwitchTab={(tab) => {
-            if (tab === "elevenlabs") {
-              setActiveSubTab("elevenlabs");
-            } else {
-              onSwitchTab?.(tab);
-            }
-          }} />
-        </TabsContent>
-
-        <TabsContent value="elevenlabs" className="space-y-4">
-          <ElevenLabsPool />
+          <GlobalSettings onSwitchTab={onSwitchTab} />
         </TabsContent>
 
         <TabsContent value="seo" className="space-y-4">

@@ -1,9 +1,9 @@
-/**
+﻿/**
  * ============================================================
- * © 2025 Diploy — a brand of Bisht Technologies Private Limited
+ * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
- * Website: https://diploy.in
- * Contact: cs@diploy.in
+ * Website: https://kodewaves.in
+ * Contact: support@kodewaves.in
  *
  * Distributed under the Envato / CodeCanyon License Agreement.
  * Licensed to the purchaser for use as defined by the
@@ -257,7 +257,7 @@ export function Footer() {
 
         <div className="py-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-slate-500" data-testid="text-copyright">
-            © {new Date().getFullYear()} {branding.app_name}. All rights reserved.
+            © {new Date().getFullYear()} {branding.app_name || 'KodeWaves'}. All rights reserved. Developed & Operated by <a href="https://kodewaves.in" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 font-medium text-slate-400">KodeWaves</a>.
           </p>
           <div className="flex items-center gap-6 text-sm text-slate-500">
             <Link href="/privacy" className="hover:text-amber-400 transition-colors">

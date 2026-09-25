@@ -1,6 +1,6 @@
-/**
+﻿/**
  * ============================================================
- * © 2025 Diploy — a brand of Bisht Technologies Private Limited
+ * © 2026 KodeWaves. All rights reserved.
  * Platform: Native Master AI Engine v5.4.5
  * Voice Library: Deepgram Aura, Sarvam AI, OpenAI, ElevenLabs
  * ============================================================

@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 /**
  * ============================================================
  * Payment Engine v1.0.0
@@ -14,7 +14,7 @@
  * - Paystack (Africa)
  * - MercadoPago (Latin America)
  * 
- * © 2025 Diploy — a brand of Bisht Technologies Private Limited
+ * © 2026 KodeWaves. All rights reserved.
  * ============================================================
  */
 

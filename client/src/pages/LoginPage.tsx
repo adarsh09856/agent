@@ -535,7 +535,7 @@ export default function LoginPage() {
 
             {/* Footer */}
             <p className="text-sm text-gray-500">
-              &copy; {new Date().getFullYear()} {branding.app_name}. {t("loginPage.leftPanel.copyright")}
+              &copy; {new Date().getFullYear()} {branding.app_name || 'KodeWaves'}. All rights reserved. Powered by <a href="https://kodewaves.in" target="_blank" rel="noopener noreferrer" className="hover:text-amber-400 font-medium text-gray-400">KodeWaves</a>.
             </p>
           </div>
         </div>

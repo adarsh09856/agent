@@ -2497,10 +2497,45 @@ export default function VoiceEngineSettings() {
               <CardTitle className="text-base">Provider API Keys</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ProviderKeyCard provider="gemini" label="Google Gemini API Key"
+                  hasKey={settings.llm.providers?.gemini?.hasKey ?? false}
+                  currentMasked={settings.llm.providers?.gemini?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ geminiApiKey: key })}
+                  onTest={() => testProvider("gemini")}
+                  isTesting={testingProvider === "gemini"}
+                  testResult={testResults.gemini ?? null} />
+                <ProviderKeyCard provider="groq" label="Groq API Key"
+                  hasKey={settings.llm.providers?.groq?.hasKey ?? false}
+                  currentMasked={settings.llm.providers?.groq?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ groqApiKey: key })}
+                  onTest={() => testProvider("groq")}
+                  isTesting={testingProvider === "groq"}
+                  testResult={testResults.groq ?? null} />
+                <ProviderKeyCard provider="openai" label="OpenAI API Key"
+                  hasKey={settings.llm.providers?.openai?.hasKey ?? false}
+                  currentMasked={settings.llm.providers?.openai?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ openaiApiKey: key })}
+                  onTest={() => testProvider("openai")}
+                  isTesting={testingProvider === "openai"}
+                  testResult={testResults.openai ?? null} />
+                <ProviderKeyCard provider="deepseek" label="DeepSeek API Key"
+                  hasKey={settings.llm.providers?.deepseek?.hasKey ?? false}
+                  currentMasked={settings.llm.providers?.deepseek?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ deepseekApiKey: key })}
+                  onTest={() => testProvider("deepseek")}
+                  isTesting={testingProvider === "deepseek"}
+                  testResult={testResults.deepseek ?? null} />
+                <ProviderKeyCard provider="anthropic" label="Anthropic Claude API Key"
+                  hasKey={settings.llm.providers?.anthropic?.hasKey ?? false}
+                  currentMasked={settings.llm.providers?.anthropic?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ anthropicApiKey: key })}
+                  onTest={() => testProvider("anthropic")}
+                  isTesting={testingProvider === "anthropic"}
+                  testResult={testResults.anthropic ?? null} />
                 <ProviderKeyCard provider="openrouter" label="OpenRouter API Key"
-                  hasKey={settings.llm.providers.openrouter?.hasKey ?? false}
-                  currentMasked={settings.llm.providers.openrouter?.maskedKey ?? ""}
+                  hasKey={settings.llm.providers?.openrouter?.hasKey ?? false}
+                  currentMasked={settings.llm.providers?.openrouter?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ openrouterApiKey: key })}
                   onTest={() => testProvider("openrouter")}
                   isTesting={testingProvider === "openrouter"}
@@ -2521,77 +2556,143 @@ export default function VoiceEngineSettings() {
                 <div className="flex flex-wrap gap-8">
                   <div className="space-y-2 border p-4 rounded-lg bg-muted/20 flex-1 min-w-[280px]">
                     <Label className="text-sm font-semibold">Active LLM Provider</Label>
-                    <p className="text-xs text-muted-foreground mb-2">The primary provider for text generation.</p>
+                    <p className="text-xs text-muted-foreground mb-2">The primary provider for real-time text generation.</p>
                     <Select
-                      value={settings.llm.activeProvider}
+                      value={settings.llm.activeProvider || "gemini"}
                       onValueChange={(v) => {
-                        
-                        updateMutation.mutate({ llmActiveProvider: v });
+                        const defaultModelsByProvider: Record<string, string> = {
+                          gemini: "gemini-2.0-flash",
+                          groq: "llama-3.3-70b-versatile",
+                          openai: "gpt-4o-mini",
+                          deepseek: "deepseek-chat",
+                          anthropic: "claude-3-5-sonnet-20241022",
+                          openrouter: "openai/gpt-4o-mini",
+                        };
+                        updateMutation.mutate({
+                          llmActiveProvider: v,
+                          llmDefaultModel: defaultModelsByProvider[v] || settings.llm.defaultModel,
+                        });
                       }}
                     >
                       <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="openrouter">OpenRouter</SelectItem>
+                        <SelectItem value="gemini">Google Gemini (Recommended for Ultra-Fast Voice - ~150ms)</SelectItem>
+                        <SelectItem value="groq">Groq (LPU Speed Inference)</SelectItem>
+                        <SelectItem value="openai">OpenAI (GPT-4o & GPT-4o Mini)</SelectItem>
+                        <SelectItem value="deepseek">DeepSeek (V3 & R1)</SelectItem>
+                        <SelectItem value="anthropic">Anthropic (Claude 3.5 Sonnet / Haiku)</SelectItem>
+                        <SelectItem value="openrouter">OpenRouter (Multi-Model Gateway)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2 border p-4 rounded-lg bg-muted/20 flex-1 min-w-[280px]">
-                    <Label className="text-sm font-semibold">Default Model for OpenRouter</Label>
+                    <Label className="text-sm font-semibold">
+                      Default Model ({settings.llm.activeProvider ? settings.llm.activeProvider.toUpperCase() : "LLM"})
+                    </Label>
                     <p className="text-xs text-muted-foreground mb-2">Fallback model if an agent doesn't specify one.</p>
-                    <Select
-                      value={settings.llm.defaultModel}
-                      onValueChange={(v) => {
-                        
-                        updateMutation.mutate({ llmDefaultModel: v });
-                      }}
-                    >
-                      <SelectTrigger className="w-full">
-                        {isOrModelsLoading ? (
-                          <span className="flex items-center gap-2 text-muted-foreground">
-                            <Loader2 className="h-3 w-3 animate-spin" /> Loading models...
-                          </span>
-                        ) : (
-                          <SelectValue placeholder="Select a model" />
-                        )}
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[320px]">
-                        <div className="px-2 py-1.5 sticky top-0 z-10 bg-popover border-b">
-                          <Input
-                            placeholder="Search models..."
-                            value={orSearch}
-                            onChange={(e) => setOrSearch(e.target.value)}
-                            className="h-7 text-xs"
-                            onKeyDown={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                        {isOrModelsLoading ? (
-                          <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground text-xs">
-                            <Loader2 className="h-4 w-4 animate-spin" /> Fetching from OpenRouter...
+                    {settings.llm.activeProvider === "openrouter" ? (
+                      <Select
+                        value={settings.llm.defaultModel}
+                        onValueChange={(v) => {
+                          updateMutation.mutate({ llmDefaultModel: v });
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          {isOrModelsLoading ? (
+                            <span className="flex items-center gap-2 text-muted-foreground">
+                              <Loader2 className="h-3 w-3 animate-spin" /> Loading models...
+                            </span>
+                          ) : (
+                            <SelectValue placeholder="Select a model" />
+                          )}
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[320px]">
+                          <div className="px-2 py-1.5 sticky top-0 z-10 bg-popover border-b">
+                            <Input
+                              placeholder="Search models..."
+                              value={orSearch}
+                              onChange={(e) => setOrSearch(e.target.value)}
+                              className="h-7 text-xs"
+                              onKeyDown={(e) => e.stopPropagation()}
+                            />
                           </div>
-                        ) : orModels.length > 0 ? (
-                          orModels
-                            .filter((m) =>
-                              m.name.toLowerCase().includes(orSearch.toLowerCase()) ||
-                              m.id.toLowerCase().includes(orSearch.toLowerCase())
-                            )
-                            .slice(0, 80)
-                            .map((m) => (
-                              <SelectItem key={m.id} value={m.id}>
-                                <div className="flex flex-col py-0.5">
-                                  <span className="text-xs font-medium leading-tight">{m.name}</span>
-                                  <span className="text-[10px] text-muted-foreground font-mono leading-tight">{m.id}</span>
-                                </div>
-                              </SelectItem>
-                            ))
-                        ) : (
-                          <>
-                            <SelectItem value="openai/gpt-4o-mini">GPT-4o Mini</SelectItem>
-                            <SelectItem value="openai/gpt-4o">GPT-4o</SelectItem>
-                            <SelectItem value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</SelectItem>
-                          </>
-                        )}
-                      </SelectContent>
-                    </Select>
+                          {isOrModelsLoading ? (
+                            <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground text-xs">
+                              <Loader2 className="h-4 w-4 animate-spin" /> Fetching from OpenRouter...
+                            </div>
+                          ) : orModels.length > 0 ? (
+                            orModels
+                              .filter((m) =>
+                                m.name.toLowerCase().includes(orSearch.toLowerCase()) ||
+                                m.id.toLowerCase().includes(orSearch.toLowerCase())
+                              )
+                              .slice(0, 80)
+                              .map((m) => (
+                                <SelectItem key={m.id} value={m.id}>
+                                  <div className="flex flex-col py-0.5">
+                                    <span className="text-xs font-medium leading-tight">{m.name}</span>
+                                    <span className="text-[10px] text-muted-foreground font-mono leading-tight">{m.id}</span>
+                                  </div>
+                                </SelectItem>
+                              ))
+                          ) : (
+                            <>
+                              <SelectItem value="openai/gpt-4o-mini">GPT-4o Mini</SelectItem>
+                              <SelectItem value="openai/gpt-4o">GPT-4o</SelectItem>
+                              <SelectItem value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</SelectItem>
+                            </>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Select
+                        value={settings.llm.defaultModel}
+                        onValueChange={(v) => {
+                          updateMutation.mutate({ llmDefaultModel: v });
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select default model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {settings.llm.activeProvider === "gemini" && (
+                            <>
+                              <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (Recommended for Voice - ~150ms)</SelectItem>
+                              <SelectItem value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite (Lowest Cost)</SelectItem>
+                              <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash</SelectItem>
+                              <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
+                            </>
+                          )}
+                          {settings.llm.activeProvider === "groq" && (
+                            <>
+                              <SelectItem value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile (Recommended - Ultra Fast)</SelectItem>
+                              <SelectItem value="llama-3.1-8b-instant">Llama 3.1 8B Instant</SelectItem>
+                              <SelectItem value="mixtral-8x7b-32768">Mixtral 8x7B</SelectItem>
+                            </>
+                          )}
+                          {settings.llm.activeProvider === "openai" && (
+                            <>
+                              <SelectItem value="gpt-4o-mini">GPT-4o Mini (Recommended for Voice)</SelectItem>
+                              <SelectItem value="gpt-4o">GPT-4o (Omnimodel)</SelectItem>
+                              <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                            </>
+                          )}
+                          {settings.llm.activeProvider === "deepseek" && (
+                            <>
+                              <SelectItem value="deepseek-chat">DeepSeek V3 (deepseek-chat)</SelectItem>
+                              <SelectItem value="deepseek-reasoner">DeepSeek R1 (deepseek-reasoner)</SelectItem>
+                            </>
+                          )}
+                          {settings.llm.activeProvider === "anthropic" && (
+                            <>
+                              <SelectItem value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet v2</SelectItem>
+                              <SelectItem value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</SelectItem>
+                              <SelectItem value="claude-3-haiku-20240307">Claude 3 Haiku</SelectItem>
+                            </>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
                 </div>
 
@@ -2924,11 +3025,11 @@ export default function VoiceEngineSettings() {
                 </div>
                 <div className="flex items-center gap-3 bg-muted/40 p-2.5 rounded-lg border">
                   <Label htmlFor="master-byok-switch" className="text-sm font-semibold cursor-pointer">
-                    {settings.allowUserByok !== false ? 'BYOK Allowed' : 'Platform Keys Enforced'}
+                    {(settings.allowUserByok !== false && (settings.allowUserByok as any) !== 'false') ? 'BYOK Allowed' : 'Platform Keys Enforced'}
                   </Label>
                   <Switch
                     id="master-byok-switch"
-                    checked={settings.allowUserByok !== false}
+                    checked={settings.allowUserByok !== false && (settings.allowUserByok as any) !== 'false'}
                     onCheckedChange={(checked) => {
                       updateMutation.mutate({ allowUserByok: checked });
                     }}
@@ -2939,11 +3040,11 @@ export default function VoiceEngineSettings() {
             </CardHeader>
             <CardContent>
               <div className={`p-4 rounded-lg border text-sm ${
-                settings.allowUserByok !== false
+                (settings.allowUserByok !== false && (settings.allowUserByok as any) !== 'false')
                   ? 'bg-emerald-50/50 border-emerald-200 text-emerald-900 dark:bg-emerald-950/20 dark:border-emerald-800 dark:text-emerald-300'
                   : 'bg-amber-50/50 border-amber-200 text-amber-900 dark:bg-amber-950/20 dark:border-amber-800 dark:text-amber-300'
               }`}>
-                {settings.allowUserByok !== false ? (
+                {(settings.allowUserByok !== false && (settings.allowUserByok as any) !== 'false') ? (
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                     <div className="space-y-1">
