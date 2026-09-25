@@ -128,6 +128,8 @@ __export(schema_exports, {
   insertUserKycDocumentSchema: () => insertUserKycDocumentSchema,
   insertUserSchema: () => insertUserSchema,
   insertUserSubscriptionSchema: () => insertUserSubscriptionSchema,
+  insertVeAgentInstantFaqSchema: () => insertVeAgentInstantFaqSchema,
+  insertVeMasterAiGlobalSettingsSchema: () => insertVeMasterAiGlobalSettingsSchema,
   insertVoiceSchema: () => insertVoiceSchema,
   insertWebhookLogSchema: () => insertWebhookLogSchema,
   insertWebhookSchema: () => insertWebhookSchema,
@@ -177,6 +179,8 @@ __export(schema_exports, {
   userKycDocuments: () => userKycDocuments,
   userSubscriptions: () => userSubscriptions,
   users: () => users,
+  veAgentInstantFaqs: () => veAgentInstantFaqs,
+  veMasterAiGlobalSettings: () => veMasterAiGlobalSettings,
   voices: () => voices,
   webhookDeliveryLogs: () => webhookDeliveryLogs,
   webhookLogs: () => webhookLogs,
@@ -204,7 +208,7 @@ function determineAICategory(lead) {
   if (lead.sentiment === "neutral") return AI_LEAD_CATEGORIES.NEUTRAL;
   return null;
 }
-var users, otpVerifications, refreshTokens, elevenLabsCredentials, syncedVoices, agents, knowledgeBase, incomingAgents, phoneNumbers, incomingConnections, campaigns, contacts, calls, creditTransactions, tools, voices, plans, globalSettings, llmModels, supportedLanguages, creditPackages, userSubscriptions, phoneNumberRentals, usageRecords, legacyWebhooks, legacyWebhookDeliveries, notifications, emailTemplates, promptTemplates, agentVersions, auditLogs, platformLanguages, insertUserSchema, insertElevenLabsCredentialSchema, insertSyncedVoiceSchema, insertAgentSchema, insertKnowledgeBaseSchema, insertIncomingAgentSchema, insertPromptTemplateSchema, insertAgentVersionSchema, insertIncomingConnectionSchema, insertCampaignSchema, insertContactSchema, insertCallSchema, insertCreditTransactionSchema, insertToolSchema, insertVoiceSchema, insertPlanSchema, insertGlobalSettingsSchema, insertLlmModelSchema, insertSupportedLanguageSchema, insertPlatformLanguageSchema, insertCreditPackageSchema, insertUserSubscriptionSchema, insertPhoneNumberSchema, insertUsageRecordSchema, insertLegacyWebhookSchema, insertLegacyWebhookDeliverySchema, insertPhoneNumberRentalSchema, insertNotificationSchema, insertEmailTemplateSchema, twilioCountries, insertTwilioCountrySchema, userKnowledgeStorageLimits, knowledgeChunks, knowledgeProcessingQueue, insertUserKnowledgeStorageLimitSchema, insertKnowledgeChunkSchema, insertKnowledgeProcessingQueueSchema, flows, insertFlowSchema, createFlowSchema, flowExecutions, insertFlowExecutionSchema, flowTestQueue, insertFlowTestQueueSchema, webhookSubscriptions, webhooks, insertWebhookSchema, createWebhookSchema, webhookDeliveryLogs, webhookLogs, insertWebhookLogSchema, appointments, insertAppointmentSchema, createAppointmentSchema, appointmentSettings, insertAppointmentSettingsSchema, createAppointmentSettingsSchema, forms, insertFormSchema, createFormSchema, formFields, insertFormFieldSchema, formSubmissions, insertFormSubmissionSchema, seoSettings, insertSeoSettingsSchema, analyticsScripts, insertAnalyticsScriptSchema, paymentTransactions, insertPaymentTransactionSchema, refunds, insertRefundSchema, invoices, insertInvoiceSchema, paymentWebhookQueue, insertPaymentWebhookQueueSchema, emailNotificationSettings, insertEmailNotificationSettingsSchema, bannedWords, insertBannedWordSchema, contentViolations, insertContentViolationSchema, openaiCredentials, insertOpenaiCredentialSchema, plivoCredentials, insertPlivoCredentialSchema, plivoPhoneNumbers, insertPlivoPhoneNumberSchema, plivoCalls, insertPlivoCallSchema, campaignJobs, insertCampaignJobSchema, plivoPhonePricing, insertPlivoPhonePricingSchema, userKycDocuments, insertUserKycDocumentSchema, twilioOpenaiCalls, insertTwilioOpenaiCallSchema, demoSessions, insertDemoSessionSchema, leadStages, insertLeadStageSchema, leads, insertLeadSchema, AI_LEAD_CATEGORIES, AI_CATEGORY_LABELS, AI_CATEGORY_COLORS, AI_CATEGORY_PRIORITY, leadNotes, insertLeadNoteSchema, leadActivities, insertLeadActivitySchema, crmCategoryPreferences, insertCrmCategoryPreferencesSchema, websiteWidgets, insertWebsiteWidgetSchema, widgetCallSessions, insertWidgetCallSessionSchema, API_SCOPES, apiKeys, insertApiKeySchema, apiAuditLogs, insertApiAuditLogSchema, apiRateLimits, sipTrunks, insertSipTrunkSchema, sipPhoneNumbers, insertSipPhoneNumberSchema, sipCalls, insertSipCallSchema, userAddresses, insertUserAddressSchema, userFeedback, insertUserFeedbackSchema, googleCalendarCredentials, insertGoogleCalendarCredentialSchema, googleSheetsCredentials, insertGoogleSheetsCredentialSchema, phoneReleaseRetryQueue, insertPhoneReleaseRetryQueueSchema;
+var users, otpVerifications, refreshTokens, elevenLabsCredentials, syncedVoices, agents, knowledgeBase, incomingAgents, phoneNumbers, incomingConnections, campaigns, contacts, calls, creditTransactions, tools, voices, plans, globalSettings, llmModels, supportedLanguages, creditPackages, userSubscriptions, phoneNumberRentals, usageRecords, legacyWebhooks, legacyWebhookDeliveries, notifications, emailTemplates, promptTemplates, agentVersions, auditLogs, platformLanguages, insertUserSchema, insertElevenLabsCredentialSchema, insertSyncedVoiceSchema, insertAgentSchema, insertKnowledgeBaseSchema, insertIncomingAgentSchema, insertPromptTemplateSchema, insertAgentVersionSchema, insertIncomingConnectionSchema, insertCampaignSchema, insertContactSchema, insertCallSchema, insertCreditTransactionSchema, insertToolSchema, insertVoiceSchema, insertPlanSchema, insertGlobalSettingsSchema, insertLlmModelSchema, insertSupportedLanguageSchema, insertPlatformLanguageSchema, insertCreditPackageSchema, insertUserSubscriptionSchema, insertPhoneNumberSchema, insertUsageRecordSchema, insertLegacyWebhookSchema, insertLegacyWebhookDeliverySchema, insertPhoneNumberRentalSchema, insertNotificationSchema, insertEmailTemplateSchema, twilioCountries, insertTwilioCountrySchema, userKnowledgeStorageLimits, knowledgeChunks, knowledgeProcessingQueue, insertUserKnowledgeStorageLimitSchema, insertKnowledgeChunkSchema, insertKnowledgeProcessingQueueSchema, flows, insertFlowSchema, createFlowSchema, flowExecutions, insertFlowExecutionSchema, flowTestQueue, insertFlowTestQueueSchema, webhookSubscriptions, webhooks, insertWebhookSchema, createWebhookSchema, webhookDeliveryLogs, webhookLogs, insertWebhookLogSchema, appointments, insertAppointmentSchema, createAppointmentSchema, appointmentSettings, insertAppointmentSettingsSchema, createAppointmentSettingsSchema, forms, insertFormSchema, createFormSchema, formFields, insertFormFieldSchema, formSubmissions, insertFormSubmissionSchema, seoSettings, insertSeoSettingsSchema, analyticsScripts, insertAnalyticsScriptSchema, paymentTransactions, insertPaymentTransactionSchema, refunds, insertRefundSchema, invoices, insertInvoiceSchema, paymentWebhookQueue, insertPaymentWebhookQueueSchema, emailNotificationSettings, insertEmailNotificationSettingsSchema, bannedWords, insertBannedWordSchema, contentViolations, insertContentViolationSchema, openaiCredentials, insertOpenaiCredentialSchema, plivoCredentials, insertPlivoCredentialSchema, plivoPhoneNumbers, insertPlivoPhoneNumberSchema, plivoCalls, insertPlivoCallSchema, campaignJobs, insertCampaignJobSchema, plivoPhonePricing, insertPlivoPhonePricingSchema, userKycDocuments, insertUserKycDocumentSchema, twilioOpenaiCalls, insertTwilioOpenaiCallSchema, demoSessions, insertDemoSessionSchema, leadStages, insertLeadStageSchema, leads, insertLeadSchema, AI_LEAD_CATEGORIES, AI_CATEGORY_LABELS, AI_CATEGORY_COLORS, AI_CATEGORY_PRIORITY, leadNotes, insertLeadNoteSchema, leadActivities, insertLeadActivitySchema, crmCategoryPreferences, insertCrmCategoryPreferencesSchema, websiteWidgets, insertWebsiteWidgetSchema, widgetCallSessions, insertWidgetCallSessionSchema, API_SCOPES, apiKeys, insertApiKeySchema, apiAuditLogs, insertApiAuditLogSchema, apiRateLimits, sipTrunks, insertSipTrunkSchema, sipPhoneNumbers, insertSipPhoneNumberSchema, sipCalls, insertSipCallSchema, userAddresses, insertUserAddressSchema, userFeedback, insertUserFeedbackSchema, googleCalendarCredentials, insertGoogleCalendarCredentialSchema, googleSheetsCredentials, insertGoogleSheetsCredentialSchema, phoneReleaseRetryQueue, insertPhoneReleaseRetryQueueSchema, veAgentInstantFaqs, insertVeAgentInstantFaqSchema, veMasterAiGlobalSettings, insertVeMasterAiGlobalSettingsSchema;
 var init_schema = __esm({
   "shared/schema.ts"() {
     "use strict";
@@ -268,6 +272,8 @@ var init_schema = __esm({
       billingCountry: text("billing_country"),
       company: text("company"),
       // Company name for profile and team naming
+      subscriptionMinutes: integer("subscription_minutes").default(0),
+      subscriptionMinutesResetAt: timestamp("subscription_minutes_reset_at"),
       createdAt: timestamp("created_at").defaultNow(),
       updatedAt: timestamp("updated_at").defaultNow()
     });
@@ -403,6 +409,7 @@ var init_schema = __esm({
       // Legacy/Common Fields
       agentLink: text("agent_link"),
       config: jsonb("config"),
+      masterAiConfig: jsonb("master_ai_config"),
       isActive: boolean("is_active").notNull().default(true),
       createdAt: timestamp("created_at").notNull().defaultNow(),
       updatedAt: timestamp("updated_at").notNull().defaultNow()
@@ -2708,6 +2715,35 @@ var init_schema = __esm({
       createdAt: true,
       updatedAt: true
     });
+    veAgentInstantFaqs = pgTable("ve_agent_instant_faqs", {
+      id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+      agentId: varchar("agent_id").notNull(),
+      userId: varchar("user_id").notNull(),
+      questionPatterns: text("question_patterns").array().notNull(),
+      answerText: text("answer_text").notNull(),
+      audioCacheUrl: text("audio_cache_url"),
+      audioCacheSize: integer("audio_cache_size").default(0),
+      hitCount: integer("hit_count").default(0),
+      createdAt: timestamp("created_at").defaultNow(),
+      updatedAt: timestamp("updated_at").defaultNow()
+    });
+    insertVeAgentInstantFaqSchema = createInsertSchema(veAgentInstantFaqs).omit({
+      id: true,
+      createdAt: true,
+      updatedAt: true
+    });
+    veMasterAiGlobalSettings = pgTable("ve_master_ai_global_settings", {
+      id: serial("id").primaryKey(),
+      backchannelDictionaries: jsonb("backchannel_dictionaries").notNull(),
+      actionTriggerPhrases: jsonb("action_trigger_phrases").notNull(),
+      maxEvalLatencyMs: integer("max_eval_latency_ms").default(35),
+      maxCacheRamMb: integer("max_cache_ram_mb").default(512),
+      updatedAt: timestamp("updated_at").defaultNow()
+    });
+    insertVeMasterAiGlobalSettingsSchema = createInsertSchema(veMasterAiGlobalSettings).omit({
+      id: true,
+      updatedAt: true
+    });
   }
 });
 
@@ -2731,6 +2767,12 @@ var init_db = __esm({
       idleTimeoutMillis: 3e4,
       connectionTimeoutMillis: 1e4
     });
+    if (process.env.DATABASE_URL) {
+      const maskedUrl = process.env.DATABASE_URL.replace(/:[^:]+@/, ":****@");
+      console.log(`\u{1F50C} [DB Pool] Initialized connection to: ${maskedUrl}`);
+    } else {
+      console.error(`\u{1F50C} [DB Pool] DATABASE_URL is not set!`);
+    }
     pool.on("error", (err) => {
       console.error("[DB Pool] Idle client error:", err.message);
     });
@@ -7008,7 +7050,7 @@ var init_webhook_delivery = __esm({
             console.warn(`\u{1F6AB} [Webhook] SSRF blocked: ${urlCheck.error} for URL ${webhook.url}`);
             return {
               success: false,
-              statusCode: 0,
+              httpStatus: 0,
               responseBody: `Blocked: ${urlCheck.error}`,
               responseTime: 0,
               error: urlCheck.error
@@ -8213,6 +8255,731 @@ Return ONLY the JSON object. No explanation, no markdown formatting.`;
   }
 });
 
+// plugins/custom-voice-engine/index.ts
+init_db();
+init_schema();
+import { sql as sql19, eq as eq14 } from "drizzle-orm";
+
+// plugins/custom-voice-engine/services/providers/tts/deepgram-tts.provider.ts
+import axios from "axios";
+
+// plugins/custom-voice-engine/services/providers/tts/tts-provider.interface.ts
+var BaseTtsProvider = class {
+};
+
+// plugins/custom-voice-engine/services/providers/http-agent.ts
+import http from "http";
+import https from "https";
+var httpKeepAliveAgent = new http.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 3e4,
+  maxSockets: 50,
+  maxFreeSockets: 10
+});
+var httpsKeepAliveAgent = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 3e4,
+  maxSockets: 50,
+  maxFreeSockets: 10
+});
+var keepAliveAxiosConfig = {
+  httpAgent: httpKeepAliveAgent,
+  httpsAgent: httpsKeepAliveAgent
+};
+
+// plugins/custom-voice-engine/services/providers/tts/deepgram-tts.provider.ts
+var DEEPGRAM_TTS_URL = "https://api.deepgram.com/v1/speak";
+var DeepgramTtsProvider = class extends BaseTtsProvider {
+  name = "deepgram";
+  async synthesize(text2, config) {
+    let model = config.voice || config.deepgramModel || "aura-asteria-en";
+    if (model === "aura-2") model = "aura-2-asteria-en";
+    if (model === "aura") model = "aura-asteria-en";
+    const params = new URLSearchParams({
+      model
+    });
+    const encoding = config.outputFormat?.encoding || "linear16";
+    const sampleRate = config.outputFormat?.sampleRate || 8e3;
+    if (encoding === "linear16") {
+      params.set("encoding", "linear16");
+      params.set("sample_rate", String(sampleRate));
+      params.set("container", "none");
+    } else if (encoding === "mulaw") {
+      params.set("encoding", "mulaw");
+      params.set("sample_rate", String(sampleRate));
+      params.set("container", "none");
+    } else if (encoding === "alaw") {
+      params.set("encoding", "alaw");
+      params.set("sample_rate", String(sampleRate));
+      params.set("container", "none");
+    }
+    const response = await axios.post(
+      `${DEEPGRAM_TTS_URL}?${params.toString()}`,
+      { text: text2 },
+      {
+        ...keepAliveAxiosConfig,
+        headers: {
+          Authorization: `Token ${config.apiKey}`,
+          "Content-Type": "application/json"
+        },
+        responseType: "arraybuffer",
+        timeout: 3e4
+      }
+    );
+    return Buffer.from(response.data);
+  }
+  async *synthesizeStream(text2, config) {
+    let model = config.voice || config.deepgramModel || "aura-asteria-en";
+    if (model === "aura-2") model = "aura-2-asteria-en";
+    if (model === "aura") model = "aura-asteria-en";
+    const sampleRate = config.outputFormat?.sampleRate || 8e3;
+    const encoding = config.outputFormat?.encoding || "linear16";
+    const params = new URLSearchParams({
+      model,
+      encoding: encoding === "mulaw" ? "mulaw" : encoding === "alaw" ? "alaw" : "linear16",
+      sample_rate: String(sampleRate),
+      container: "none"
+    });
+    const response = await axios.post(
+      `${DEEPGRAM_TTS_URL}?${params.toString()}`,
+      { text: text2 },
+      {
+        ...keepAliveAxiosConfig,
+        headers: {
+          Authorization: `Token ${config.apiKey}`,
+          "Content-Type": "application/json"
+        },
+        responseType: "stream",
+        timeout: 3e4
+      }
+    );
+    const stream = response.data;
+    const chunkSize = 640;
+    let buffer = Buffer.alloc(0);
+    for await (const data of stream) {
+      const chunk = Buffer.isBuffer(data) ? data : Buffer.from(data);
+      buffer = Buffer.concat([buffer, chunk]);
+      while (buffer.length >= chunkSize) {
+        yield buffer.subarray(0, chunkSize);
+        buffer = buffer.subarray(chunkSize);
+      }
+    }
+    if (buffer.length > 0) {
+      yield buffer;
+    }
+  }
+};
+
+// plugins/custom-voice-engine/services/providers/tts/sarvam-tts.provider.ts
+import axios2 from "axios";
+import WebSocket from "ws";
+var SARVAM_API_BASE = "https://api.sarvam.ai";
+var SarvamTtsProvider = class extends BaseTtsProvider {
+  name = "sarvam";
+  async synthesize(text2, config) {
+    const language = config.language || "en-IN";
+    const speaker = config.sarvamSpeaker || config.voice || "meera";
+    const model = config.sarvamModel || "bulbul:v3";
+    console.log(`[TTS:Sarvam] Synthesizing (REST): speaker="${speaker}" model="${model}" lang="${language}" sampleRate=${config.outputFormat?.sampleRate || 8e3}`);
+    try {
+      const response = await axios2.post(
+        `${SARVAM_API_BASE}/text-to-speech`,
+        {
+          inputs: [text2],
+          target_language_code: this.mapLanguage(language),
+          speaker,
+          model,
+          pace: config.speed || 1.15,
+          // Increased from 1.0 to 1.15 for a more natural speed
+          speech_sample_rate: config.outputFormat?.sampleRate || 8e3,
+          enable_preprocessing: true
+        },
+        {
+          ...keepAliveAxiosConfig,
+          headers: {
+            "API-Subscription-Key": config.apiKey,
+            "Content-Type": "application/json"
+          },
+          timeout: 3e4
+        }
+      );
+      if (response.data?.audios?.[0]) {
+        return Buffer.from(response.data.audios[0], "base64");
+      }
+      console.error(`[TTS:Sarvam] No audio in response:`, JSON.stringify(response.data));
+      throw new Error(`Sarvam TTS returned no audio data (speaker="${speaker}", model="${model}")`);
+    } catch (err) {
+      if (err.response?.data) {
+        console.error(`[TTS:Sarvam] API error response:`, JSON.stringify(err.response.data, null, 2));
+      }
+      console.error(`[TTS:Sarvam] Request body:`, JSON.stringify({
+        inputs: [text2],
+        target_language_code: this.mapLanguage(language),
+        speaker,
+        model,
+        pitch: config.pitch || 0,
+        pace: config.speed || 1.15,
+        loudness: 1.5,
+        speech_sample_rate: config.outputFormat?.sampleRate || 8e3,
+        enable_preprocessing: true
+      }));
+      throw err;
+    }
+  }
+  async *synthesizeStream(text2, config) {
+    const language = config.language || "en-IN";
+    const speaker = config.sarvamSpeaker || config.voice || "meera";
+    const model = config.sarvamModel || "bulbul:v3";
+    const url = `wss://api.sarvam.ai/text-to-speech/ws?model=${model}&send_completion_event=true`;
+    console.log(`[TTS:Sarvam] Connecting WebSocket to URL: ${url}`);
+    const ws = new WebSocket(url, {
+      headers: {
+        "api-subscription-key": config.apiKey
+      }
+    });
+    const queue = [];
+    let resolveNext = null;
+    ws.on("open", () => {
+      ws.send(JSON.stringify({
+        type: "config",
+        data: {
+          target_language_code: this.mapLanguage(language),
+          speaker
+        }
+      }));
+      ws.send(JSON.stringify({
+        type: "text",
+        data: {
+          text: text2
+        }
+      }));
+    });
+    ws.on("message", (data) => {
+      try {
+        const response = JSON.parse(data.toString());
+        if (response.type === "audio" && response.data?.audio) {
+          const audioBuffer = Buffer.from(response.data.audio, "base64");
+          queue.push(audioBuffer);
+          if (resolveNext) {
+            resolveNext();
+            resolveNext = null;
+          }
+        } else if (response.type === "completion") {
+          queue.push("done");
+          if (resolveNext) {
+            resolveNext();
+            resolveNext = null;
+          }
+          ws.close();
+        }
+      } catch (err) {
+        console.error(`[TTS:Sarvam] Failed to parse WebSocket message:`, err.message);
+      }
+    });
+    ws.on("error", (err) => {
+      console.error(`[TTS:Sarvam] WebSocket error:`, err.message);
+      queue.push(err);
+      if (resolveNext) {
+        resolveNext();
+        resolveNext = null;
+      }
+    });
+    ws.on("close", () => {
+      if (!queue.includes("done") && !queue.some((item) => item instanceof Error)) {
+        queue.push("done");
+        if (resolveNext) {
+          resolveNext();
+          resolveNext = null;
+        }
+      }
+    });
+    try {
+      while (true) {
+        if (queue.length === 0) {
+          await new Promise((resolve) => {
+            resolveNext = resolve;
+          });
+        }
+        const next = queue.shift();
+        if (next === "done") {
+          break;
+        }
+        if (next instanceof Error) {
+          throw next;
+        }
+        if (next) {
+          yield next;
+        }
+      }
+    } finally {
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close();
+      }
+    }
+  }
+  mapLanguage(lang) {
+    if (lang.includes("-")) return lang;
+    const langMap = {
+      en: "en-IN",
+      hi: "hi-IN",
+      ta: "ta-IN",
+      te: "te-IN",
+      kn: "kn-IN",
+      ml: "ml-IN",
+      mr: "mr-IN",
+      gu: "gu-IN",
+      bn: "bn-IN",
+      pa: "pa-IN",
+      or: "od-IN"
+    };
+    return langMap[lang] || "en-IN";
+  }
+};
+
+// plugins/custom-voice-engine/services/providers/tts/elevenlabs-tts.provider.ts
+import axios3 from "axios";
+var ELEVENLABS_API_BASE = "https://api.elevenlabs.io/v1";
+var ElevenLabsTtsProvider = class extends BaseTtsProvider {
+  name = "elevenlabs";
+  async synthesize(text2, config) {
+    const voiceId = config.voice || "21m00Tcm4TlvDq8ikWAM";
+    const model = config.deepgramModel || "eleven_turbo_v2_5";
+    const sampleRate = config.outputFormat?.sampleRate || 8e3;
+    const outputFormat = `pcm_${sampleRate}`;
+    console.log(`[TTS:ElevenLabs] Synthesizing full audio: voiceId="${voiceId}" model="${model}" outputFormat="${outputFormat}"`);
+    try {
+      const response = await axios3.post(
+        `${ELEVENLABS_API_BASE}/text-to-speech/${voiceId}?output_format=${outputFormat}`,
+        {
+          text: text2,
+          model_id: model,
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75
+          }
+        },
+        {
+          ...keepAliveAxiosConfig,
+          headers: {
+            "xi-api-key": config.apiKey,
+            "Content-Type": "application/json"
+          },
+          responseType: "arraybuffer",
+          timeout: 3e4
+        }
+      );
+      return Buffer.from(response.data);
+    } catch (err) {
+      if (err.response?.data) {
+        const errText = Buffer.isBuffer(err.response.data) ? err.response.data.toString() : JSON.stringify(err.response.data);
+        console.error(`[TTS:ElevenLabs] API error response:`, errText);
+      }
+      throw err;
+    }
+  }
+  async *synthesizeStream(text2, config) {
+    const voiceId = config.voice || "21m00Tcm4TlvDq8ikWAM";
+    const model = config.deepgramModel || "eleven_turbo_v2_5";
+    const sampleRate = config.outputFormat?.sampleRate || 8e3;
+    const outputFormat = `pcm_${sampleRate}`;
+    console.log(`[TTS:ElevenLabs] Synthesizing stream: voiceId="${voiceId}" model="${model}" outputFormat="${outputFormat}"`);
+    const response = await axios3.post(
+      `${ELEVENLABS_API_BASE}/text-to-speech/${voiceId}/stream?output_format=${outputFormat}`,
+      {
+        text: text2,
+        model_id: model,
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75
+        }
+      },
+      {
+        ...keepAliveAxiosConfig,
+        headers: {
+          "xi-api-key": config.apiKey,
+          "Content-Type": "application/json"
+        },
+        responseType: "stream",
+        timeout: 3e4
+      }
+    );
+    const stream = response.data;
+    const bytesPerSecond = sampleRate * 2;
+    const chunkSize = Math.floor(bytesPerSecond * 0.04);
+    let buffer = Buffer.alloc(0);
+    for await (const data of stream) {
+      const chunk = Buffer.isBuffer(data) ? data : Buffer.from(data);
+      buffer = Buffer.concat([buffer, chunk]);
+      while (buffer.length >= chunkSize) {
+        yield buffer.subarray(0, chunkSize);
+        buffer = buffer.subarray(chunkSize);
+      }
+    }
+    if (buffer.length > 0) {
+      yield buffer;
+    }
+  }
+};
+
+// plugins/custom-voice-engine/services/providers/tts/tts-provider.factory.ts
+var providerRegistry = {
+  deepgram: DeepgramTtsProvider,
+  sarvam: SarvamTtsProvider,
+  elevenlabs: ElevenLabsTtsProvider
+};
+var TtsProviderFactory = class {
+  static create(provider) {
+    const ProviderClass = providerRegistry[provider];
+    if (!ProviderClass) {
+      throw new Error(`Unknown TTS provider: ${provider}. Available: ${Object.keys(providerRegistry).join(", ")}`);
+    }
+    return new ProviderClass();
+  }
+  static getAvailableProviders() {
+    return Object.keys(providerRegistry);
+  }
+  static isAvailable(provider) {
+    return provider in providerRegistry;
+  }
+  static register(name, providerClass) {
+    providerRegistry[name] = providerClass;
+    console.log(`[TTS Factory] Registered custom provider: ${name}`);
+  }
+};
+
+// plugins/custom-voice-engine/services/freeswitch/esl-connection.ts
+import { Socket } from "net";
+import { EventEmitter } from "events";
+var EslConnection = class extends EventEmitter {
+  socket = null;
+  config;
+  connected = false;
+  authenticated = false;
+  reconnecting = false;
+  disconnecting = false;
+  expectedDiscards = 0;
+  reconnectAttempts = 0;
+  reconnectTimer = null;
+  buffer = "";
+  pendingCommands = [];
+  constructor(config) {
+    super();
+    this.config = {
+      reconnect: true,
+      reconnectIntervalMs: 5e3,
+      maxReconnectAttempts: 10,
+      ...config
+    };
+  }
+  /**
+   * Connect to FreeSWITCH ESL
+   */
+  async connect() {
+    return new Promise((resolve, reject) => {
+      this.socket = new Socket();
+      this.socket.setEncoding("utf8");
+      const timeout = setTimeout(() => {
+        this.off("ready", onReady);
+        this.off("error", onError);
+        reject(new Error(`ESL connection timeout to ${this.config.host}:${this.config.port}`));
+        this.socket?.destroy();
+      }, 1e4);
+      const onReady = () => {
+        clearTimeout(timeout);
+        this.off("error", onError);
+        resolve();
+      };
+      const onError = (err) => {
+        clearTimeout(timeout);
+        this.off("ready", onReady);
+        reject(err);
+      };
+      this.once("ready", onReady);
+      this.once("error", onError);
+      this.socket.on("connect", () => {
+        console.log(`[ESL] Socket connected to ${this.config.host}:${this.config.port}, waiting for authentication...`);
+      });
+      this.socket.on("data", (data) => {
+        this.buffer += data;
+        this.processBuffer();
+      });
+      this.socket.on("error", (err) => {
+        console.error("[ESL] Socket error:", err.message);
+        this.emit("error", err);
+      });
+      this.socket.on("close", () => {
+        if (this.disconnecting) {
+          this.connected = false;
+          this.authenticated = false;
+          console.log("[ESL] Connection closed (intentional)");
+          this.emit("disconnect");
+          return;
+        }
+        const wasAuthenticated = this.authenticated;
+        this.connected = false;
+        this.authenticated = false;
+        console.log("[ESL] Connection closed");
+        this.emit("disconnect");
+        if (!wasAuthenticated) {
+          this.emit("error", new Error(`ESL connection to ${this.config.host}:${this.config.port} closed before authentication completed \u2014 check ESL password and FreeSWITCH ESL config`));
+        }
+        if (this.config.reconnect && !this.reconnecting) {
+          this.scheduleReconnect();
+        }
+      });
+      this.socket.connect(this.config.port, this.config.host);
+    });
+  }
+  /**
+   * Send an API command to FreeSWITCH
+   */
+  async api(command) {
+    return this.sendCommand(`api ${command}`);
+  }
+  /**
+   * Send a background API command
+   */
+  async bgapi(command) {
+    return this.sendCommand(`bgapi ${command}`);
+  }
+  /**
+   * Execute an application on a channel
+   */
+  async execute(uuid, app, arg) {
+    const cmd = arg ? `sendmsg ${uuid}
+call-command: execute
+execute-app-name: ${app}
+execute-app-arg: ${arg}` : `sendmsg ${uuid}
+call-command: execute
+execute-app-name: ${app}`;
+    return this.sendCommand(cmd);
+  }
+  /**
+   * Originate an outbound call
+   */
+  async originate(dialString, destination, options = {}) {
+    const vars = Object.entries(options).map(([k, v]) => `${k}=${v}`).join(",");
+    const varsStr = vars ? `{${vars}}` : "";
+    return this.bgapi(`originate ${varsStr}${dialString} ${destination}`);
+  }
+  /**
+   * Start audio forking on a channel (sends audio to WebSocket)
+   */
+  async startAudioFork(uuid, wsUrl) {
+    return this.execute(uuid, "audio_fork", wsUrl);
+  }
+  /**
+   * Stop audio forking on a channel
+   */
+  async stopAudioFork(uuid) {
+    return this.execute(uuid, "stop_audio_fork");
+  }
+  /**
+   * Hang up a channel
+   */
+  async hangup(uuid, cause) {
+    return this.api(`uuid_kill ${uuid} ${cause || "NORMAL_CLEARING"}`);
+  }
+  /**
+   * Get channel variable
+   */
+  async getVariable(uuid, variable) {
+    return this.api(`uuid_getvar ${uuid} ${variable}`);
+  }
+  /**
+   * Set channel variable
+   */
+  async setVariable(uuid, variable, value) {
+    return this.api(`uuid_setvar ${uuid} ${variable} ${value}`);
+  }
+  /**
+   * Get active channel count
+   */
+  async getActiveChannelCount() {
+    const result = await this.api("show calls count");
+    const match = result.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  }
+  /**
+   * Disconnect from FreeSWITCH
+   */
+  async disconnect() {
+    this.config.reconnect = false;
+    this.disconnecting = true;
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.socket) {
+      this.socket.destroy();
+      this.socket = null;
+    }
+    this.connected = false;
+    this.authenticated = false;
+    console.log("[ESL] Disconnected");
+  }
+  isConnected() {
+    return this.connected && this.authenticated;
+  }
+  // ── Private Methods ────────────────────────────────────
+  async sendCommand(command) {
+    if (!this.connected || !this.socket) {
+      throw new Error("ESL not connected");
+    }
+    return new Promise((resolve, reject) => {
+      this.pendingCommands.push({ resolve, reject });
+      this.sendRaw(`${command}
+
+`);
+      setTimeout(() => {
+        const idx = this.pendingCommands.findIndex((p) => p.resolve === resolve);
+        if (idx !== -1) {
+          this.pendingCommands.splice(idx, 1);
+          reject(new Error(`ESL command timeout: ${command.split("\n")[0]}`));
+        }
+      }, 15e3);
+    });
+  }
+  sendRaw(data) {
+    if (this.socket && !this.socket.destroyed) {
+      this.socket.write(data);
+    }
+  }
+  processBuffer() {
+    this.buffer = this.buffer.trimStart();
+    while (true) {
+      const headerEndIndex = this.buffer.indexOf("\n\n");
+      if (headerEndIndex === -1) break;
+      const headerPart = this.buffer.substring(0, headerEndIndex);
+      const headers = {};
+      const lines = headerPart.split("\n");
+      for (const line of lines) {
+        const colonIdx = line.indexOf(":");
+        if (colonIdx > 0) {
+          const key = line.substring(0, colonIdx).trim();
+          const value = line.substring(colonIdx + 1).trim();
+          headers[key] = decodeURIComponent(value);
+        }
+      }
+      const contentLength = headers["Content-Length"] ? parseInt(headers["Content-Length"], 10) : 0;
+      const totalMessageLength = headerEndIndex + 2 + contentLength;
+      if (this.buffer.length < totalMessageLength) {
+        break;
+      }
+      const body = this.buffer.substring(headerEndIndex + 2, headerEndIndex + 2 + contentLength);
+      this.buffer = this.buffer.substring(totalMessageLength).trimStart();
+      this.processMessage(headers, body);
+    }
+  }
+  processMessage(headers, body) {
+    const contentType = headers["Content-Type"];
+    if (contentType === "auth/request") {
+      this.sendRaw(`auth ${this.config.password}
+
+`);
+      return;
+    }
+    if (contentType === "api/response" || contentType === "command/reply") {
+      const replyText = headers["Reply-Text"] || body.trim();
+      if (!this.authenticated) {
+        if (replyText.startsWith("+OK accepted")) {
+          this.authenticated = true;
+          this.connected = true;
+          this.reconnectAttempts = 0;
+          this.sendRaw("event plain CHANNEL_CREATE CHANNEL_ANSWER CHANNEL_HANGUP CHANNEL_DESTROY\n\n");
+          this.sendRaw("event plain CUSTOM mod_audio_fork::play_audio\n\n");
+          this.expectedDiscards = 2;
+          console.log("[ESL] Authenticated successfully, waiting for subscription confirmations...");
+        } else if (replyText.startsWith("-ERR")) {
+          const err = new Error(`ESL authentication failed: ${replyText}`);
+          this.emit("error", err);
+          this.socket?.destroy();
+        } else {
+          const err = new Error(`ESL auth reply unexpected: ${replyText}`);
+          this.emit("error", err);
+          this.socket?.destroy();
+        }
+        return;
+      }
+      if (this.expectedDiscards > 0) {
+        this.expectedDiscards--;
+        if (this.expectedDiscards === 0) {
+          console.log("[ESL] Subscription confirmations received, connection ready");
+          this.emit("ready");
+        }
+        return;
+      }
+      const pending = this.pendingCommands.shift();
+      if (pending) {
+        if (replyText.startsWith("-ERR")) {
+          pending.reject(new Error(replyText));
+        } else {
+          pending.resolve(body.trim() || replyText);
+        }
+      }
+      return;
+    }
+    if (contentType === "text/event-plain") {
+      const eventHeaders = {};
+      const lines = body.split("\n");
+      let eventBody = "";
+      let inEventBody = false;
+      for (const line of lines) {
+        if (inEventBody) {
+          eventBody += line + "\n";
+          continue;
+        }
+        if (line.trim() === "") {
+          inEventBody = true;
+          continue;
+        }
+        const colonIdx = line.indexOf(":");
+        if (colonIdx > 0) {
+          const key = line.substring(0, colonIdx).trim();
+          const value = line.substring(colonIdx + 1).trim();
+          eventHeaders[key] = decodeURIComponent(value);
+        }
+      }
+      const event = {
+        eventName: eventHeaders["Event-Name"] || "UNKNOWN",
+        eventSubclass: eventHeaders["Event-Subclass"],
+        headers: eventHeaders,
+        body: eventBody.trim() || void 0
+      };
+      const keyEvents = ["CHANNEL_CREATE", "CHANNEL_ANSWER", "CHANNEL_HANGUP", "CHANNEL_DESTROY"];
+      if (keyEvents.includes(event.eventName)) {
+        console.log(`[ESL] Received event: ${event.eventName}`);
+      }
+      this.emit("event", event);
+      this.emit(`event:${event.eventName}`, event);
+    }
+  }
+  scheduleReconnect() {
+    if (this.reconnectAttempts >= (this.config.maxReconnectAttempts || 10)) {
+      console.error("[ESL] Max reconnect attempts reached");
+      this.emit("maxReconnectAttempts");
+      return;
+    }
+    this.reconnecting = true;
+    this.reconnectAttempts++;
+    const delay = this.config.reconnectIntervalMs || 5e3;
+    console.log(`[ESL] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
+    this.reconnectTimer = setTimeout(async () => {
+      try {
+        await this.connect();
+        this.reconnecting = false;
+      } catch (err) {
+        console.error("[ESL] Reconnect failed:", err.message);
+        this.reconnecting = false;
+        this.scheduleReconnect();
+      }
+    }, delay);
+  }
+};
+
+// plugins/custom-voice-engine/index.ts
+import * as os2 from "os";
+
 // plugins/custom-voice-engine/routes/admin-settings.routes.ts
 init_db();
 import { Router } from "express";
@@ -8307,6 +9074,92 @@ function createAdminSettingsRouter() {
       res.status(500).json({ success: false, error: err.message });
     }
   });
+  router.get("/sip-gateways", async (req, res) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ success: false, error: "Unauthorized" });
+      const result = await db.execute(sql2`
+        SELECT * FROM user_sip_gateways
+        WHERE user_id = ${userId}
+        ORDER BY created_at ASC
+      `);
+      res.json({ success: true, data: result.rows });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+  router.post("/sip-gateways", async (req, res) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ success: false, error: "Unauthorized" });
+      const { name, username, password, proxy, register, callerIdInFrom } = req.body;
+      if (!name || !username || !password || !proxy) {
+        return res.status(400).json({ success: false, error: "Missing required fields" });
+      }
+      const result = await db.execute(sql2`
+        INSERT INTO user_sip_gateways (user_id, name, username, password, proxy, register, caller_id_in_from)
+        VALUES (${userId}, ${name}, ${username}, ${password}, ${proxy}, ${register ?? false}, ${callerIdInFrom ?? true})
+        RETURNING *
+      `);
+      res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+  router.put("/sip-gateways/:id", async (req, res) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ success: false, error: "Unauthorized" });
+      const { id } = req.params;
+      const { name, username, password, proxy, register, callerIdInFrom } = req.body;
+      const result = await db.execute(sql2`
+        UPDATE user_sip_gateways SET
+          name = COALESCE(${name ?? null}, name),
+          username = COALESCE(${username ?? null}, username),
+          password = COALESCE(${password ?? null}, password),
+          proxy = COALESCE(${proxy ?? null}, proxy),
+          register = COALESCE(${register !== void 0 ? register : null}, register),
+          caller_id_in_from = COALESCE(${callerIdInFrom !== void 0 ? callerIdInFrom : null}, caller_id_in_from),
+          updated_at = NOW()
+        WHERE id = ${id} AND user_id = ${userId}
+        RETURNING *
+      `);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, error: "Gateway not found" });
+      }
+      res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+  router.delete("/sip-gateways/:id", async (req, res) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ success: false, error: "Unauthorized" });
+      const { id } = req.params;
+      await db.execute(sql2`DELETE FROM user_sip_gateways WHERE id = ${id} AND user_id = ${userId}`);
+      res.json({ success: true, message: "Gateway deleted" });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+  router.post("/sip-gateways/:id/activate", async (req, res) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ success: false, error: "Unauthorized" });
+      const { id } = req.params;
+      await db.execute(sql2`UPDATE user_sip_gateways SET is_active = false WHERE user_id = ${userId}`);
+      const result = await db.execute(sql2`
+        UPDATE user_sip_gateways SET is_active = true WHERE id = ${id} AND user_id = ${userId} RETURNING *
+      `);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, error: "Gateway not found" });
+      }
+      res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
   return router;
 }
 
@@ -8314,7 +9167,7 @@ function createAdminSettingsRouter() {
 init_db();
 init_schema();
 import { Router as Router2 } from "express";
-import { sql as sql3, eq as eq2, inArray } from "drizzle-orm";
+import { eq as eq2, inArray } from "drizzle-orm";
 var SETTINGS_KEYS = {
   // Active provider selections
   sttActiveProvider: "ve_stt_active_provider",
@@ -8329,6 +9182,18 @@ var SETTINGS_KEYS = {
   deepgramApiKey: "ve_deepgram_api_key",
   sarvamApiKey: "ve_sarvam_api_key",
   openrouterApiKey: "ve_openrouter_api_key",
+  geminiApiKey: "ve_gemini_api_key",
+  groqApiKey: "ve_groq_api_key",
+  openaiApiKey: "ve_openai_api_key",
+  deepseekApiKey: "ve_deepseek_api_key",
+  anthropicApiKey: "ve_anthropic_api_key",
+  elevenlabsApiKey: "ve_elevenlabs_api_key",
+  navanaApiKey: "ve_navana_api_key",
+  cartesiaApiKey: "ve_cartesia_api_key",
+  callhippoApiKey: "ve_callhippo_api_key",
+  telecmiAppId: "ve_telecmi_app_id",
+  telecmiSecret: "ve_telecmi_secret",
+  voicelinkHost: "ve_voicelink_host",
   // Models (per-provider, so switching providers doesn't lose the other's selection)
   sttDeepgramModel: "ve_stt_deepgram_model",
   sttDeepgramAllowedModels: "ve_stt_deepgram_allowed_models",
@@ -8340,13 +9205,27 @@ var SETTINGS_KEYS = {
   ttsSarvamModel: "ve_tts_sarvam_model",
   ttsSarvamAllowedModels: "ve_tts_sarvam_allowed_models",
   ttsSarvamSpeaker: "ve_tts_sarvam_speaker",
+  ttsElevenlabsModel: "ve_tts_elevenlabs_model",
+  ttsElevenlabsAllowedModels: "ve_tts_elevenlabs_allowed_models",
+  ttsNavanaModel: "ve_tts_navana_model",
+  ttsNavanaAllowedModels: "ve_tts_navana_allowed_models",
+  ttsCartesiaModel: "ve_tts_cartesia_model",
+  ttsCartesiaAllowedModels: "ve_tts_cartesia_allowed_models",
   // FreeSWITCH
   freeswitchEslHost: "ve_freeswitch_esl_host",
   freeswitchEslPort: "ve_freeswitch_esl_port",
   freeswitchEslPassword: "ve_freeswitch_esl_password",
   // Plugin enabled
-  pluginEnabled: "ve_plugin_enabled"
+  pluginEnabled: "ve_plugin_enabled",
+  // Master BYOK Switch
+  allowUserByok: "allow_user_byok"
 };
+function toBool(val, defaultVal = true) {
+  if (val === void 0 || val === null) return defaultVal;
+  if (val === false || val === "false" || val === 0 || val === "0") return false;
+  if (val === true || val === "true" || val === 1 || val === "1") return true;
+  return Boolean(val);
+}
 function maskKey(key) {
   if (!key) return "";
   if (key.length <= 4) return "****";
@@ -8354,7 +9233,17 @@ function maskKey(key) {
 }
 function extractValue(val) {
   if (val === null || val === void 0) return null;
-  if (typeof val === "string") return val;
+  if (typeof val === "string") {
+    const trimmed = val.trim();
+    if (trimmed.startsWith('"') && trimmed.endsWith('"') || trimmed.startsWith("'") && trimmed.endsWith("'")) {
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        return trimmed.slice(1, -1);
+      }
+    }
+    return trimmed;
+  }
   if (typeof val === "object" && val !== null) return val;
   return val;
 }
@@ -8406,10 +9295,35 @@ function createAdminProviderKeysRouter() {
           }
         },
         llm: {
-          activeProvider: settingsMap[SETTINGS_KEYS.llmActiveProvider] || "openrouter",
-          defaultModel: settingsMap[SETTINGS_KEYS.llmDefaultModel] || "openai/gpt-4o-mini",
-          allowedModels: parseAllowedArray(SETTINGS_KEYS.llmAllowedModels, ["openai/gpt-4o-mini", "anthropic/claude-3-haiku", "google/gemini-flash-1.5"]),
+          activeProvider: settingsMap[SETTINGS_KEYS.llmActiveProvider] || "gemini",
+          defaultModel: settingsMap[SETTINGS_KEYS.llmDefaultModel] || "gemini-2.0-flash",
+          allowedModels: parseAllowedArray(SETTINGS_KEYS.llmAllowedModels, ["gemini-2.0-flash", "llama-3.3-70b-versatile", "gpt-4o-mini", "claude-3-5-sonnet", "deepseek-chat"]),
           providers: {
+            gemini: {
+              name: "Google Gemini",
+              hasKey: !!settingsMap[SETTINGS_KEYS.geminiApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.geminiApiKey])
+            },
+            groq: {
+              name: "Groq",
+              hasKey: !!settingsMap[SETTINGS_KEYS.groqApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.groqApiKey])
+            },
+            openai: {
+              name: "OpenAI",
+              hasKey: !!settingsMap[SETTINGS_KEYS.openaiApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.openaiApiKey])
+            },
+            deepseek: {
+              name: "DeepSeek",
+              hasKey: !!settingsMap[SETTINGS_KEYS.deepseekApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.deepseekApiKey])
+            },
+            anthropic: {
+              name: "Anthropic",
+              hasKey: !!settingsMap[SETTINGS_KEYS.anthropicApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.anthropicApiKey])
+            },
             openrouter: {
               name: "OpenRouter",
               hasKey: !!settingsMap[SETTINGS_KEYS.openrouterApiKey],
@@ -8420,12 +9334,18 @@ function createAdminProviderKeysRouter() {
         tts: {
           activeProvider: settingsMap[SETTINGS_KEYS.ttsActiveProvider] || "deepgram",
           allowedProviders: parseAllowedArray(SETTINGS_KEYS.ttsAllowedProviders, ["deepgram"]),
-          defaultModel: settingsMap[SETTINGS_KEYS.ttsActiveProvider] === "sarvam" ? settingsMap[SETTINGS_KEYS.ttsSarvamModel] || "bulbul:v3" : settingsMap[SETTINGS_KEYS.ttsDeepgramModel] || "aura-asteria-en",
+          defaultModel: settingsMap[SETTINGS_KEYS.ttsActiveProvider] === "navana" ? settingsMap[SETTINGS_KEYS.ttsNavanaModel] || "bodhi-indic-tts-v1" : settingsMap[SETTINGS_KEYS.ttsActiveProvider] === "cartesia" ? settingsMap[SETTINGS_KEYS.ttsCartesiaModel] || "sonic-english" : settingsMap[SETTINGS_KEYS.ttsActiveProvider] === "sarvam" ? settingsMap[SETTINGS_KEYS.ttsSarvamModel] || "bulbul:v3" : settingsMap[SETTINGS_KEYS.ttsActiveProvider] === "elevenlabs" ? settingsMap[SETTINGS_KEYS.ttsElevenlabsModel] || "eleven_turbo_v2_5" : settingsMap[SETTINGS_KEYS.ttsDeepgramModel] || "aura-asteria-en",
           deepgramModel: settingsMap[SETTINGS_KEYS.ttsDeepgramModel] || "aura-asteria-en",
           deepgramAllowedModels: parseAllowedArray(SETTINGS_KEYS.ttsDeepgramAllowedModels, ["aura-asteria-en", "aura-luna-en"]),
           sarvamModel: settingsMap[SETTINGS_KEYS.ttsSarvamModel] || "bulbul:v3",
           sarvamAllowedModels: parseAllowedArray(SETTINGS_KEYS.ttsSarvamAllowedModels, ["bulbul:v3", "bulbul:v2"]),
           sarvamSpeaker: settingsMap[SETTINGS_KEYS.ttsSarvamSpeaker] || "neha",
+          elevenlabsModel: settingsMap[SETTINGS_KEYS.ttsElevenlabsModel] || "eleven_turbo_v2_5",
+          elevenlabsAllowedModels: parseAllowedArray(SETTINGS_KEYS.ttsElevenlabsAllowedModels, ["eleven_turbo_v2_5", "eleven_turbo_v2"]),
+          navanaModel: settingsMap[SETTINGS_KEYS.ttsNavanaModel] || "bodhi-indic-tts-v1",
+          navanaAllowedModels: parseAllowedArray(SETTINGS_KEYS.ttsNavanaAllowedModels, ["bodhi-indic-tts-v1"]),
+          cartesiaModel: settingsMap[SETTINGS_KEYS.ttsCartesiaModel] || "sonic-english",
+          cartesiaAllowedModels: parseAllowedArray(SETTINGS_KEYS.ttsCartesiaAllowedModels, ["sonic-english", "sonic-multilingual"]),
           providers: {
             deepgram: {
               name: "Deepgram",
@@ -8436,6 +9356,21 @@ function createAdminProviderKeysRouter() {
               name: "Sarvam AI",
               hasKey: !!settingsMap[SETTINGS_KEYS.sarvamApiKey],
               maskedKey: maskKey(settingsMap[SETTINGS_KEYS.sarvamApiKey])
+            },
+            elevenlabs: {
+              name: "ElevenLabs",
+              hasKey: !!settingsMap[SETTINGS_KEYS.elevenlabsApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.elevenlabsApiKey])
+            },
+            navana: {
+              name: "Navana AI (Bodhi Indic TTS)",
+              hasKey: !!settingsMap[SETTINGS_KEYS.navanaApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.navanaApiKey])
+            },
+            cartesia: {
+              name: "Cartesia Sonic (90ms)",
+              hasKey: !!settingsMap[SETTINGS_KEYS.cartesiaApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.cartesiaApiKey])
             }
           }
         },
@@ -8444,7 +9379,8 @@ function createAdminProviderKeysRouter() {
           eslPort: settingsMap[SETTINGS_KEYS.freeswitchEslPort] || 8021,
           eslPassword: settingsMap[SETTINGS_KEYS.freeswitchEslPassword] ? "\u2022\u2022\u2022\u2022\u2022\u2022" : ""
         },
-        pluginEnabled: settingsMap[SETTINGS_KEYS.pluginEnabled] ?? true
+        pluginEnabled: settingsMap[SETTINGS_KEYS.pluginEnabled] ?? true,
+        allowUserByok: toBool(settingsMap["allow_user_byok"], true)
       };
       res.json({ success: true, data: response });
     } catch (err) {
@@ -8463,6 +9399,18 @@ function createAdminProviderKeysRouter() {
         deepgramApiKey,
         sarvamApiKey,
         openrouterApiKey,
+        geminiApiKey,
+        groqApiKey,
+        openaiApiKey,
+        deepseekApiKey,
+        anthropicApiKey,
+        elevenlabsApiKey,
+        navanaApiKey,
+        cartesiaApiKey,
+        callhippoApiKey,
+        telecmiAppId,
+        telecmiSecret,
+        voicelinkHost,
         sttDeepgramModel,
         sttDeepgramAllowedModels,
         sttSarvamModel,
@@ -8472,14 +9420,28 @@ function createAdminProviderKeysRouter() {
         ttsSarvamModel,
         ttsSarvamAllowedModels,
         ttsSarvamSpeaker,
+        ttsElevenlabsModel,
+        ttsElevenlabsAllowedModels,
+        ttsNavanaModel,
+        ttsNavanaAllowedModels,
+        ttsCartesiaModel,
+        ttsCartesiaAllowedModels,
         llmDefaultModel,
         llmAllowedModels,
         freeswitchEslHost,
         freeswitchEslPort,
         freeswitchEslPassword,
-        pluginEnabled
+        pluginEnabled,
+        allowUserByok
       } = req.body;
       const updates = [];
+      if (allowUserByok !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.allowUserByok,
+          value: allowUserByok === true || allowUserByok === "true" ? "true" : "false",
+          description: "Voice Engine: Master switch allowing users to bring own provider keys (BYOK)"
+        });
+      }
       if (sttActiveProvider !== void 0) {
         updates.push({
           key: SETTINGS_KEYS.sttActiveProvider,
@@ -8534,6 +9496,90 @@ function createAdminProviderKeysRouter() {
           key: SETTINGS_KEYS.openrouterApiKey,
           value: openrouterApiKey || "",
           description: "Voice Engine: OpenRouter API key"
+        });
+      }
+      if (geminiApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.geminiApiKey,
+          value: geminiApiKey || "",
+          description: "Voice Engine: Gemini API key"
+        });
+      }
+      if (groqApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.groqApiKey,
+          value: groqApiKey || "",
+          description: "Voice Engine: Groq API key"
+        });
+      }
+      if (openaiApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.openaiApiKey,
+          value: openaiApiKey || "",
+          description: "Voice Engine: OpenAI API key"
+        });
+      }
+      if (deepseekApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.deepseekApiKey,
+          value: deepseekApiKey || "",
+          description: "Voice Engine: DeepSeek API key"
+        });
+      }
+      if (anthropicApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.anthropicApiKey,
+          value: anthropicApiKey || "",
+          description: "Voice Engine: Anthropic API key"
+        });
+      }
+      if (elevenlabsApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.elevenlabsApiKey,
+          value: elevenlabsApiKey || "",
+          description: "Voice Engine: ElevenLabs API key"
+        });
+      }
+      if (navanaApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.navanaApiKey,
+          value: navanaApiKey || "",
+          description: "Voice Engine: Navana AI API key"
+        });
+      }
+      if (cartesiaApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.cartesiaApiKey,
+          value: cartesiaApiKey || "",
+          description: "Voice Engine: Cartesia API key"
+        });
+      }
+      if (callhippoApiKey !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.callhippoApiKey,
+          value: callhippoApiKey || "",
+          description: "Voice Engine: CallHippo API key"
+        });
+      }
+      if (telecmiAppId !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.telecmiAppId,
+          value: telecmiAppId || "",
+          description: "Voice Engine: TeleCMI App ID"
+        });
+      }
+      if (telecmiSecret !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.telecmiSecret,
+          value: telecmiSecret || "",
+          description: "Voice Engine: TeleCMI Secret Key"
+        });
+      }
+      if (voicelinkHost !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.voicelinkHost,
+          value: voicelinkHost || "",
+          description: "Voice Engine: VoiceLink SIP Host"
         });
       }
       if (sttDeepgramModel !== void 0) {
@@ -8597,6 +9643,48 @@ function createAdminProviderKeysRouter() {
           key: SETTINGS_KEYS.ttsSarvamSpeaker,
           value: ttsSarvamSpeaker,
           description: "Voice Engine: Default TTS speaker/voice for Sarvam AI"
+        });
+      }
+      if (ttsElevenlabsModel !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsElevenlabsModel,
+          value: ttsElevenlabsModel,
+          description: "Voice Engine: TTS ElevenLabs model"
+        });
+      }
+      if (ttsElevenlabsAllowedModels !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsElevenlabsAllowedModels,
+          value: JSON.stringify(ttsElevenlabsAllowedModels),
+          description: "Voice Engine: Allowed TTS ElevenLabs models"
+        });
+      }
+      if (ttsNavanaModel !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsNavanaModel,
+          value: ttsNavanaModel,
+          description: "Voice Engine: TTS Navana AI model"
+        });
+      }
+      if (ttsNavanaAllowedModels !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsNavanaAllowedModels,
+          value: JSON.stringify(ttsNavanaAllowedModels),
+          description: "Voice Engine: Allowed TTS Navana AI models"
+        });
+      }
+      if (ttsCartesiaModel !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsCartesiaModel,
+          value: ttsCartesiaModel,
+          description: "Voice Engine: TTS Cartesia model"
+        });
+      }
+      if (ttsCartesiaAllowedModels !== void 0) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsCartesiaAllowedModels,
+          value: JSON.stringify(ttsCartesiaAllowedModels),
+          description: "Voice Engine: Allowed TTS Cartesia models"
         });
       }
       if (llmDefaultModel !== void 0) {
@@ -8692,29 +9780,57 @@ function createAdminProviderKeysRouter() {
   router.post("/test/:provider", async (req, res) => {
     try {
       const { provider } = req.params;
-      let keyName;
-      switch (provider) {
-        case "deepgram":
-          keyName = SETTINGS_KEYS.deepgramApiKey;
-          break;
-        case "sarvam":
-          keyName = SETTINGS_KEYS.sarvamApiKey;
-          break;
-        case "openrouter":
-          keyName = SETTINGS_KEYS.openrouterApiKey;
-          break;
-        default:
-          return res.status(400).json({ success: false, error: `Unknown provider: ${provider}` });
+      let rawApiKey = req.body?.apiKey;
+      if (!rawApiKey) {
+        let keyName;
+        switch (provider) {
+          case "deepgram":
+            keyName = SETTINGS_KEYS.deepgramApiKey;
+            break;
+          case "sarvam":
+            keyName = SETTINGS_KEYS.sarvamApiKey;
+            break;
+          case "openrouter":
+            keyName = SETTINGS_KEYS.openrouterApiKey;
+            break;
+          case "gemini":
+            keyName = SETTINGS_KEYS.geminiApiKey;
+            break;
+          case "groq":
+            keyName = SETTINGS_KEYS.groqApiKey;
+            break;
+          case "openai":
+            keyName = SETTINGS_KEYS.openaiApiKey;
+            break;
+          case "deepseek":
+            keyName = SETTINGS_KEYS.deepseekApiKey;
+            break;
+          case "anthropic":
+            keyName = SETTINGS_KEYS.anthropicApiKey;
+            break;
+          case "elevenlabs":
+            keyName = SETTINGS_KEYS.elevenlabsApiKey;
+            break;
+          case "navana":
+            keyName = SETTINGS_KEYS.navanaApiKey;
+            break;
+          case "cartesia":
+            keyName = SETTINGS_KEYS.cartesiaApiKey;
+            break;
+          default:
+            return res.status(400).json({ success: false, error: `Unknown provider: ${provider}` });
+        }
+        const [setting] = await db.select().from(globalSettings).where(eq2(globalSettings.key, keyName)).limit(1);
+        rawApiKey = setting?.value;
       }
-      const [setting] = await db.select().from(globalSettings).where(eq2(globalSettings.key, keyName)).limit(1);
-      const apiKey = setting?.value;
-      if (!apiKey) {
+      const apiKey = extractValue(rawApiKey);
+      if (!apiKey || typeof apiKey === "string" && apiKey.trim().length === 0) {
         return res.json({
           success: true,
           data: {
             provider,
             connected: false,
-            error: "No API key configured"
+            error: "No API key configured or provided"
           }
         });
       }
@@ -8728,7 +9844,7 @@ function createAdminProviderKeysRouter() {
           connected = response.ok;
           details = connected ? "Connected to Deepgram" : `HTTP ${response.status}`;
         } else if (provider === "sarvam") {
-          connected = apiKey.length > 10;
+          connected = apiKey.length >= 10;
           details = connected ? "API key format valid" : "API key too short";
         } else if (provider === "openrouter") {
           const response = await fetch("https://openrouter.ai/api/v1/models", {
@@ -8736,6 +9852,66 @@ function createAdminProviderKeysRouter() {
           });
           connected = response.ok;
           details = connected ? "Connected to OpenRouter" : `HTTP ${response.status}`;
+        } else if (provider === "gemini") {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash?key=${apiKey}`);
+          connected = response.ok;
+          details = connected ? "Connected to Google Gemini" : `HTTP ${response.status}`;
+        } else if (provider === "groq") {
+          const response = await fetch("https://api.groq.com/openai/v1/models", {
+            headers: { Authorization: `Bearer ${apiKey}` }
+          });
+          connected = response.ok;
+          details = connected ? "Connected to Groq" : `HTTP ${response.status}`;
+        } else if (provider === "openai") {
+          const response = await fetch("https://api.openai.com/v1/models", {
+            headers: { Authorization: `Bearer ${apiKey}` }
+          });
+          connected = response.ok;
+          details = connected ? "Connected to OpenAI" : `HTTP ${response.status}`;
+        } else if (provider === "deepseek") {
+          const response = await fetch("https://api.deepseek.com/models", {
+            headers: { Authorization: `Bearer ${apiKey}` }
+          });
+          connected = response.ok;
+          details = connected ? "Connected to DeepSeek" : `HTTP ${response.status}`;
+        } else if (provider === "anthropic") {
+          const response = await fetch("https://api.anthropic.com/v1/models", {
+            headers: {
+              "x-api-key": apiKey,
+              "anthropic-version": "2023-06-01"
+            }
+          });
+          connected = response.ok;
+          details = connected ? "Connected to Anthropic" : `HTTP ${response.status}`;
+        } else if (provider === "elevenlabs") {
+          const response = await fetch("https://api.elevenlabs.io/v1/voices", {
+            headers: { "xi-api-key": apiKey }
+          });
+          connected = response.ok;
+          details = connected ? "Connected to ElevenLabs" : `HTTP ${response.status}`;
+        } else if (provider === "navana") {
+          const response = await fetch("https://api.navana.ai/v1/voices", {
+            headers: { Authorization: `Bearer ${apiKey}` }
+          }).catch(() => null);
+          if (response && response.ok) {
+            connected = true;
+            details = "Connected to Navana AI (Bodhi Indic TTS)";
+          } else if (apiKey && apiKey.length >= 8) {
+            connected = true;
+            details = "Navana AI API key format verified";
+          } else {
+            connected = false;
+            details = "Invalid Navana AI API key";
+          }
+        } else if (provider === "cartesia") {
+          const response = await fetch("https://api.cartesia.ai/voices", {
+            headers: {
+              "X-API-Key": apiKey,
+              "Cartesia-Version": "2024-06-10"
+            }
+          });
+          connected = response.ok;
+          details = connected ? "Connected to Cartesia Sonic" : `HTTP ${response.status}`;
         }
       } catch (fetchErr) {
         details = `Connection failed: ${fetchErr.message}`;
@@ -9109,6 +10285,26 @@ function createTenantConfigRouter() {
 init_db();
 import { Router as Router5 } from "express";
 import { sql as sql6 } from "drizzle-orm";
+import * as os from "os";
+function getContainerIp() {
+  if (process.env.VE_AUDIO_WS_IP) {
+    return process.env.VE_AUDIO_WS_IP;
+  }
+  if (process.env.PUBLIC_IP) {
+    return process.env.PUBLIC_IP;
+  }
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const net2 of interfaces[name] || []) {
+      if (net2.family === "IPv4" && !net2.internal) {
+        if (net2.address.startsWith("10.") || net2.address.startsWith("172.") || net2.address.startsWith("192.168.")) {
+          return net2.address;
+        }
+      }
+    }
+  }
+  return "127.0.0.1";
+}
 function createCallsRouter() {
   const router = Router5();
   router.get("/", async (req, res) => {
@@ -9158,22 +10354,114 @@ function createCallsRouter() {
   router.post("/outbound", async (req, res) => {
     try {
       const userId = req.userId;
-      const { agentId, toNumber, fromNumber } = req.body;
-      if (!agentId || !toNumber) {
-        return res.status(400).json({ success: false, error: "agentId and toNumber are required" });
+      const { agentId, toNumber, fromNumber, language, ttsVoice, llmModel, sttProvider, ttsProvider, sttModel, ttsModel } = req.body;
+      if (!toNumber) {
+        return res.status(400).json({ success: false, error: "toNumber is required" });
       }
-      const agentResult = await db.execute(
-        sql6`SELECT * FROM ve_voice_agents WHERE id = ${agentId} AND user_id = ${userId} AND is_active = true LIMIT 1`
-      );
-      if (agentResult.rows.length === 0) {
-        return res.status(404).json({ success: false, error: "Agent not found or inactive" });
+      let resolvedAgentId = agentId;
+      let agent;
+      if (resolvedAgentId) {
+        const agentResult = await db.execute(
+          sql6`SELECT * FROM ve_voice_agents WHERE id = ${resolvedAgentId} AND user_id = ${userId} AND is_active = true LIMIT 1`
+        );
+        if (agentResult.rows.length === 0) {
+          return res.status(404).json({ success: false, error: "Agent not found or inactive" });
+        }
+        agent = agentResult.rows[0];
+      } else {
+        const agentResult = await db.execute(
+          sql6`SELECT * FROM ve_voice_agents WHERE user_id = ${userId} AND is_active = true ORDER BY created_at DESC LIMIT 1`
+        );
+        if (agentResult.rows.length === 0) {
+          const fallbackResult = await db.execute(
+            sql6`SELECT * FROM ve_voice_agents WHERE user_id = ${userId} ORDER BY created_at DESC LIMIT 1`
+          );
+          if (fallbackResult.rows.length === 0) {
+            return res.status(404).json({ success: false, error: "No voice agents found. Please create an agent first." });
+          }
+          agent = fallbackResult.rows[0];
+        } else {
+          agent = agentResult.rows[0];
+        }
+        resolvedAgentId = agent.id;
       }
+      const metadata = {
+        language,
+        ttsVoice,
+        llmModel,
+        sttProvider,
+        ttsProvider,
+        sttModel,
+        ttsModel,
+        isPublicDemo: true
+      };
       const sessionResult = await db.execute(sql6`
-        INSERT INTO ve_sessions (user_id, agent_id, to_number, from_number, direction, status)
-        VALUES (${userId}, ${agentId}, ${toNumber}, ${fromNumber || null}, 'outbound', 'initializing')
+        INSERT INTO ve_sessions (user_id, agent_id, to_number, from_number, direction, status, metadata)
+        VALUES (${userId}, ${resolvedAgentId}, ${toNumber}, ${fromNumber || null}, 'outbound', 'initializing', ${JSON.stringify(metadata)})
         RETURNING *
       `);
       const session = sessionResult.rows[0];
+      const nodesResult = await db.execute(sql6`SELECT * FROM ve_freeswitch_nodes WHERE status = 'online' ORDER BY created_at ASC`);
+      const nodes = nodesResult.rows;
+      if (nodes.length === 0) {
+        throw new Error("No active FreeSWITCH nodes available");
+      }
+      const node = nodes[0];
+      const eslHost = node.esl_host || node.eslHost;
+      const eslPort = node.esl_port || node.eslPort;
+      const eslPassword = node.esl_password || node.eslPassword || "ClueCon";
+      const eslConnection = new EslConnection({ host: eslHost, port: eslPort, password: eslPassword, reconnect: false });
+      await eslConnection.connect();
+      let activeGateway = null;
+      const userGatewayResult = await db.execute(sql6`
+        SELECT id, name, proxy, username, password FROM user_sip_gateways WHERE user_id = ${userId} AND is_active = true LIMIT 1
+      `);
+      if (userGatewayResult.rows.length > 0) {
+        activeGateway = userGatewayResult.rows[0];
+      }
+      let activePhoneNumber = "FreeSWITCH";
+      if (activeGateway) {
+        const sipPhoneResult = await db.execute(sql6`
+          SELECT phone_number FROM user_sip_phone_numbers WHERE gateway_id = ${activeGateway.id} LIMIT 1
+        `);
+        if (sipPhoneResult.rows.length > 0) {
+          activePhoneNumber = sipPhoneResult.rows[0].phone_number;
+        }
+      }
+      const gatewayProxy = activeGateway ? activeGateway.proxy : "testhr.pstn.twilio.com";
+      const gatewayUsername = activeGateway?.username;
+      const gatewayPassword = activeGateway?.password;
+      const formattedTo = !toNumber.startsWith("+") ? `+${toNumber}` : toNumber;
+      const dialString = `sofia/external/${formattedTo}@${gatewayProxy}`;
+      const destination = `${formattedTo} XML public`;
+      const callerId = fromNumber && fromNumber !== "FreeSWITCH" ? fromNumber : activePhoneNumber;
+      const formattedCallerId = callerId !== "FreeSWITCH" && !callerId.startsWith("+") ? `+${callerId}` : callerId;
+      const options = {
+        origination_uuid: session.id,
+        origination_caller_id_number: formattedCallerId,
+        origination_caller_id_name: formattedCallerId,
+        effective_caller_id_number: formattedCallerId,
+        effective_caller_id_name: formattedCallerId,
+        sip_from_uri: `sip:${formattedCallerId}@${gatewayProxy}`,
+        sip_invite_req_uri: `sip:${formattedTo}@${gatewayProxy}`,
+        ve_audio_ws_url: `ws://${getContainerIp()}:${process.env.PORT || "5000"}/voice-engine/ws/audio`,
+        ...gatewayUsername && { sip_auth_username: gatewayUsername },
+        ...gatewayPassword && { sip_auth_password: gatewayPassword }
+      };
+      try {
+        await eslConnection.originate(dialString, destination, options);
+        await db.execute(sql6`
+          UPDATE ve_sessions SET status = 'active', channel_uuid = ${session.id} WHERE id = ${session.id}
+        `);
+      } catch (originateErr) {
+        await db.execute(sql6`
+          UPDATE ve_sessions SET status = 'failed' WHERE id = ${session.id}
+        `);
+        throw originateErr;
+      } finally {
+        await eslConnection.disconnect().catch(() => {
+        });
+      }
       res.json({ success: true, data: session });
     } catch (err) {
       res.status(500).json({ success: false, error: err.message });
@@ -9348,225 +10636,6 @@ init_db();
 init_schema();
 import { Router as Router9 } from "express";
 import { sql as sql10, eq as eq4 } from "drizzle-orm";
-
-// plugins/custom-voice-engine/services/providers/tts/deepgram-tts.provider.ts
-import axios from "axios";
-
-// plugins/custom-voice-engine/services/providers/tts/tts-provider.interface.ts
-var BaseTtsProvider = class {
-};
-
-// plugins/custom-voice-engine/services/providers/http-agent.ts
-import http from "http";
-import https from "https";
-var httpKeepAliveAgent = new http.Agent({
-  keepAlive: true,
-  keepAliveMsecs: 3e4,
-  maxSockets: 50,
-  maxFreeSockets: 10
-});
-var httpsKeepAliveAgent = new https.Agent({
-  keepAlive: true,
-  keepAliveMsecs: 3e4,
-  maxSockets: 50,
-  maxFreeSockets: 10
-});
-var keepAliveAxiosConfig = {
-  httpAgent: httpKeepAliveAgent,
-  httpsAgent: httpsKeepAliveAgent
-};
-
-// plugins/custom-voice-engine/services/providers/tts/deepgram-tts.provider.ts
-var DEEPGRAM_TTS_URL = "https://api.deepgram.com/v1/speak";
-var DeepgramTtsProvider = class extends BaseTtsProvider {
-  name = "deepgram";
-  async synthesize(text2, config) {
-    let model = config.voice || config.deepgramModel || "aura-asteria-en";
-    if (model === "aura-2") model = "aura-2-asteria-en";
-    if (model === "aura") model = "aura-asteria-en";
-    const params = new URLSearchParams({
-      model
-    });
-    const encoding = config.outputFormat?.encoding || "linear16";
-    const sampleRate = config.outputFormat?.sampleRate || 8e3;
-    if (encoding === "linear16") {
-      params.set("encoding", "linear16");
-      params.set("sample_rate", String(sampleRate));
-      params.set("container", "none");
-    } else if (encoding === "mulaw") {
-      params.set("encoding", "mulaw");
-      params.set("sample_rate", String(sampleRate));
-      params.set("container", "none");
-    } else if (encoding === "alaw") {
-      params.set("encoding", "alaw");
-      params.set("sample_rate", String(sampleRate));
-      params.set("container", "none");
-    }
-    const response = await axios.post(
-      `${DEEPGRAM_TTS_URL}?${params.toString()}`,
-      { text: text2 },
-      {
-        ...keepAliveAxiosConfig,
-        headers: {
-          Authorization: `Token ${config.apiKey}`,
-          "Content-Type": "application/json"
-        },
-        responseType: "arraybuffer",
-        timeout: 3e4
-      }
-    );
-    return Buffer.from(response.data);
-  }
-  async *synthesizeStream(text2, config) {
-    let model = config.voice || config.deepgramModel || "aura-asteria-en";
-    if (model === "aura-2") model = "aura-2-asteria-en";
-    if (model === "aura") model = "aura-asteria-en";
-    const sampleRate = config.outputFormat?.sampleRate || 8e3;
-    const encoding = config.outputFormat?.encoding || "linear16";
-    const params = new URLSearchParams({
-      model,
-      encoding: encoding === "mulaw" ? "mulaw" : encoding === "alaw" ? "alaw" : "linear16",
-      sample_rate: String(sampleRate),
-      container: "none"
-    });
-    const response = await axios.post(
-      `${DEEPGRAM_TTS_URL}?${params.toString()}`,
-      { text: text2 },
-      {
-        ...keepAliveAxiosConfig,
-        headers: {
-          Authorization: `Token ${config.apiKey}`,
-          "Content-Type": "application/json"
-        },
-        responseType: "stream",
-        timeout: 3e4
-      }
-    );
-    const stream = response.data;
-    const chunkSize = 640;
-    let buffer = Buffer.alloc(0);
-    for await (const data of stream) {
-      const chunk = Buffer.isBuffer(data) ? data : Buffer.from(data);
-      buffer = Buffer.concat([buffer, chunk]);
-      while (buffer.length >= chunkSize) {
-        yield buffer.subarray(0, chunkSize);
-        buffer = buffer.subarray(chunkSize);
-      }
-    }
-    if (buffer.length > 0) {
-      yield buffer;
-    }
-  }
-};
-
-// plugins/custom-voice-engine/services/providers/tts/sarvam-tts.provider.ts
-import axios2 from "axios";
-var SARVAM_API_BASE = "https://api.sarvam.ai";
-var SarvamTtsProvider = class extends BaseTtsProvider {
-  name = "sarvam";
-  async synthesize(text2, config) {
-    const language = config.language || "en-IN";
-    const speaker = config.sarvamSpeaker || config.voice || "meera";
-    const model = config.sarvamModel || "bulbul:v3";
-    console.log(`[TTS:Sarvam] Synthesizing: speaker="${speaker}" model="${model}" lang="${language}" sampleRate=${config.outputFormat?.sampleRate || 8e3}`);
-    try {
-      const response = await axios2.post(
-        `${SARVAM_API_BASE}/text-to-speech`,
-        {
-          inputs: [text2],
-          target_language_code: this.mapLanguage(language),
-          speaker,
-          model,
-          pace: config.speed || 1.15,
-          // Increased from 1.0 to 1.15 for a more natural speed
-          speech_sample_rate: config.outputFormat?.sampleRate || 8e3,
-          enable_preprocessing: true
-        },
-        {
-          ...keepAliveAxiosConfig,
-          headers: {
-            "API-Subscription-Key": config.apiKey,
-            "Content-Type": "application/json"
-          },
-          timeout: 3e4
-        }
-      );
-      if (response.data?.audios?.[0]) {
-        return Buffer.from(response.data.audios[0], "base64");
-      }
-      console.error(`[TTS:Sarvam] No audio in response:`, JSON.stringify(response.data));
-      throw new Error(`Sarvam TTS returned no audio data (speaker="${speaker}", model="${model}")`);
-    } catch (err) {
-      if (err.response?.data) {
-        console.error(`[TTS:Sarvam] API error response:`, JSON.stringify(err.response.data, null, 2));
-      }
-      console.error(`[TTS:Sarvam] Request body:`, JSON.stringify({
-        inputs: [text2],
-        target_language_code: this.mapLanguage(language),
-        speaker,
-        model,
-        pitch: config.pitch || 0,
-        pace: config.speed || 1.15,
-        loudness: 1.5,
-        speech_sample_rate: config.outputFormat?.sampleRate || 8e3,
-        enable_preprocessing: true
-      }));
-      throw err;
-    }
-  }
-  async *synthesizeStream(text2, config) {
-    const audioBuffer = await this.synthesize(text2, config);
-    const chunkSize = 640;
-    for (let offset = 0; offset < audioBuffer.length; offset += chunkSize) {
-      const end = Math.min(offset + chunkSize, audioBuffer.length);
-      yield audioBuffer.subarray(offset, end);
-    }
-  }
-  mapLanguage(lang) {
-    if (lang.includes("-")) return lang;
-    const langMap = {
-      en: "en-IN",
-      hi: "hi-IN",
-      ta: "ta-IN",
-      te: "te-IN",
-      kn: "kn-IN",
-      ml: "ml-IN",
-      mr: "mr-IN",
-      gu: "gu-IN",
-      bn: "bn-IN",
-      pa: "pa-IN",
-      or: "od-IN"
-    };
-    return langMap[lang] || "en-IN";
-  }
-};
-
-// plugins/custom-voice-engine/services/providers/tts/tts-provider.factory.ts
-var providerRegistry = {
-  deepgram: DeepgramTtsProvider,
-  sarvam: SarvamTtsProvider
-};
-var TtsProviderFactory = class {
-  static create(provider) {
-    const ProviderClass = providerRegistry[provider];
-    if (!ProviderClass) {
-      throw new Error(`Unknown TTS provider: ${provider}. Available: ${Object.keys(providerRegistry).join(", ")}`);
-    }
-    return new ProviderClass();
-  }
-  static getAvailableProviders() {
-    return Object.keys(providerRegistry);
-  }
-  static isAvailable(provider) {
-    return provider in providerRegistry;
-  }
-  static register(name, providerClass) {
-    providerRegistry[name] = providerClass;
-    console.log(`[TTS Factory] Registered custom provider: ${name}`);
-  }
-};
-
-// plugins/custom-voice-engine/routes/agents.routes.ts
 function formatPgArray(arr) {
   if (!arr || !arr.length) return null;
   return `{${arr.map((val) => `"${val.replace(/"/g, '\\"')}"`).join(",")}}`;
@@ -9609,7 +10678,7 @@ function createAgentsRouter() {
         )
         VALUES (
           ${userId}, ${name}, ${description || null}, ${systemPrompt}, ${firstMessage || "Hello! How can I help you today?"}, 
-          ${language || "en"}, ${llmModel || "openai/gpt-4o-mini"}, ${temperature || 0.7}, ${maxTokens || 500}, 
+          ${language || "en"}, ${llmModel || "gemini-2.0-flash"}, ${temperature || 0.7}, ${maxTokens || 500}, 
           ${ttsVoice || "aura-asteria-en"}, ${ttsProvider || "deepgram"}, ${sttProvider || "deepgram"}, 
           ${sttModel || (sttProvider === "sarvam" ? "saaras:v3" : null)}, ${ttsModel || (ttsProvider === "sarvam" ? "bulbul:v3" : null)},
           ${interruptible ?? true}, ${silenceTimeoutMs || 5e3}, ${maxDurationSeconds || 600}, 
@@ -9740,14 +10809,14 @@ function createAgentsRouter() {
 }
 
 // plugins/custom-voice-engine/services/audio-pipeline/ws-audio-server.ts
-import { WebSocketServer, WebSocket as WebSocket2 } from "ws";
-import fs2 from "fs";
+import { WebSocketServer, WebSocket as WebSocket4 } from "ws";
+import fs3 from "fs";
 
 // plugins/custom-voice-engine/services/audio-pipeline/audio-session.ts
 init_db();
-import { EventEmitter } from "events";
-import * as fs from "fs";
-import * as path from "path";
+import { EventEmitter as EventEmitter2 } from "events";
+import * as fs2 from "fs";
+import * as path2 from "path";
 import { sql as sql15 } from "drizzle-orm";
 
 // plugins/custom-voice-engine/services/tools/tool-executor.ts
@@ -9755,6 +10824,8 @@ init_db();
 init_schema();
 import { sql as sql14, eq as eq10 } from "drizzle-orm";
 import { nanoid as nanoid2 } from "nanoid";
+import fs from "fs";
+import path from "path";
 
 // server/services/google-calendar/google-calendar.service.ts
 init_db();
@@ -10067,49 +11138,43 @@ var DEFAULT_STORAGE_LIMIT_BYTES = 20 * 1024 * 1024;
 var openaiClient = null;
 var lastApiKey = null;
 async function getOpenAIClient() {
-  let apiKey = '';
-  let baseURL = undefined;
-
-  // 1. Try to get OpenAI API key
+  let apiKey = "";
+  let baseURL = void 0;
   try {
     const [dbSetting] = await db.select().from(globalSettings).where(eq9(globalSettings.key, "openai_api_key")).limit(1);
     if (dbSetting?.value) {
       apiKey = dbSetting.value;
     }
-  } catch (e) {}
-
+  } catch (e) {
+  }
   if (!apiKey && process.env.OPENAI_API_KEY) {
     apiKey = process.env.OPENAI_API_KEY;
   }
-
-  // 2. If no OpenAI key, try OpenRouter API key
   if (!apiKey) {
     try {
       const [dbSetting] = await db.select().from(globalSettings).where(eq9(globalSettings.key, "openrouter_api_key")).limit(1);
       if (dbSetting?.value) {
         apiKey = dbSetting.value;
-        baseURL = 'https://openrouter.ai/api/v1';
-        embeddingModel = 'openai/text-embedding-3-small';
+        baseURL = "https://openrouter.ai/api/v1";
+        embeddingModel = "openai/text-embedding-3-small";
       }
-    } catch (e) {}
+    } catch (e) {
+    }
   }
-
   if (!apiKey && process.env.OPENROUTER_API_KEY) {
     apiKey = process.env.OPENROUTER_API_KEY;
-    baseURL = 'https://openrouter.ai/api/v1';
-    embeddingModel = 'openai/text-embedding-3-small';
+    baseURL = "https://openrouter.ai/api/v1";
+    embeddingModel = "openai/text-embedding-3-small";
   }
-
   if (!apiKey) {
     throw new Error("No API key found for embeddings. Configure either openai_api_key or openrouter_api_key in Admin Settings.");
   }
-
-  const clientKey = `${apiKey}_${baseURL || 'default'}`;
+  const clientKey = `${apiKey}_${baseURL || "default"}`;
   if (!openaiClient || lastApiKey !== clientKey) {
-    openaiClient = new OpenAI({ 
-      apiKey, 
+    openaiClient = new OpenAI({
+      apiKey,
       baseURL,
-      timeout: 10000 
+      timeout: 1e4
     });
     lastApiKey = clientKey;
   }
@@ -10154,6 +11219,61 @@ function chunkText(text2, maxChars = MAX_CHUNK_CHARS, overlapChars = 200) {
     start = end - overlapChars;
     if (start >= cleanText.length) break;
   }
+  return chunks;
+}
+function parseJsonToChunks(data) {
+  const chunks = [];
+  function traverse(node, path3 = "") {
+    if (node === null || node === void 0) return;
+    if (Array.isArray(node)) {
+      if (node.length > 0 && typeof node[0] === "object" && node[0] !== null) {
+        for (const item of node) {
+          const itemText = objectToReadableText(item, path3);
+          if (itemText) chunks.push(itemText);
+        }
+      } else {
+        chunks.push(`${path3}: ${node.join(", ")}`);
+      }
+    } else if (typeof node === "object") {
+      const keys = Object.keys(node);
+      const hasNested = keys.some((k) => typeof node[k] === "object" && node[k] !== null);
+      if (!hasNested && keys.length > 0) {
+        const itemText = objectToReadableText(node, path3);
+        if (itemText) chunks.push(itemText);
+      } else {
+        for (const key of keys) {
+          const cleanKey = key.replace(/_/g, " ");
+          const subPath = path3 ? `${path3} > ${cleanKey}` : cleanKey;
+          traverse(node[key], subPath);
+        }
+      }
+    } else {
+      chunks.push(`${path3}: ${node}`);
+    }
+  }
+  function objectToReadableText(obj, prefix) {
+    const parts = [];
+    if (prefix) {
+      parts.push(`[Category: ${prefix}]`);
+    }
+    const titleKeys = ["title", "name", "question", "subject", "key"];
+    const foundTitleKey = Object.keys(obj).find((k) => titleKeys.includes(k.toLowerCase()));
+    if (foundTitleKey) {
+      parts.push(`${foundTitleKey.toUpperCase()}: ${obj[foundTitleKey]}`);
+    }
+    for (const [key, val] of Object.entries(obj)) {
+      if (key === foundTitleKey) continue;
+      if (val === null || val === void 0) continue;
+      const cleanKey = key.replace(/_/g, " ");
+      if (typeof val === "object") {
+        parts.push(`${cleanKey}: ${JSON.stringify(val)}`);
+      } else {
+        parts.push(`${cleanKey}: ${val}`);
+      }
+    }
+    return parts.join("\n");
+  }
+  traverse(data);
   return chunks;
 }
 async function generateEmbedding(text2) {
@@ -10219,7 +11339,31 @@ var RAGKnowledgeService = class {
         userId,
         status: "processing"
       }).returning();
-      const chunks = chunkText(content);
+      let chunks = [];
+      let isJson = false;
+      const trimmedContent = content.trim();
+      if (metadata?.mimeType === "application/json" || metadata?.filename?.endsWith(".json") || trimmedContent.startsWith("{") || trimmedContent.startsWith("[")) {
+        try {
+          const jsonData = JSON.parse(content);
+          chunks = parseJsonToChunks(jsonData);
+          isJson = true;
+          console.log(`[RAG] Successfully parsed JSON content into ${chunks.length} logical chunks`);
+        } catch (jsonErr) {
+          console.warn(`[RAG] Failed to parse content as JSON, falling back to text chunking:`, jsonErr.message);
+        }
+      }
+      if (!isJson) {
+        chunks = chunkText(content);
+      }
+      let finalChunks = [];
+      for (const chunk of chunks) {
+        if (chunk.length > MAX_CHUNK_CHARS) {
+          finalChunks.push(...chunkText(chunk));
+        } else {
+          finalChunks.push(chunk);
+        }
+      }
+      chunks = finalChunks;
       console.log(`[RAG] Created ${chunks.length} chunks from content`);
       await db.update(knowledgeProcessingQueue).set({ totalChunks: chunks.length }).where(eq9(knowledgeProcessingQueue.id, queueEntry.id));
       let processedCount = 0;
@@ -10461,6 +11605,152 @@ var ToolExecutor = class _ToolExecutor {
     } catch (err) {
       console.error(`[ToolExecutor] Webhook error for ${name}:`, err.message);
       return { success: false, result: `Failed to execute webhook: ${err.message}` };
+    }
+  }
+  static async executeSendWhatsApp(name, params, metadata, userId, agentId, callId) {
+    try {
+      let phoneNumber = params.phone_number || params.phoneNumber || "";
+      const template = params.template_name || params.templateName || metadata?.templateName || "hello_world";
+      const lang = metadata?.language || "en_US";
+      if (!phoneNumber && callId) {
+        try {
+          const sanitizedCallId = callId.replace(/[^a-zA-Z0-9_-]/g, "");
+          const callTables = ["calls", "twilio_openai_calls", "plivo_calls", "sip_calls"];
+          for (const table of callTables) {
+            const rows = await db.execute(
+              sql14`SELECT caller_number, from_number FROM ${sql14.identifier(table)} WHERE id = ${sanitizedCallId} LIMIT 1`
+            );
+            const row = (Array.isArray(rows) ? rows : rows.rows || [])[0];
+            if (row?.caller_number || row?.from_number) {
+              phoneNumber = row.caller_number || row.from_number;
+              console.log(`[ToolExecutor] Resolved caller phone from ${table}: ${phoneNumber}`);
+              break;
+            }
+          }
+        } catch (e) {
+          console.warn(`[ToolExecutor] Could not resolve caller phone:`, e.message);
+        }
+      }
+      if (phoneNumber) {
+        let cleanPhone = phoneNumber.toLowerCase().replace(/\s+/g, "");
+        if (cleanPhone.startsWith("plus")) {
+          cleanPhone = "+" + cleanPhone.substring(4);
+        }
+        cleanPhone = cleanPhone.replace(/[^\d+]/g, "");
+        phoneNumber = cleanPhone;
+      }
+      console.log(`[ToolExecutor] Sending WhatsApp: template="${template}" to="${phoneNumber}"`);
+      if (!phoneNumber) {
+        return {
+          success: false,
+          result: "Please provide the phone number to send the WhatsApp message to."
+        };
+      }
+      let templateVariables = params.template_variables || params.templateVariables || [];
+      if (templateVariables.length === 0) {
+        const variableEntries = [];
+        for (const [key, value] of Object.entries(params)) {
+          const match = key.match(/^variable_(\d+)$/);
+          if (match && value) {
+            variableEntries.push({ position: parseInt(match[1], 10), value: String(value) });
+          }
+        }
+        if (variableEntries.length > 0) {
+          variableEntries.sort((a, b) => a.position - b.position);
+          templateVariables = variableEntries.map((v) => ({ position: v.position, value: v.value }));
+        }
+      }
+      const metadataVariables = metadata?.templateVariables;
+      if (templateVariables.length === 0 && metadataVariables && metadataVariables.length > 0) {
+        templateVariables = metadataVariables.map((tv) => {
+          let value = tv.value || "";
+          if (tv.source && tv.source !== "custom") {
+            const sourceKey = tv.source;
+            if (params[sourceKey]) {
+              value = String(params[sourceKey]);
+            } else if (sourceKey === "system__caller_id" && phoneNumber) {
+              value = phoneNumber;
+            }
+          }
+          return { position: tv.position, value };
+        });
+      }
+      const domain = _ToolExecutor.getDomain();
+      const secret = _ToolExecutor.getAppointmentWebhookSecret();
+      const [agent] = await db.select({ elevenLabsAgentId: agents.elevenLabsAgentId }).from(agents).where(eq10(agents.id, agentId)).limit(1);
+      const elAgentId = agent?.elevenLabsAgentId || agentId;
+      const queryParams = callId ? `?callId=${encodeURIComponent(callId)}` : "";
+      const webhookUrl = `${domain}/api/webhooks/messaging/send-whatsapp/${secret}/${elAgentId}${queryParams}`;
+      console.log(`[ToolExecutor] Calling WhatsApp webhook: ${webhookUrl}`);
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone_number: phoneNumber,
+          template_name: template,
+          language: lang,
+          template_variables: templateVariables,
+          headerVariable: params.headerVariable || params.header_variable || metadata?.headerVariable || null,
+          buttonVariables: params.buttonVariables || params.button_variables || metadata?.buttonVariables || []
+        })
+      });
+      if (!response.ok) {
+        throw new Error(`Webhook returned status ${response.status}`);
+      }
+      const data = await response.json();
+      console.log(`[ToolExecutor] WhatsApp send result:`, data.success ? "sent" : data.error);
+      return {
+        success: data.success,
+        result: data.success ? `WhatsApp message sent successfully to ${phoneNumber} using template "${template}".` : `Failed to send WhatsApp message: ${data.message || data.error || "Unknown error"}`
+      };
+    } catch (error) {
+      console.error(`[ToolExecutor] WhatsApp error:`, error.message);
+      return {
+        success: false,
+        result: `Unable to send WhatsApp message: ${error.message}`
+      };
+    }
+  }
+  static async executeSendEmail(name, params, metadata, userId, agentId, callId) {
+    try {
+      const recipientEmail = params.recipient_email || params.recipientEmail || metadata?.recipientEmail;
+      const template = params.template_name || params.templateName || metadata?.templateName || "default";
+      console.log(`[ToolExecutor] Sending email: template="${template}" to="${recipientEmail}"`);
+      if (!recipientEmail) {
+        return {
+          success: false,
+          result: "Please provide the recipient email address before sending the email."
+        };
+      }
+      const fs4 = await import("fs");
+      const path3 = await import("path");
+      const { pathToFileURL } = await import("url");
+      const canImportTs = process.execArgv.join(" ").includes("tsx") || process.execArgv.join(" ").includes("ts-node") || !!process.env.TS_NODE_PROJECT;
+      let emailServicePath = path3.resolve(process.cwd(), "plugins/messaging/services/email-template.service.ts");
+      if (!canImportTs || !fs4.existsSync(emailServicePath)) {
+        emailServicePath = path3.resolve(process.cwd(), "plugins/messaging/services/email-template.service.js");
+      }
+      const { EmailTemplateService } = await import(pathToFileURL(emailServicePath).href);
+      const emailService = new EmailTemplateService();
+      const dynamicVars = params.dynamic_variables || params.dynamicVariables || {};
+      const result = await emailService.sendEmailByName(
+        userId,
+        template,
+        recipientEmail,
+        dynamicVars,
+        { callId: callId || "", agentId }
+      );
+      console.log(`[ToolExecutor] Email send result:`, result.success ? "sent" : result.error);
+      return {
+        success: result.success,
+        result: result.success ? `Email sent successfully to ${recipientEmail} using template "${template}".` : `Failed to send email: ${result.error || "Unknown error"}`
+      };
+    } catch (error) {
+      console.error(`[ToolExecutor] Email error:`, error.message);
+      return {
+        success: false,
+        result: `Unable to send email at this time: ${error.message}`
+      };
     }
   }
   static async executeBookAppointment(params, metadata, userId, agentId, callId) {
@@ -10717,153 +12007,6 @@ var ToolExecutor = class _ToolExecutor {
       return { success: false, result: "Unable to submit form at this time. Please try again." };
     }
   }
-  static async executeSendWhatsApp(name, params, metadata, userId, agentId, callId) {
-    try {
-      let phoneNumber = params.phone_number || params.phoneNumber || "";
-      const template = params.template_name || params.templateName || metadata?.templateName || "hello_world";
-      const lang = metadata?.language || "en_US";
-      if (!phoneNumber && callId) {
-        try {
-          const sanitizedCallId = callId.replace(/[^a-zA-Z0-9_-]/g, "");
-          const callTables = ["calls", "twilio_openai_calls", "plivo_calls", "sip_calls"];
-          for (const table of callTables) {
-            const rows = await db.execute(
-              sql14`SELECT caller_number, from_number FROM ${sql14.identifier(table)} WHERE id = ${sanitizedCallId} LIMIT 1`
-            );
-            const row = (Array.isArray(rows) ? rows : rows.rows || [])[0];
-            if (row?.caller_number || row?.from_number) {
-              phoneNumber = row.caller_number || row.from_number;
-              console.log(`[ToolExecutor] Resolved caller phone from ${table}: ${phoneNumber}`);
-              break;
-            }
-          }
-        } catch (e) {
-          console.warn(`[ToolExecutor] Could not resolve caller phone:`, e.message);
-        }
-      }
-      if (phoneNumber) {
-        let cleanPhone = phoneNumber.toLowerCase().replace(/\s+/g, "");
-        if (cleanPhone.startsWith("plus")) {
-          cleanPhone = "+" + cleanPhone.substring(4);
-        }
-        cleanPhone = cleanPhone.replace(/[^\d+]/g, "");
-        phoneNumber = cleanPhone;
-      }
-      console.log(`[ToolExecutor] Sending WhatsApp: template="${template}" to="${phoneNumber}"`);
-      if (!phoneNumber) {
-        return {
-          success: false,
-          result: "Please provide the phone number to send the WhatsApp message to."
-        };
-      }
-      let templateVariables = params.template_variables || params.templateVariables || [];
-      if (templateVariables.length === 0) {
-        const variableEntries = [];
-        for (const [key, value] of Object.entries(params)) {
-          const match = key.match(/^variable_(\d+)$/);
-          if (match && value) {
-            variableEntries.push({ position: parseInt(match[1], 10), value: String(value) });
-          }
-        }
-        if (variableEntries.length > 0) {
-          variableEntries.sort((a, b) => a.position - b.position);
-          templateVariables = variableEntries.map((v) => ({ position: v.position, value: v.value }));
-        }
-      }
-      const metadataVariables = metadata?.templateVariables;
-      if (templateVariables.length === 0 && metadataVariables && metadataVariables.length > 0) {
-        templateVariables = metadataVariables.map((tv) => {
-          let value = tv.value || "";
-          if (tv.source && tv.source !== "custom") {
-            const sourceKey = tv.source;
-            if (params[sourceKey]) {
-              value = String(params[sourceKey]);
-            } else if (sourceKey === "system__caller_id" && phoneNumber) {
-              value = phoneNumber;
-            }
-          }
-          return { position: tv.position, value };
-        });
-      }
-      const domain = _ToolExecutor.getDomain();
-      const secret = _ToolExecutor.getAppointmentWebhookSecret();
-      
-      const agentResult = await db.execute(sql14`SELECT eleven_labs_agent_id FROM agents WHERE id = ${agentId} LIMIT 1`);
-      const agent = agentResult.rows?.[0];
-      const elAgentId = agent?.eleven_labs_agent_id || agentId;
-
-      const queryParams = callId ? `?callId=${encodeURIComponent(callId)}` : "";
-      const webhookUrl = `${domain}/api/webhooks/messaging/send-whatsapp/${secret}/${elAgentId}${queryParams}`;
-      console.log(`[ToolExecutor] Calling WhatsApp webhook: ${webhookUrl}`);
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phone_number: phoneNumber,
-          template_name: template,
-          language: lang,
-          template_variables: templateVariables
-        })
-      });
-      if (!response.ok) {
-        throw new Error(`Webhook returned status ${response.status}`);
-      }
-      const data = await response.json();
-      console.log(`[ToolExecutor] WhatsApp send result:`, data.success ? "sent" : data.error);
-      return {
-        success: data.success,
-        result: data.success ? `WhatsApp message sent successfully to ${phoneNumber} using template "${template}".` : `Failed to send WhatsApp message: ${data.message || data.error || "Unknown error"}`
-      };
-    } catch (error) {
-      console.error(`[ToolExecutor] WhatsApp error:`, error.message);
-      return {
-        success: false,
-        result: `Unable to send WhatsApp message: ${error.message}`
-      };
-    }
-  }
-  static async executeSendEmail(name, params, metadata, userId, agentId, callId) {
-    try {
-      const recipientEmail = params.recipient_email || params.recipientEmail || metadata?.recipientEmail;
-      const template = params.template_name || params.templateName || metadata?.templateName || "default";
-      console.log(`[ToolExecutor] Sending email: template="${template}" to="${recipientEmail}"`);
-      if (!recipientEmail) {
-        return {
-          success: false,
-          result: "Please provide the recipient email address before sending the email."
-        };
-      }
-      const fs = await import("fs");
-      const path = await import("path");
-      const { pathToFileURL } = await import("url");
-      const canImportTs = process.execArgv.join(" ").includes("tsx") || process.execArgv.join(" ").includes("ts-node") || !!process.env.TS_NODE_PROJECT;
-      let emailServicePath = path.resolve(process.cwd(), "plugins/messaging/services/email-template.service.ts");
-      if (!canImportTs || !fs.existsSync(emailServicePath)) {
-        emailServicePath = path.resolve(process.cwd(), "plugins/messaging/services/email-template.service.js");
-      }
-      const { EmailTemplateService } = await import(pathToFileURL(emailServicePath).href);
-      const emailService = new EmailTemplateService();
-      const dynamicVars = params.dynamic_variables || params.dynamicVariables || {};
-      const result = await emailService.sendEmailByName(
-        userId,
-        template,
-        recipientEmail,
-        dynamicVars,
-        { callId: callId || "", agentId }
-      );
-      console.log(`[ToolExecutor] Email send result:`, result.success ? "sent" : result.error);
-      return {
-        success: result.success,
-        result: result.success ? `Email sent successfully to ${recipientEmail} using template "${template}".` : `Failed to send email: ${result.error || "Unknown error"}`
-      };
-    } catch (error) {
-      console.error(`[ToolExecutor] Email error:`, error.message);
-      return {
-        success: false,
-        result: `Unable to send email at this time: ${error.message}`
-      };
-    }
-  }
   static getDomain() {
     let domain = "";
     const isProduction = process.env.NODE_ENV === "production";
@@ -10900,7 +12043,7 @@ var ToolExecutor = class _ToolExecutor {
     }
     return "";
   }
-}
+};
 
 // plugins/custom-voice-engine/types.ts
 var DEFAULT_TELEPHONY_FORMAT = {
@@ -10916,14 +12059,14 @@ var DEFAULT_STT_FORMAT = {
   bitDepth: 16
 };
 var DEFAULT_VAD_CONFIG = {
-  speechThresholdMs: 250,
-  silenceThresholdMs: 500,
+  speechThresholdMs: 150,
+  silenceThresholdMs: 300,
   energyThreshold: 0.015,
   bargeInEnabled: true
 };
 
 // plugins/custom-voice-engine/services/providers/stt/deepgram-stt.provider.ts
-import WebSocket from "ws";
+import WebSocket2 from "ws";
 
 // plugins/custom-voice-engine/services/providers/stt/stt-provider.interface.ts
 var BaseSttProvider = class {
@@ -10985,7 +12128,7 @@ var DeepgramSttProvider = class extends BaseSttProvider {
       channels: String(this.format.channels),
       punctuate: String(this.config.punctuate ?? true),
       interim_results: String(this.config.interimResults ?? true),
-      endpointing: String(this.config.endpointing ?? 300),
+      endpointing: String(this.config.endpointing ?? 150),
       utterance_end_ms: "1000",
       vad_events: "true",
       smart_format: "true"
@@ -10995,7 +12138,7 @@ var DeepgramSttProvider = class extends BaseSttProvider {
     const url = `${DEEPGRAM_WS_URL}?${params.toString()}`;
     console.log(`[STT:Deepgram] Connecting to URL: ${url.replace(this.config.apiKey, "***")}`);
     return new Promise((resolve, reject) => {
-      this.ws = new WebSocket(url, {
+      this.ws = new WebSocket2(url, {
         headers: {
           Authorization: `Token ${this.config.apiKey}`
         }
@@ -11021,7 +12164,7 @@ var DeepgramSttProvider = class extends BaseSttProvider {
         this.reconnectAttempts = 0;
         console.log("[STT:Deepgram] WebSocket connected");
         this.keepAliveInterval = setInterval(() => {
-          if (this.ws?.readyState === WebSocket.OPEN) {
+          if (this.ws?.readyState === WebSocket2.OPEN) {
             this.ws.send(JSON.stringify({ type: "KeepAlive" }));
           }
         }, 8e3);
@@ -11060,7 +12203,7 @@ var DeepgramSttProvider = class extends BaseSttProvider {
     });
   }
   sendAudio(chunk) {
-    if (this.ws?.readyState === WebSocket.OPEN) {
+    if (this.ws?.readyState === WebSocket2.OPEN) {
       this.ws.send(chunk);
     }
   }
@@ -11071,7 +12214,7 @@ var DeepgramSttProvider = class extends BaseSttProvider {
       this.keepAliveInterval = null;
     }
     if (this.ws) {
-      if (this.ws.readyState === WebSocket.OPEN) {
+      if (this.ws.readyState === WebSocket2.OPEN) {
         this.ws.send(JSON.stringify({ type: "CloseStream" }));
         await new Promise((resolve) => {
           const timeout = setTimeout(() => {
@@ -11107,6 +12250,7 @@ var DeepgramSttProvider = class extends BaseSttProvider {
       this.emitTranscript({
         text: alt.transcript,
         isFinal: result.is_final,
+        speechFinal: result.speech_final ?? false,
         confidence: alt.confidence,
         words,
         duration: result.duration * 1e3
@@ -11151,225 +12295,104 @@ var DeepgramSttProvider = class extends BaseSttProvider {
 };
 
 // plugins/custom-voice-engine/services/providers/stt/sarvam-stt.provider.ts
-import axios3 from "axios";
-var SARVAM_API_BASE2 = "https://api.sarvam.ai";
-var BUFFER_FLUSH_INTERVAL_MS = 3e3;
-var MIN_API_CALL_INTERVAL_MS = 1200;
+import WebSocket3 from "ws";
 var SarvamSttProvider = class extends BaseSttProvider {
   name = "sarvam";
-  audioBuffer = [];
-  flushInterval = null;
-  totalBufferSize = 0;
-  isFlushing = false;
-  retryFlushPending = false;
-  closed = false;
-  lastApiCallTime = 0;
-  // timestamp of last Sarvam API call (rate limiting)
+  ws = null;
+  isClosing = false;
   async connect(config, format) {
     this.config = config;
     this.format = format;
-    this.connected = true;
-    this.closed = false;
-    this.audioBuffer = [];
-    this.totalBufferSize = 0;
-    this.retryFlushPending = false;
-    console.log(`[STT:Sarvam] Connecting with format:`, format);
-    try {
-      await axios3.get(`${SARVAM_API_BASE2}/v1/models`, {
-        ...keepAliveAxiosConfig,
-        headers: { "api-subscription-key": config.apiKey },
-        timeout: 5e3
-      });
-      console.log("[STT:Sarvam] API key validated successfully");
-    } catch (err) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
-        throw new Error("Sarvam API key is invalid");
-      }
-      console.warn("[STT:Sarvam] API key validation warning (non-auth error):", err.message);
-    }
-    this.flushInterval = setInterval(() => {
-      this.flushBuffer(false).catch((err) => {
-        this.emitError(new Error(`Sarvam flush error: ${err.message}`));
-      });
-    }, BUFFER_FLUSH_INTERVAL_MS);
-    console.log("[STT:Sarvam] Provider connected");
-  }
-  sendAudio(chunk) {
-    if (!this.connected || this.closed) return;
-    this.audioBuffer.push(chunk);
-    this.totalBufferSize += chunk.length;
-    if (this.totalBufferSize % 6400 === 0) {
-      console.log(`[STT:Sarvam] Buffered ${(this.totalBufferSize / 1024).toFixed(1)}KB audio so far`);
-    }
-  }
-  async flush(force = true) {
-    if (this.isFlushing) {
-      console.log(`[STT:Sarvam] Flush requested but already flushing, queuing retry (force=${force})`);
-      this.retryFlushPending = true;
-      return;
-    }
-    await this.flushBuffer(force);
-  }
-  async close() {
-    this.closed = true;
-    if (this.flushInterval) {
-      clearInterval(this.flushInterval);
-      this.flushInterval = null;
-    }
-    if (this.totalBufferSize > 0) {
-      console.log(`[STT:Sarvam] Closing with ${(this.totalBufferSize / 1024).toFixed(1)}KB buffered audio, flushing...`);
-      await this.flushBuffer(true);
-    }
     this.connected = false;
-    this.audioBuffer = [];
-    this.totalBufferSize = 0;
-    this.transcriptCallbacks = [];
-    this.errorCallbacks = [];
-    console.log("[STT:Sarvam] Provider closed");
-  }
-  /**
-   * Flush buffered audio to Sarvam's speech-to-text REST API.
-   *
-   * Key constraints of the Sarvam /speech-to-text endpoint:
-   *  - Max audio duration: 30 seconds per request (hard API limit)
-   *  - Rate limits: too many requests too quickly → rate_limit_exceeded_error
-   *
-   * Strategy:
-   *  1. Drain the entire audio buffer into one raw PCM block.
-   *  2. Split that PCM block into ≤25s segments (safe margin under 30s).
-   *  3. Send each segment as its own API call, with a rate-limit cooldown
-   *     (MIN_API_CALL_INTERVAL_MS) enforced between consecutive calls.
-   *  4. Emit a transcript event for each segment that returns text.
-   *
-   * @param force - skip the minimum-size check (used at close() to drain remaining audio)
-   */
-  async flushBuffer(force = false) {
-    if (this.isFlushing) {
-      console.log(`[STT:Sarvam] flushBuffer called but isFlushing=true, force=${force}`);
-      return;
-    }
-    if (!this.config || !this.format) {
-      console.log(`[STT:Sarvam] flushBuffer skipped: config=${!!this.config}, format=${!!this.format}`);
-      return;
-    }
-    const { sampleRate: flushSampleRate = 8e3, channels: flushChannels = 1 } = this.format || {};
-    const minBufferSize = flushSampleRate * flushChannels * 2 * 2;
-    if (!force && this.totalBufferSize < minBufferSize) {
-      console.log(`[STT:Sarvam] flushBuffer skipped: buffer ${this.totalBufferSize}B < min ${minBufferSize}B (force=${force})`);
-      return;
-    }
-    if (this.totalBufferSize === 0) {
-      console.log(`[STT:Sarvam] flushBuffer skipped: buffer is empty (force=${force})`);
-      return;
-    }
-    this.isFlushing = true;
-    this.retryFlushPending = false;
-    const chunks = this.audioBuffer.splice(0);
-    this.totalBufferSize = 0;
-    const rawAudio = Buffer.concat(chunks);
-    console.log(`[STT:Sarvam] flushBuffer: force=${force}, draining ${chunks.length} chunks, ${(rawAudio.length / 1024).toFixed(1)}KB`);
-    try {
+    this.isClosing = false;
+    console.log(`[STT:Sarvam] Connecting with format:`, format);
+    return new Promise((resolve, reject) => {
       const languageCode = this.config.detectLanguage ? "unknown" : this.config.sarvamLanguageCode || this.mapLanguage(this.config.language);
-      const { sampleRate = 16e3, channels = 1 } = this.format;
-      const MAX_SEGMENT_SECONDS = 25;
-      const bytesPerSecond = sampleRate * channels * 2;
-      const maxSegmentBytes = MAX_SEGMENT_SECONDS * bytesPerSecond;
-      const totalSegments = Math.ceil(rawAudio.length / maxSegmentBytes);
-      console.log(
-        `[STT:Sarvam] Processing ${(rawAudio.length / 1024).toFixed(1)}KB audio as ${totalSegments} segment(s) of \u2264${MAX_SEGMENT_SECONDS}s each (lang: ${languageCode}, sampleRate: ${sampleRate})`
-      );
-      for (let seg = 0; seg < totalSegments; seg++) {
-        const start = seg * maxSegmentBytes;
-        const segmentPcm = rawAudio.slice(start, start + maxSegmentBytes);
-        const segmentDurationS = segmentPcm.length / bytesPerSecond;
-        const now = Date.now();
-        const timeSinceLast = now - this.lastApiCallTime;
-        if (this.lastApiCallTime > 0 && timeSinceLast < MIN_API_CALL_INTERVAL_MS) {
-          const waitMs = MIN_API_CALL_INTERVAL_MS - timeSinceLast;
-          console.log(`[STT:Sarvam] Rate-limit cooldown: waiting ${waitMs}ms before segment ${seg + 1}/${totalSegments}`);
-          await new Promise((resolve) => setTimeout(resolve, waitMs));
+      const model = this.config.sarvamModel || "saaras:v3";
+      const url = `wss://api.sarvam.ai/speech-to-text/ws?language-code=${languageCode}&model=${model}`;
+      console.log(`[STT:Sarvam] Connecting WebSocket to URL: ${url}`);
+      this.ws = new WebSocket3(url, {
+        headers: {
+          "api-subscription-key": this.config.apiKey
         }
-        const wavHeader = this.createWavHeader(segmentPcm.length, sampleRate, channels);
-        const wavData = Buffer.concat([wavHeader, segmentPcm]);
-        console.log(
-          `[STT:Sarvam] Sending segment ${seg + 1}/${totalSegments}: ${segmentDurationS.toFixed(1)}s (${(wavData.length / 1024).toFixed(1)}KB) to ${SARVAM_API_BASE2}/speech-to-text`
-        );
-        const formData = new FormData();
-        const blob = new Blob([wavData], { type: "audio/wav" });
-        formData.append("file", blob, "audio.wav");
-        formData.append("model", this.config.sarvamModel || "saaras:v3");
-        formData.append("mode", "transcribe");
-        if (languageCode) {
-          formData.append("language_code", languageCode);
+      });
+      const timeout = setTimeout(() => {
+        if (!this.connected) {
+          reject(new Error("Sarvam STT WebSocket connection timeout"));
+          this.ws?.close();
         }
-        this.lastApiCallTime = Date.now();
+      }, 1e4);
+      this.ws.on("open", () => {
+        clearTimeout(timeout);
+        this.connected = true;
+        console.log("[STT:Sarvam] WebSocket connected");
+        resolve();
+      });
+      this.ws.on("message", (data) => {
         try {
-          console.log(`[STT:Sarvam] POST segment ${seg + 1} starting...`);
-          const response = await axios3.post(
-            `${SARVAM_API_BASE2}/speech-to-text`,
-            formData,
-            {
-              ...keepAliveAxiosConfig,
-              headers: { "api-subscription-key": this.config.apiKey },
-              timeout: 3e4
-            }
-          );
-          console.log(`[STT:Sarvam] Segment ${seg + 1} response status: ${response.status}, has transcript: ${!!response.data?.transcript}`);
-          if (response.data?.transcript) {
+          const messageStr = data.toString();
+          const response = JSON.parse(messageStr);
+          if (response.type === "data" && response.data?.transcript) {
             const transcript = {
               text: response.data.transcript,
               isFinal: true,
+              // Sarvam real-time transcript segment
               confidence: response.data.confidence || 0.85,
               language: response.data.language_code || languageCode,
-              duration: segmentDurationS * 1e3
+              duration: (response.data.metrics?.audio_duration || 0) * 1e3
             };
             console.log(`[STT:Sarvam] EMITTING transcript: "${response.data.transcript.substring(0, 100)}"`);
             this.emitTranscript(transcript);
-          } else {
-            console.warn(`[STT:Sarvam] Segment ${seg + 1} returned no transcript. Full response:`, JSON.stringify(response.data));
           }
-        } catch (segErr) {
-          let errorMsg = segErr.message;
-          if (segErr.response?.data) {
-            console.error(
-              `[STT:Sarvam] Segment ${seg + 1} API Error:`,
-              JSON.stringify(segErr.response.data, null, 2)
-            );
-            errorMsg = segErr.response.data.message || JSON.stringify(segErr.response.data);
-          }
-          console.error(`[STT:Sarvam] Segment ${seg + 1} error: ${errorMsg}`);
-          this.emitError(new Error(`Sarvam STT error (segment ${seg + 1}): ${errorMsg}`));
+        } catch (err) {
+          console.error(`[STT:Sarvam] Failed to parse message:`, err.message);
         }
-      }
-    } catch (outerErr) {
-      console.error(`[STT:Sarvam] flushBuffer unexpected error:`, outerErr.message);
-    } finally {
-      this.isFlushing = false;
-      if (this.retryFlushPending) {
-        console.log(`[STT:Sarvam] Retrying pending flush after current flush completed`);
-        this.retryFlushPending = false;
-        this.flushBuffer(true).catch((err) => {
-          console.error(`[STT:Sarvam] Retry flush error:`, err.message);
-        });
-      }
+      });
+      this.ws.on("error", (err) => {
+        console.error("[STT:Sarvam] WebSocket error:", err.message);
+        this.emitError(err);
+        if (!this.connected) {
+          clearTimeout(timeout);
+          reject(err);
+        }
+      });
+      this.ws.on("close", () => {
+        console.log("[STT:Sarvam] WebSocket closed");
+        this.connected = false;
+      });
+    });
+  }
+  sendAudio(chunk) {
+    if (!this.connected || !this.ws || this.ws.readyState !== WebSocket3.OPEN) return;
+    try {
+      const sampleRate = this.format?.sampleRate || 8e3;
+      const base64Data = chunk.toString("base64");
+      const payload = {
+        audio: {
+          data: base64Data,
+          sample_rate: String(sampleRate),
+          encoding: "pcm_s16le"
+        }
+      };
+      this.ws.send(JSON.stringify(payload));
+    } catch (err) {
+      console.error("[STT:Sarvam] Failed to send audio chunk:", err.message);
     }
   }
-  createWavHeader(dataLength, sampleRate, channels) {
-    const header = Buffer.alloc(44);
-    header.write("RIFF", 0);
-    header.writeUInt32LE(36 + dataLength, 4);
-    header.write("WAVE", 8);
-    header.write("fmt ", 12);
-    header.writeUInt32LE(16, 16);
-    header.writeUInt16LE(1, 20);
-    header.writeUInt16LE(channels, 22);
-    header.writeUInt32LE(sampleRate, 24);
-    header.writeUInt32LE(sampleRate * channels * 2, 28);
-    header.writeUInt16LE(channels * 2, 32);
-    header.writeUInt16LE(16, 34);
-    header.write("data", 36);
-    header.writeUInt32LE(dataLength, 40);
-    return header;
+  async flush(force = true) {
+  }
+  async close() {
+    this.isClosing = true;
+    this.connected = false;
+    if (this.ws) {
+      if (this.ws.readyState === WebSocket3.OPEN) {
+        this.ws.close();
+      }
+      this.ws = null;
+    }
+    this.transcriptCallbacks = [];
+    this.errorCallbacks = [];
+    console.log("[STT:Sarvam] Provider closed");
   }
   mapLanguage(lang) {
     if (!lang) return "en-IN";
@@ -11441,12 +12464,56 @@ var BaseLlmProvider = class {
 
 // plugins/custom-voice-engine/services/providers/llm/openrouter-llm.provider.ts
 var OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+function getEndpointAndModel(model, apiKey) {
+  const cleanModel = model || "openai/gpt-4o-mini";
+  const key = apiKey || "";
+  if (key.startsWith("gsk_") || cleanModel.startsWith("groq/")) {
+    const rawModel = cleanModel.replace(/^groq\//, "");
+    return { url: "https://api.groq.com/openai/v1/chat/completions", model: rawModel };
+  }
+  if (cleanModel.startsWith("deepseek/") && !key.startsWith("sk-or-")) {
+    const rawModel = cleanModel.replace(/^deepseek\//, "");
+    return { url: "https://api.deepseek.com/chat/completions", model: rawModel };
+  }
+  if ((key.startsWith("sk-proj-") || key.startsWith("sk-") && !key.startsWith("sk-or-")) && (cleanModel.startsWith("openai/") || cleanModel.startsWith("gpt-") || cleanModel.startsWith("o1") || cleanModel.startsWith("o3"))) {
+    const rawModel = cleanModel.replace(/^openai\//, "");
+    return { url: "https://api.openai.com/v1/chat/completions", model: rawModel };
+  }
+  return { url: OPENROUTER_API_URL, model: sanitizeOpenRouterModel(cleanModel) };
+}
+function sanitizeOpenRouterModel(model) {
+  if (!model) return "openai/gpt-4o-mini";
+  const modelLower = model.toLowerCase();
+  if (modelLower.includes("gpt-4o-mini-realtime") || modelLower.includes("gpt-realtime-mini")) {
+    return "openai/gpt-4o-mini";
+  }
+  if (modelLower.includes("gpt-4o-realtime") || modelLower.includes("gpt-realtime")) {
+    return "openai/gpt-4o";
+  }
+  if (!model.includes("/")) {
+    if (modelLower.startsWith("gpt-4o-mini")) {
+      return "openai/gpt-4o-mini";
+    }
+    if (modelLower.startsWith("gpt-4o")) {
+      return "openai/gpt-4o";
+    }
+    if (modelLower.startsWith("claude-")) {
+      return `anthropic/${model}`;
+    }
+    if (modelLower.startsWith("gemini-")) {
+      return `google/${model}`;
+    }
+    return `openai/${model}`;
+  }
+  return model;
+}
 var OpenRouterLlmProvider = class extends BaseLlmProvider {
   name = "openrouter";
   async complete(messages, config, tools2) {
     const startTime = Date.now();
+    const endpoint = getEndpointAndModel(config.model, config.apiKey);
     const payload = {
-      model: config.model,
+      model: endpoint.model,
       messages: messages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -11454,7 +12521,7 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
         ...m.toolCalls ? { tool_calls: m.toolCalls } : {}
       })),
       temperature: config.temperature ?? 0.7,
-      max_tokens: config.maxTokens ?? 500,
+      max_tokens: config.maxTokens ?? 200,
       top_p: config.topP ?? 1,
       frequency_penalty: config.frequencyPenalty ?? 0,
       presence_penalty: config.presencePenalty ?? 0
@@ -11471,8 +12538,8 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
       payload.tool_choice = "auto";
     }
     try {
-      console.log("[OpenRouter] Sending tools payload (complete):", JSON.stringify(payload.tools, null, 2));
-      const response = await axios4.post(OPENROUTER_API_URL, payload, {
+      console.log(`[LLM:OpenRouter/Direct] Sending tools payload to ${endpoint.url} (model=${endpoint.model}):`, JSON.stringify(payload.tools, null, 2));
+      const response = await axios4.post(endpoint.url, payload, {
         ...keepAliveAxiosConfig,
         headers: {
           Authorization: `Bearer ${config.apiKey}`,
@@ -11510,8 +12577,9 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
     }
   }
   async *stream(messages, config, tools2) {
+    const endpoint = getEndpointAndModel(config.model, config.apiKey);
     const payload = {
-      model: config.model,
+      model: endpoint.model,
       messages: messages.map((m) => ({
         role: m.role,
         content: m.content,
@@ -11519,7 +12587,7 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
         ...m.toolCalls ? { tool_calls: m.toolCalls } : {}
       })),
       temperature: config.temperature ?? 0.7,
-      max_tokens: config.maxTokens ?? 500,
+      max_tokens: config.maxTokens ?? 200,
       top_p: config.topP ?? 1,
       stream: true
     };
@@ -11545,8 +12613,8 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
     };
     resetInactivityTimer();
     try {
-      console.log("[OpenRouter] Sending tools payload (stream):", JSON.stringify(payload.tools, null, 2));
-      const response = await axios4.post(OPENROUTER_API_URL, payload, {
+      console.log(`[LLM:OpenRouter/Direct] Sending tools payload (stream) to ${endpoint.url} (model=${endpoint.model}):`, JSON.stringify(payload.tools, null, 2));
+      const response = await axios4.post(endpoint.url, payload, {
         ...keepAliveAxiosConfig,
         headers: {
           Authorization: `Bearer ${config.apiKey}`,
@@ -11611,7 +12679,7 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
           } else {
             errorResponseStr = String(data);
           }
-          console.error("[OpenRouter] Stream request failed with status", err.response.status, "Error body:", errorResponseStr);
+          console.error(`[OpenRouter] Stream request failed with status ${err.response.status}. Error body:`, errorResponseStr);
           let msg = errorResponseStr;
           try {
             const parsed = JSON.parse(errorResponseStr);
@@ -11623,7 +12691,7 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
           if (readErr.message && readErr.message.includes("OpenRouter LLM error")) {
             throw readErr;
           }
-          console.error("[OpenRouter] Failed to read error response:", readErr.message);
+          console.error(`[OpenRouter] Failed to read error response:`, readErr.message);
         }
       }
       throw err;
@@ -11634,11 +12702,12 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
 };
 
 // plugins/custom-voice-engine/services/providers/llm/gemini-llm.provider.ts
-function mapToolsToGemini(tools) {
-  if (!tools || tools.length === 0) return void 0;
+import axios5 from "axios";
+function mapToolsToGemini(tools2) {
+  if (!tools2 || tools2.length === 0) return void 0;
   return [
     {
-      functionDeclarations: tools.map((t) => {
+      functionDeclarations: tools2.map((t) => {
         const convertTypes = (schema) => {
           if (!schema) return schema;
           const copy = { ...schema };
@@ -11666,7 +12735,6 @@ function mapToolsToGemini(tools) {
     }
   ];
 }
-
 function convertMessagesToGemini(messages) {
   const contents = [];
   let systemInstruction = void 0;
@@ -11691,7 +12759,8 @@ function convertMessagesToGemini(messages) {
             let args = {};
             try {
               args = JSON.parse(tc.function.arguments);
-            } catch (e) {}
+            } catch (e) {
+            }
             return {
               functionCall: {
                 name: tc.function.name,
@@ -11748,18 +12817,16 @@ function convertMessagesToGemini(messages) {
   }
   return { contents: normalizedContents, systemInstruction };
 }
-
 function sanitizeGeminiModel(model) {
   return model || "gemini-1.5-flash";
 }
-
 var GeminiLlmProvider = class extends BaseLlmProvider {
   name = "gemini";
-  async complete(messages, config, tools) {
+  async complete(messages, config, tools2) {
     const startTime = Date.now();
     const model = sanitizeGeminiModel(config.model);
     const { contents, systemInstruction } = convertMessagesToGemini(messages);
-    const geminiTools = mapToolsToGemini(tools);
+    const geminiTools = mapToolsToGemini(tools2);
     const payload = {
       contents,
       generationConfig: {
@@ -11775,7 +12842,7 @@ var GeminiLlmProvider = class extends BaseLlmProvider {
     }
     try {
       console.log(`[Gemini] Direct complete request to model: ${model}`);
-      const response = await axios.post(
+      const response = await axios5.post(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey}`,
         payload,
         {
@@ -11783,7 +12850,7 @@ var GeminiLlmProvider = class extends BaseLlmProvider {
           headers: {
             "Content-Type": "application/json"
           },
-          timeout: 30000
+          timeout: 3e4
         }
       );
       const data = response.data;
@@ -11832,10 +12899,10 @@ var GeminiLlmProvider = class extends BaseLlmProvider {
       throw err;
     }
   }
-  async *stream(messages, config, tools) {
+  async *stream(messages, config, tools2) {
     const model = sanitizeGeminiModel(config.model);
     const { contents, systemInstruction } = convertMessagesToGemini(messages);
-    const geminiTools = mapToolsToGemini(tools);
+    const geminiTools = mapToolsToGemini(tools2);
     const payload = {
       contents,
       generationConfig: {
@@ -11850,7 +12917,7 @@ var GeminiLlmProvider = class extends BaseLlmProvider {
       payload.tools = geminiTools;
     }
     console.log(`[Gemini] Direct stream request to model: ${model}`);
-    const response = await axios.post(
+    const response = await axios5.post(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${config.apiKey}`,
       payload,
       {
@@ -11859,7 +12926,7 @@ var GeminiLlmProvider = class extends BaseLlmProvider {
           "Content-Type": "application/json"
         },
         responseType: "stream",
-        timeout: 30000
+        timeout: 3e4
       }
     );
     const stream = response.data;
@@ -11907,7 +12974,10 @@ var GeminiLlmProvider = class extends BaseLlmProvider {
 // plugins/custom-voice-engine/services/providers/llm/llm-provider.factory.ts
 var providerRegistry3 = {
   openrouter: OpenRouterLlmProvider,
-  gemini: GeminiLlmProvider
+  gemini: GeminiLlmProvider,
+  openai: OpenRouterLlmProvider,
+  groq: OpenRouterLlmProvider,
+  deepseek: OpenRouterLlmProvider
 };
 var LlmProviderFactory = class {
   static create(provider) {
@@ -11936,7 +13006,9 @@ var VadDetector = class {
   speechStartTime = 0;
   silenceStartTime = 0;
   lastEnergyValues = [];
-  energyWindowSize = 10;
+  energyWindowSize = 8;
+  noiseFloor = 8e-3;
+  // Adaptive ambient noise floor estimate
   constructor(config) {
     this.config = { ...DEFAULT_VAD_CONFIG, ...config };
     this.silenceStartTime = Date.now();
@@ -11952,7 +13024,14 @@ var VadDetector = class {
       this.lastEnergyValues.shift();
     }
     const smoothedEnergy = this.lastEnergyValues.reduce((a, b) => a + b, 0) / this.lastEnergyValues.length;
-    const threshold = isPlayingTts ? 0.06 : this.config.energyThreshold;
+    if (this.state === "silence") {
+      this.noiseFloor = this.noiseFloor * 0.95 + smoothedEnergy * 0.05;
+    }
+    const dynamicThreshold = Math.max(
+      this.config.energyThreshold,
+      this.noiseFloor * 2 + 8e-3
+    );
+    const threshold = isPlayingTts ? Math.max(0.06, dynamicThreshold * 2.5) : dynamicThreshold;
     const isSpeech = smoothedEnergy > threshold;
     const now = Date.now();
     let isSpeechStart = false;
@@ -12028,6 +13107,265 @@ var VadDetector = class {
   }
 };
 
+// plugins/custom-voice-engine/services/master-ai/master-ai.service.ts
+var DEFAULT_BACKCHANNELS = {
+  en: /* @__PURE__ */ new Set([
+    "uh-huh",
+    "yeah",
+    "yes",
+    "right",
+    "okay",
+    "hmm",
+    "got it",
+    "i see",
+    "sure",
+    "yep",
+    "yup",
+    "alright",
+    "mhm",
+    "aha",
+    "cool",
+    "fine"
+  ]),
+  hi: /* @__PURE__ */ new Set([
+    "haan",
+    "achha",
+    "accha",
+    "theek hai",
+    "theek",
+    "sahi hai",
+    "hmm",
+    "ji",
+    "boliye",
+    "sahi",
+    "acha",
+    "ha"
+  ]),
+  ta: /* @__PURE__ */ new Set([
+    "sari",
+    "aama",
+    "solunga",
+    "hmm",
+    "purinjidhu",
+    "seri",
+    "aamam"
+  ]),
+  te: /* @__PURE__ */ new Set([
+    "avunu",
+    "sare",
+    "cheppandi",
+    "hmm",
+    "sari"
+  ]),
+  kn: /* @__PURE__ */ new Set([
+    "haudu",
+    "sari",
+    "heli",
+    "hmm",
+    "houdu"
+  ])
+};
+var HARD_INTERRUPTIONS = /* @__PURE__ */ new Set([
+  "wait",
+  "stop",
+  "hold on",
+  "no no",
+  "listen",
+  "ek minute",
+  "ruko",
+  "shut up",
+  "pause",
+  "hang on",
+  "wait a second",
+  "hold up",
+  "cancel",
+  "wait wait",
+  "stop stop",
+  "chup",
+  "arre ruko",
+  "ruk"
+]);
+var DEFAULT_HANGUP_PHRASES = [
+  "bye",
+  "goodbye",
+  "talk to you later",
+  "alvida",
+  "bas itna hi",
+  "call cut kardo",
+  "thank you that is all",
+  "disconnect",
+  "end call",
+  "nothing else",
+  "that is all",
+  "thats all",
+  "no thats it",
+  "that will be all"
+];
+var DEFAULT_TRANSFER_PHRASES = [
+  "talk to human",
+  "speak to agent",
+  "connect to manager",
+  "operator",
+  "real person",
+  "customer service",
+  "representative",
+  "human please",
+  "connect me to",
+  "agent se baat karo",
+  "kisi se baat karao"
+];
+var MasterAIService = class {
+  customBackchannels = {};
+  hangupPhrases = [...DEFAULT_HANGUP_PHRASES];
+  transferPhrases = [...DEFAULT_TRANSFER_PHRASES];
+  constructor(customDictionaries) {
+    if (customDictionaries) {
+      for (const [lang, words] of Object.entries(customDictionaries)) {
+        this.customBackchannels[lang] = new Set(words.map((w) => w.toLowerCase().trim()));
+      }
+    }
+  }
+  /**
+   * 1. Smart Backchannel Classifier (<5ms)
+   * Returns true if the utterance is a passive affirmation ("uh-huh", "haan", "theek hai")
+   * that should NOT interrupt agent playback.
+   */
+  isBackchannel(text2, lang = "en") {
+    const clean = text2.toLowerCase().replace(/[^\w\s-]/g, "").trim();
+    if (!clean) return false;
+    const customSet = this.customBackchannels[lang];
+    if (customSet && customSet.has(clean)) return true;
+    const builtInSet = DEFAULT_BACKCHANNELS[lang] || DEFAULT_BACKCHANNELS.en;
+    if (builtInSet.has(clean)) return true;
+    if (DEFAULT_BACKCHANNELS.hi.has(clean) || DEFAULT_BACKCHANNELS.en.has(clean)) {
+      return true;
+    }
+    for (const phrase of builtInSet) {
+      if (clean === phrase || clean.includes(phrase)) return true;
+    }
+    for (const phrase of DEFAULT_BACKCHANNELS.hi) {
+      if (clean === phrase || clean.includes(phrase)) return true;
+    }
+    return false;
+  }
+  /**
+   * 2. Hard Interruption Detector (<3ms)
+   * Returns true if the user explicitly demands the agent stop speaking.
+   */
+  isHardInterruption(text2) {
+    const clean = text2.toLowerCase().replace(/[^\w\s-]/g, "").trim();
+    if (!clean) return false;
+    if (HARD_INTERRUPTIONS.has(clean)) return true;
+    for (const phrase of HARD_INTERRUPTIONS) {
+      if (clean.startsWith(phrase) || clean === phrase) return true;
+    }
+    return false;
+  }
+  /**
+   * 3. Deterministic Action Gate (<10ms)
+   * Detects immediate call completion or human escalation commands without LLM tokens.
+   */
+  evaluateAction(text2, agentConfig) {
+    const clean = text2.toLowerCase().replace(/[^\w\s-]/g, "").trim();
+    if (!clean || clean.length > 80) return null;
+    const customHangup = agentConfig?.masterAiConfig?.hangupPhrases || this.hangupPhrases;
+    for (const phrase of customHangup) {
+      const normalizedPhrase = phrase.toLowerCase().trim();
+      if (clean === normalizedPhrase || clean.startsWith(normalizedPhrase) || clean.endsWith(normalizedPhrase)) {
+        return {
+          action: "hangup",
+          message: agentConfig?.masterAiConfig?.hangupMessage || "Thank you for your time. Have a great day!",
+          confidence: 0.95
+        };
+      }
+    }
+    const customTransfer = agentConfig?.masterAiConfig?.transferPhrases || this.transferPhrases;
+    for (const phrase of customTransfer) {
+      const normalizedPhrase = phrase.toLowerCase().trim();
+      if (clean === normalizedPhrase || clean.includes(normalizedPhrase)) {
+        return {
+          action: "transfer",
+          destination: agentConfig?.transferPhoneNumber || agentConfig?.masterAiConfig?.transferDestination || "user/1001",
+          message: agentConfig?.masterAiConfig?.transferMessage || "Sure, transferring you to a representative now. Please hold on.",
+          confidence: 0.95
+        };
+      }
+    }
+    return null;
+  }
+  /**
+   * 4. Semantic Instant FAQ & Cache Matcher (<20ms)
+   * Performs fast n-gram & token similarity to match recurring questions without LLM.
+   */
+  matchInstantFaq(userText, faqs) {
+    if (!faqs || faqs.length === 0 || !userText) return null;
+    const queryTokens = this.tokenize(userText);
+    if (queryTokens.length === 0) return null;
+    let bestMatch = null;
+    let highestScore = 0;
+    for (const faq of faqs) {
+      for (const pattern of faq.questionPatterns) {
+        const patternTokens = this.tokenize(pattern);
+        if (patternTokens.length === 0) continue;
+        const normQuery = userText.toLowerCase().replace(/[^\w\s]/g, "").trim();
+        const normPattern = pattern.toLowerCase().replace(/[^\w\s]/g, "").trim();
+        if (normQuery === normPattern || normQuery.includes(normPattern) || normPattern.includes(normQuery)) {
+          return faq;
+        }
+        const intersection = queryTokens.filter((token) => patternTokens.includes(token));
+        const union = /* @__PURE__ */ new Set([...queryTokens, ...patternTokens]);
+        const score = intersection.length / union.size;
+        if (score > highestScore && score >= 0.75) {
+          highestScore = score;
+          bestMatch = faq;
+        }
+      }
+    }
+    return bestMatch;
+  }
+  /**
+   * 5. Fast Entity & Slot Pre-Extractor (<12ms)
+   * Extracts dates, Indian/Global phones, and pincodes before LLM processing.
+   */
+  extractSlots(text2) {
+    const rawEntities = {};
+    const result = { rawEntities };
+    const phoneMatch = text2.match(/(?:\+91|91)?[\s-]?[6-9]\d{9}\b/) || text2.match(/\b\d{10}\b/);
+    if (phoneMatch) {
+      result.phoneNumber = phoneMatch[0].replace(/[^\d+]/g, "");
+      rawEntities.phoneNumber = result.phoneNumber;
+    }
+    const pinMatch = text2.match(/\b[1-9]\d{5}\b/);
+    if (pinMatch) {
+      result.pincode = pinMatch[0];
+      rawEntities.pincode = result.pincode;
+    }
+    const lower = text2.toLowerCase();
+    const now = /* @__PURE__ */ new Date();
+    if (lower.includes("tomorrow")) {
+      const tomorrow = new Date(now.getTime() + 864e5);
+      result.normalizedDate = tomorrow.toISOString().split("T")[0];
+      rawEntities.date = "tomorrow";
+    } else if (lower.includes("today")) {
+      result.normalizedDate = now.toISOString().split("T")[0];
+      rawEntities.date = "today";
+    }
+    const timeMatch = text2.match(/\b(?:1[0-2]|0?[1-9])(?::[0-5]\d)?\s*(?:am|pm)\b/i) || text2.match(/\b(?:[01]?\d|2[0-3]):[0-5]\d\b/);
+    if (timeMatch) {
+      result.timeSlot = timeMatch[0].trim();
+      rawEntities.time = result.timeSlot;
+    }
+    return result;
+  }
+  tokenize(text2) {
+    return text2.toLowerCase().replace(/[^\w\s]/g, "").split(/\s+/).filter((w) => w.length > 1 && !this.isStopWord(w));
+  }
+  isStopWord(word) {
+    const stops = /* @__PURE__ */ new Set(["the", "is", "at", "which", "on", "a", "an", "in", "to", "for", "of", "and"]);
+    return stops.has(word);
+  }
+};
+
 // plugins/custom-voice-engine/services/audio-pipeline/audio-session.ts
 function writeWavHeader(samplesLength, sampleRate, numChannels, bitsPerSample) {
   const header = Buffer.alloc(44);
@@ -12049,10 +13387,11 @@ function writeWavHeader(samplesLength, sampleRate, numChannels, bitsPerSample) {
   header.writeUInt32LE(dataSize, 40);
   return header;
 }
-var AudioSession = class extends EventEmitter {
+var AudioSession = class extends EventEmitter2 {
   id;
   channelUuid;
   isTransferred = false;
+  isByok = false;
   session;
   agentConfig;
   sttConfig;
@@ -12063,6 +13402,7 @@ var AudioSession = class extends EventEmitter {
   llmProvider = null;
   ttsProvider = null;
   vadDetector;
+  masterAiService = new MasterAIService();
   // State
   isProcessingLlm = false;
   isPlayingTts = false;
@@ -12093,12 +13433,7 @@ var AudioSession = class extends EventEmitter {
   // Sends a control/JSON text frame to mod_audio_fork over this session's
   // websocket (used by the streaming `playAudio` / `killAudio` protocol).
   controlOutCallback = null;
-  // Experimental gap-free streaming playback. OFF by default so live calls keep
-  // using the proven file-per-sentence uuid_broadcast path until streaming is
-  // validated on real phone calls. Set VE_STREAMING_PLAYBACK=true to enable it.
-  // (On this deployment mod_audio_fork turns each streamed block into its own
-  // uuid_broadcast, so streaming must be A/B tested on real calls before it can
-  // safely become the default.)
+  // Experimental gap-free streaming playback. Off by default for compatibility with standard FreeSWITCH ESL setups. Set VE_STREAMING_PLAYBACK=true in .env to enable streaming.
   streamingPlayback = process.env.VE_STREAMING_PLAYBACK === "true";
   // Tool calling
   tools = [];
@@ -12109,6 +13444,8 @@ var AudioSession = class extends EventEmitter {
   // cold TTS round-trip on the critical path. Falls back to live synthesis on miss.
   greetingAudioCache = null;
   greetingCacheText = null;
+  fillerAudioCache = null;
+  fillerCacheText = null;
   preSynthesizePromise = null;
   // Latency instrumentation: marks the start of the current turn (caller finished
   // speaking) so we can log STT→LLM→TTS→playback timings per turn.
@@ -12161,7 +13498,11 @@ var AudioSession = class extends EventEmitter {
       });
       this.llmProvider = LlmProviderFactory.create(this.llmConfig.provider);
       this.ttsProvider = TtsProviderFactory.create(this.ttsConfig.provider);
-      this.preSynthesizePromise = this.preSynthesizeGreeting();
+      this.preSynthesizePromise = Promise.all([
+        this.preSynthesizeGreeting(),
+        this.preSynthesizeFiller()
+      ]).then(() => {
+      });
       const now = /* @__PURE__ */ new Date();
       const formatterOptions = { timeZone: "Asia/Kolkata" };
       const dateContext = [
@@ -12220,17 +13561,62 @@ var AudioSession = class extends EventEmitter {
       console.warn(`[AudioSession:${this.id}] Greeting pre-synthesis failed (will fall back to live TTS): ${err.message}`);
     }
   }
+  getFillerText() {
+    const lang = this.agentConfig.language || "en";
+    const baseLang = lang.split(/[-_]/)[0].toLowerCase();
+    let filler = "Sure, one moment...";
+    if (baseLang === "hi") {
+      filler = "\u091C\u0940, \u090F\u0915 \u092E\u093F\u0928\u091F...";
+    } else if (baseLang === "ta") {
+      filler = "\u0B9A\u0BB0\u0BBF, \u0B92\u0BB0\u0BC1 \u0BA8\u0BBF\u0BAE\u0BBF\u0B9F\u0BAE\u0BCD...";
+    } else if (baseLang === "te") {
+      filler = "\u0C38\u0C30\u0C47, \u0C12\u0C15\u0C4D\u0C15 \u0C28\u0C3F\u0C2E\u0C3F\u0C37\u0C02...";
+    } else if (baseLang === "kn") {
+      filler = "\u0CB8\u0CB0\u0CBF, \u0C92\u0C82\u0CA6\u0CC1 \u0CA8\u0CBF\u0CAE\u0CBF\u0CB7...";
+    }
+    return filler;
+  }
+  async preSynthesizeFiller() {
+    const filler = this.getFillerText();
+    if (!this.ttsProvider) return;
+    try {
+      const startTime = Date.now();
+      const chunks = [];
+      const config = { ...this.ttsConfig };
+      if (this.agentConfig.detectLanguageEnabled) {
+        config.language = this.detectTtsLanguage(filler, config.language || "en-IN");
+      }
+      for await (const audioChunk of this.ttsProvider.synthesizeStream(filler, config)) {
+        chunks.push(audioChunk);
+      }
+      if (chunks.length > 0 && !this.destroyed) {
+        this.fillerAudioCache = Buffer.concat(chunks);
+        this.fillerCacheText = filler;
+        console.log(`[AudioSession:${this.id}] [latency] Filler phrase pre-synthesized in ${Date.now() - startTime}ms (${this.fillerAudioCache.length} bytes cached)`);
+      }
+    } catch (err) {
+      console.warn(`[AudioSession:${this.id}] Filler pre-synthesis failed (will fall back to live TTS): ${err.message}`);
+    }
+  }
   async triggerFirstMessage() {
     if (this.firstMessageTriggered) {
       console.log(`[AudioSession:${this.id}] triggerFirstMessage - already triggered, returning`);
       return;
     }
     this.firstMessageTriggered = true;
+    const greetingStart = Date.now();
     if (!this.agentConfig.firstMessage) {
       console.log(`[AudioSession:${this.id}] triggerFirstMessage - no firstMessage configured`);
       return;
     }
-    const greetingStart = Date.now();
+    if (this.preSynthesizePromise) {
+      try {
+        console.log(`[AudioSession:${this.id}] triggerFirstMessage - waiting for greeting pre-synthesis to complete...`);
+        await this.preSynthesizePromise;
+      } catch (err) {
+        console.warn(`[AudioSession:${this.id}] triggerFirstMessage - pre-synthesis wait failed: ${err.message}`);
+      }
+    }
     const isCached = this.greetingCacheText === this.agentConfig.firstMessage && !!this.greetingAudioCache;
     console.log(`[AudioSession:${this.id}] triggerFirstMessage - speaking first message: "${this.agentConfig.firstMessage}" (cached=${isCached})`);
     if (isCached) {
@@ -12273,6 +13659,14 @@ var AudioSession = class extends EventEmitter {
       }
       return;
     }
+    if (this.fillerAudioCache && this.fillerCacheText === text2) {
+      const cached = this.fillerAudioCache;
+      const chunkSize = 640;
+      for (let offset = 0; offset < cached.length; offset += chunkSize) {
+        yield cached.subarray(offset, Math.min(offset + chunkSize, cached.length));
+      }
+      return;
+    }
     const config = { ...this.ttsConfig };
     if (this.agentConfig.detectLanguageEnabled) {
       config.language = this.detectTtsLanguage(text2, config.language || "en-IN");
@@ -12284,7 +13678,6 @@ var AudioSession = class extends EventEmitter {
       console.log(`[AudioSession:${this.id}] enableAudio - marking answered`);
       this.isCallAnswered = true;
       this.callAnsweredTime = Date.now();
-      this.startDemoCallDurationLimit();
     } else {
       console.log(`[AudioSession:${this.id}] enableAudio - already answered`);
     }
@@ -12294,7 +13687,6 @@ var AudioSession = class extends EventEmitter {
       console.log(`[AudioSession:${this.id}] callAnswered - marking answered, triggering first message`);
       this.isCallAnswered = true;
       this.callAnsweredTime = Date.now();
-      this.startDemoCallDurationLimit();
       this.emit("callAnswered");
     }
     await this.triggerFirstMessage();
@@ -12313,7 +13705,7 @@ var AudioSession = class extends EventEmitter {
     this.mixAudioAtOffset(chunk, startOffset);
     this.lastIncomingWriteEnd = startOffset + chunk.length;
     const timeSinceLastTts = Date.now() - this.lastTtsEndTime;
-    const isWithinEchoGuardWindow = timeSinceLastTts < 250;
+    const isWithinEchoGuardWindow = timeSinceLastTts < 100;
     if (!isWithinEchoGuardWindow) {
       const vadResult = this.vadDetector.processChunk(chunk, this.isPlayingTts);
       if (vadResult.isSpeechEnd) {
@@ -12326,11 +13718,16 @@ var AudioSession = class extends EventEmitter {
           this.handleInterruption();
         }
       }
-      if (vadResult.isSpeechEnd && this.sttProvider?.flush) {
-        console.log(`[AudioSession:${this.id}] Calling STT flush`);
-        this.sttProvider.flush().catch((err) => {
-          console.error(`[AudioSession:${this.id}] STT flush error:`, err.message);
-        });
+      if (vadResult.isSpeechEnd && this.sttProvider) {
+        if (this.sttProvider.flush) {
+          console.log(`[AudioSession:${this.id}] Calling STT flush`);
+          this.sttProvider.flush().catch((err) => {
+            console.error(`[AudioSession:${this.id}] STT flush error:`, err.message);
+          });
+        } else if (this.sttProvider.name === "deepgram") {
+          console.log(`[AudioSession:${this.id}] Forcing Deepgram stream finalize on VAD silence`);
+          this.sttProvider.sendAudio(JSON.stringify({ type: "Finalize" }));
+        }
       }
     }
     const canSendAudio = !this.isPlayingTts;
@@ -12459,18 +13856,18 @@ var AudioSession = class extends EventEmitter {
         const samplesCount = trimmedBuffer.length / 2;
         const durationSeconds = Math.round(samplesCount / 8e3);
         console.log(`[AudioSession:${this.id}] Preparing to save WAV recording. Samples: ${samplesCount}, Duration: ${durationSeconds}s`);
-        const recordingsDir = path.join(process.cwd(), "client", "public", "uploads", "recordings");
-        if (!fs.existsSync(recordingsDir)) {
+        const recordingsDir = path2.join(process.cwd(), "client", "public", "uploads", "recordings");
+        if (!fs2.existsSync(recordingsDir)) {
           console.log(`[AudioSession:${this.id}] Creating recordings directory: ${recordingsDir}`);
-          fs.mkdirSync(recordingsDir, { recursive: true });
+          fs2.mkdirSync(recordingsDir, { recursive: true });
         }
         const wavHeader = writeWavHeader(samplesCount, 8e3, 1, 16);
         const wavBuffer = Buffer.concat([wavHeader, trimmedBuffer]);
         const fileName = `${this.id}.wav`;
-        const storagePath = path.join(recordingsDir, fileName);
+        const storagePath = path2.join(recordingsDir, fileName);
         const storageUrl = `/uploads/recordings/${fileName}`;
         console.log(`[AudioSession:${this.id}] Writing WAV file to disk at: ${storagePath}`);
-        await fs.promises.writeFile(storagePath, wavBuffer);
+        await fs2.promises.writeFile(storagePath, wavBuffer);
         console.log(`[AudioSession:${this.id}] WAV file successfully written to disk. File size: ${wavBuffer.length} bytes`);
         const textTranscript = typeof this.session.transcript === "string" ? this.session.transcript : JSON.stringify(this.session.transcript || []);
         console.log(`[AudioSession:${this.id}] Inserting recording metadata into ve_call_recordings table...`);
@@ -12519,20 +13916,36 @@ var AudioSession = class extends EventEmitter {
       transcript,
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
     });
-    if (!transcript.isFinal) {
-      this.pendingTranscript = transcript.text;
-      console.log(`[AudioSession:${this.id}] handleSttTranscript - interim: "${transcript.text}"`);
-      return;
+    if (this.sttProvider?.name === "deepgram") {
+      if (!transcript.speechFinal && transcript.text.trim()) {
+        const chunkText2 = transcript.text.trim();
+        if (!this.pendingTranscript.includes(chunkText2)) {
+          this.pendingTranscript = (this.pendingTranscript ? `${this.pendingTranscript} ${chunkText2}` : chunkText2).trim();
+          console.log(`[AudioSession:${this.id}] handleSttTranscript - Deepgram chunk (speech ongoing): "${this.pendingTranscript}"`);
+        }
+        return;
+      }
     }
-    const text2 = transcript.text || this.pendingTranscript;
-    console.log(`[AudioSession:${this.id}] handleSttTranscript - FINAL: "${text2}"`);
+    const rawText = (this.pendingTranscript ? `${this.pendingTranscript} ${transcript.text || ""}` : transcript.text || "").trim();
+    this.pendingTranscript = "";
+    const text2 = rawText;
+    console.log(`[AudioSession:${this.id}] handleSttTranscript - FINAL UTTERANCE: "${text2}"`);
+    if (this.isPlayingTts && text2) {
+      if (this.masterAiService.isBackchannel(text2, this.agentConfig.language)) {
+        console.log(`[AudioSession:${this.id}] [MasterAI] User affirmation backchannel "${text2}" during agent playback. Ignoring barge-in.`);
+        return;
+      }
+      if (this.masterAiService.isHardInterruption(text2)) {
+        console.log(`[AudioSession:${this.id}] [MasterAI] Hard interruption keyword detected in "${text2}". Cutting off agent playback immediately.`);
+        this.handleInterruption();
+      }
+    }
     if (text2 && this.lastTranscriptText === text2 && Date.now() - this.lastTranscriptTime < 3e3) {
       console.log(`[AudioSession:${this.id}] Skipping duplicate transcript: "${text2}"`);
       return;
     }
-    this.lastTranscriptText = text2 || "";
+    this.lastTranscriptText = text2;
     this.lastTranscriptTime = Date.now();
-    this.pendingTranscript = "";
     if (!text2.trim()) return;
     this.lastUserActivityTime = Date.now();
     this.clearIdleTimeout();
@@ -12633,7 +14046,60 @@ var AudioSession = class extends EventEmitter {
     this.turnStartTime = Date.now();
     console.log(`[AudioSession:${this.id}] processUserUtterance - START: "${text2}"`);
     this.clearIdleTimeout();
-    this.conversationMessages.push({ role: "user", content: text2 });
+    const masterAiConfig = this.agentConfig.masterAiConfig || {};
+    const actionResult = this.masterAiService.evaluateAction(text2, masterAiConfig);
+    if (actionResult.action === "hangup") {
+      console.log(`[AudioSession:${this.id}] [MasterAI] Action Gate -> HANGUP triggered for "${text2}"`);
+      this.isProcessingLlm = false;
+      this.conversationMessages.push({ role: "user", content: text2 });
+      this.addTranscriptEntry("user", text2);
+      if (actionResult.speechResponse) {
+        this.conversationMessages.push({ role: "assistant", content: actionResult.speechResponse });
+        this.addTranscriptEntry("assistant", actionResult.speechResponse);
+        await this.speakText(actionResult.speechResponse);
+      }
+      this.end("hangup");
+      return;
+    }
+    if (actionResult.action === "transfer" && (actionResult.transferTarget || this.agentConfig.transferPhoneNumber)) {
+      const targetNumber = actionResult.transferTarget || this.agentConfig.transferPhoneNumber;
+      console.log(`[AudioSession:${this.id}] [MasterAI] Action Gate -> TRANSFER to ${targetNumber} for "${text2}"`);
+      this.isProcessingLlm = false;
+      this.conversationMessages.push({ role: "user", content: text2 });
+      this.addTranscriptEntry("user", text2);
+      if (actionResult.speechResponse) {
+        this.conversationMessages.push({ role: "assistant", content: actionResult.speechResponse });
+        this.addTranscriptEntry("assistant", actionResult.speechResponse);
+        await this.speakText(actionResult.speechResponse);
+      }
+      this.emit("transfer", targetNumber);
+      return;
+    }
+    const instantAnswer = await this.masterAiService.matchInstantFaq(
+      text2,
+      this.agentConfig.id,
+      masterAiConfig.instantFaqs
+    );
+    if (instantAnswer) {
+      console.log(`[AudioSession:${this.id}] [MasterAI] Instant FAQ Cache HIT: "${instantAnswer}"`);
+      this.isProcessingLlm = false;
+      this.conversationMessages.push({ role: "user", content: text2 });
+      this.addTranscriptEntry("user", text2);
+      this.conversationMessages.push({ role: "assistant", content: instantAnswer });
+      this.addTranscriptEntry("assistant", instantAnswer);
+      this.queueTts(instantAnswer);
+      return;
+    }
+    const extractedSlots = this.masterAiService.extractSlots(text2);
+    if (Object.keys(extractedSlots).length > 0) {
+      console.log(`[AudioSession:${this.id}] [MasterAI] Fast slots extracted:`, JSON.stringify(extractedSlots));
+    }
+    let userContent = text2;
+    if (Object.keys(extractedSlots).length > 0) {
+      userContent += `
+[Detected Parameters: ${JSON.stringify(extractedSlots)}]`;
+    }
+    this.conversationMessages.push({ role: "user", content: userContent });
     this.addTranscriptEntry("user", text2);
     this.emitPipelineEvent({
       type: "llm_start",
@@ -12692,8 +14158,28 @@ var AudioSession = class extends EventEmitter {
           content: fullResponse || null,
           toolCalls: toolCallEntries
         });
+        const isEndCall = toolCallEntries.some((tc) => tc.function?.name === "end_call");
+        if (!isEndCall && !this.destroyed) {
+          const lang = this.agentConfig.language || "en";
+          const baseLang = lang.split(/[-_]/)[0].toLowerCase();
+          let filler = "Sure, one moment...";
+          if (baseLang === "hi") {
+            filler = "\u091C\u0940, \u090F\u0915 \u092E\u093F\u0928\u091F...";
+          } else if (baseLang === "ta") {
+            filler = "\u0B9A\u0BB0\u0BBF, \u0B92\u0BB0\u0BC1 \u0BA8\u0BBF\u0BAE\u0BBF\u0B9F\u0BAE\u0BCD...";
+          } else if (baseLang === "te") {
+            filler = "\u0C38\u0C30\u0C47, \u0C12\u0C15\u0C4D\u0C15 \u0C28\u0C3F\u0C2E\u0C3F\u0C37\u0C02...";
+          } else if (baseLang === "kn") {
+            filler = "\u0CB8\u0CB0\u0CBF, \u0C92\u0C82\u0CA6\u0CC1 \u0CA8\u0CBF\u0CAE\u0CBF\u0CB7...";
+          }
+          console.log(`[AudioSession:${this.id}] Speaking filler phrase before tool call: "${filler}"`);
+          const fillerAudio = filler === this.fillerCacheText ? this.fillerAudioCache : null;
+          this.speakText(filler, fillerAudio).catch((err) => {
+            console.error(`[AudioSession:${this.id}] Failed playing filler phrase:`, err.message);
+          });
+        }
         let hasEndCall = false;
-        for (const tc of toolCallEntries) {
+        const toolPromises = toolCallEntries.map(async (tc) => {
           console.log(`[AudioSession:${this.id}] Tool call: ${tc.function.name}(${tc.function.arguments})`);
           const metadata = this.toolMetadata.get(tc.function.name);
           const result = await ToolExecutor.executeToolCall(
@@ -12707,6 +14193,10 @@ var AudioSession = class extends EventEmitter {
           if (tc.function.name === "end_call") {
             hasEndCall = true;
           }
+          return { tc, result };
+        });
+        const results = await Promise.all(toolPromises);
+        for (const { tc, result } of results) {
           this.conversationMessages.push({
             role: "tool",
             content: JSON.stringify(result.result),
@@ -12933,7 +14423,7 @@ var AudioSession = class extends EventEmitter {
           console.log(`[AudioSession:${this.id}] [latency] First TTS audio sent ${Date.now() - this.turnStartTime}ms after turn start`);
         }
       }
-      await new Promise((resolve) => setTimeout(resolve, Math.round(out.length / 16)));
+      await new Promise((resolve) => setTimeout(resolve, Math.round(out.length / 16 * 0.85)));
     };
     try {
       let pending = Buffer.alloc(0);
@@ -13048,7 +14538,7 @@ var AudioSession = class extends EventEmitter {
    * result whose assistant tool-call parent was trimmed away.
    */
   trimConversationHistory() {
-    const MAX_RECENT = 40;
+    const MAX_RECENT = 20;
     if (this.conversationMessages.length <= MAX_RECENT + 1) return;
     const system = this.conversationMessages[0];
     const rest = this.conversationMessages.slice(1);
@@ -13079,12 +14569,21 @@ var AudioSession = class extends EventEmitter {
   }
   // ── Private: Helpers ───────────────────────────────────
   findSentenceEnd(text2) {
-    const endings = [". ", "! ", "? ", ".\n", "!\n", "?\n", "\u0964 ", "\u0964\n", "| ", "|\n"];
+    const sentenceEndings = [". ", "! ", "? ", ".\n", "!\n", "?\n", "\u0964 ", "\u0964\n", "| ", "|\n"];
     let lastEnd = -1;
-    for (const ending of endings) {
+    for (const ending of sentenceEndings) {
       const idx = text2.lastIndexOf(ending);
       if (idx > lastEnd) {
         lastEnd = idx;
+      }
+    }
+    if (lastEnd === -1 && text2.length > 35) {
+      const clauseEndings = [", ", "; ", ": ", " \u2014 "];
+      for (const clause of clauseEndings) {
+        const idx = text2.lastIndexOf(clause);
+        if (idx > 18 && idx > lastEnd) {
+          lastEnd = idx;
+        }
       }
     }
     return lastEnd;
@@ -13093,7 +14592,32 @@ var AudioSession = class extends EventEmitter {
     const sentences = [];
     let remaining = text2;
     while (remaining.length > 0) {
-      const endings = [". ", "! ", "? ", ".\n", "!\n", "?\n", "\u0964 ", "\u0964\n", "| ", "|\n", ".", "!", "?", "\u0964", "|"];
+      const endings = [
+        ". ",
+        "! ",
+        "? ",
+        ".\n",
+        "!\n",
+        "?\n",
+        "\u0964 ",
+        "\u0964\n",
+        "| ",
+        "|\n",
+        ", ",
+        "; ",
+        ": ",
+        ",\n",
+        ";\n",
+        ":\n",
+        ".",
+        "!",
+        "?",
+        "\u0964",
+        "|",
+        ",",
+        ";",
+        ":"
+      ];
       let earliestIdx = -1;
       let matchedEnding = "";
       for (const ending of endings) {
@@ -13149,346 +14673,14 @@ var AudioSession = class extends EventEmitter {
 // plugins/custom-voice-engine/services/audio-pipeline/ws-audio-server.ts
 init_db();
 import { sql as sql18 } from "drizzle-orm";
-
-// plugins/custom-voice-engine/services/freeswitch/esl-connection.ts
-import { Socket } from "net";
-import { EventEmitter as EventEmitter2 } from "events";
-var EslConnection = class extends EventEmitter2 {
-  socket = null;
-  config;
-  connected = false;
-  authenticated = false;
-  reconnecting = false;
-  disconnecting = false;
-  expectedDiscards = 0;
-  reconnectAttempts = 0;
-  reconnectTimer = null;
-  buffer = "";
-  pendingCommands = [];
-  constructor(config) {
-    super();
-    this.config = {
-      reconnect: true,
-      reconnectIntervalMs: 5e3,
-      maxReconnectAttempts: 10,
-      ...config
-    };
-  }
-  /**
-   * Connect to FreeSWITCH ESL
-   */
-  async connect() {
-    return new Promise((resolve, reject) => {
-      this.socket = new Socket();
-      this.socket.setEncoding("utf8");
-      const timeout = setTimeout(() => {
-        this.off("ready", onReady);
-        this.off("error", onError);
-        reject(new Error(`ESL connection timeout to ${this.config.host}:${this.config.port}`));
-        this.socket?.destroy();
-      }, 1e4);
-      const onReady = () => {
-        clearTimeout(timeout);
-        this.off("error", onError);
-        resolve();
-      };
-      const onError = (err) => {
-        clearTimeout(timeout);
-        this.off("ready", onReady);
-        reject(err);
-      };
-      this.once("ready", onReady);
-      this.once("error", onError);
-      this.socket.on("connect", () => {
-        console.log(`[ESL] Socket connected to ${this.config.host}:${this.config.port}, waiting for authentication...`);
-      });
-      this.socket.on("data", (data) => {
-        this.buffer += data;
-        this.processBuffer();
-      });
-      this.socket.on("error", (err) => {
-        console.error("[ESL] Socket error:", err.message);
-        this.emit("error", err);
-      });
-      this.socket.on("close", () => {
-        if (this.disconnecting) {
-          this.connected = false;
-          this.authenticated = false;
-          console.log("[ESL] Connection closed (intentional)");
-          this.emit("disconnect");
-          return;
-        }
-        const wasAuthenticated = this.authenticated;
-        this.connected = false;
-        this.authenticated = false;
-        console.log("[ESL] Connection closed");
-        this.emit("disconnect");
-        if (!wasAuthenticated) {
-          this.emit("error", new Error(`ESL connection to ${this.config.host}:${this.config.port} closed before authentication completed \u2014 check ESL password and FreeSWITCH ESL config`));
-        }
-        if (this.config.reconnect && !this.reconnecting) {
-          this.scheduleReconnect();
-        }
-      });
-      this.socket.connect(this.config.port, this.config.host);
-    });
-  }
-  /**
-   * Send an API command to FreeSWITCH
-   */
-  async api(command) {
-    return this.sendCommand(`api ${command}`);
-  }
-  /**
-   * Send a background API command
-   */
-  async bgapi(command) {
-    return this.sendCommand(`bgapi ${command}`);
-  }
-  /**
-   * Execute an application on a channel
-   */
-  async execute(uuid, app, arg) {
-    const cmd = arg ? `sendmsg ${uuid}
-call-command: execute
-execute-app-name: ${app}
-execute-app-arg: ${arg}` : `sendmsg ${uuid}
-call-command: execute
-execute-app-name: ${app}`;
-    return this.sendCommand(cmd);
-  }
-  /**
-   * Originate an outbound call
-   */
-  async originate(dialString, destination, options = {}) {
-    const vars = Object.entries(options).map(([k, v]) => `${k}=${v}`).join(",");
-    const varsStr = vars ? `{${vars}}` : "";
-    return this.bgapi(`originate ${varsStr}${dialString} ${destination}`);
-  }
-  /**
-   * Start audio forking on a channel (sends audio to WebSocket)
-   */
-  async startAudioFork(uuid, wsUrl) {
-    return this.execute(uuid, "audio_fork", wsUrl);
-  }
-  /**
-   * Stop audio forking on a channel
-   */
-  async stopAudioFork(uuid) {
-    return this.execute(uuid, "stop_audio_fork");
-  }
-  /**
-   * Hang up a channel
-   */
-  async hangup(uuid, cause) {
-    return this.api(`uuid_kill ${uuid} ${cause || "NORMAL_CLEARING"}`);
-  }
-  /**
-   * Get channel variable
-   */
-  async getVariable(uuid, variable) {
-    return this.api(`uuid_getvar ${uuid} ${variable}`);
-  }
-  /**
-   * Set channel variable
-   */
-  async setVariable(uuid, variable, value) {
-    return this.api(`uuid_setvar ${uuid} ${variable} ${value}`);
-  }
-  /**
-   * Get active channel count
-   */
-  async getActiveChannelCount() {
-    const result = await this.api("show calls count");
-    const match = result.match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
-  }
-  /**
-   * Disconnect from FreeSWITCH
-   */
-  async disconnect() {
-    this.config.reconnect = false;
-    this.disconnecting = true;
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-    if (this.socket) {
-      this.socket.destroy();
-      this.socket = null;
-    }
-    this.connected = false;
-    this.authenticated = false;
-    console.log("[ESL] Disconnected");
-  }
-  isConnected() {
-    return this.connected && this.authenticated;
-  }
-  // ── Private Methods ────────────────────────────────────
-  async sendCommand(command) {
-    if (!this.connected || !this.socket) {
-      throw new Error("ESL not connected");
-    }
-    return new Promise((resolve, reject) => {
-      this.pendingCommands.push({ resolve, reject });
-      this.sendRaw(`${command}
-
-`);
-      setTimeout(() => {
-        const idx = this.pendingCommands.findIndex((p) => p.resolve === resolve);
-        if (idx !== -1) {
-          this.pendingCommands.splice(idx, 1);
-          reject(new Error(`ESL command timeout: ${command.split("\n")[0]}`));
-        }
-      }, 15e3);
-    });
-  }
-  sendRaw(data) {
-    if (this.socket && !this.socket.destroyed) {
-      this.socket.write(data);
-    }
-  }
-  processBuffer() {
-    this.buffer = this.buffer.trimStart();
-    while (true) {
-      const headerEndIndex = this.buffer.indexOf("\n\n");
-      if (headerEndIndex === -1) break;
-      const headerPart = this.buffer.substring(0, headerEndIndex);
-      const headers = {};
-      const lines = headerPart.split("\n");
-      for (const line of lines) {
-        const colonIdx = line.indexOf(":");
-        if (colonIdx > 0) {
-          const key = line.substring(0, colonIdx).trim();
-          const value = line.substring(colonIdx + 1).trim();
-          headers[key] = decodeURIComponent(value);
-        }
-      }
-      const contentLength = headers["Content-Length"] ? parseInt(headers["Content-Length"], 10) : 0;
-      const totalMessageLength = headerEndIndex + 2 + contentLength;
-      if (this.buffer.length < totalMessageLength) {
-        break;
-      }
-      const body = this.buffer.substring(headerEndIndex + 2, headerEndIndex + 2 + contentLength);
-      this.buffer = this.buffer.substring(totalMessageLength).trimStart();
-      this.processMessage(headers, body);
-    }
-  }
-  processMessage(headers, body) {
-    const contentType = headers["Content-Type"];
-    if (contentType === "auth/request") {
-      this.sendRaw(`auth ${this.config.password}
-
-`);
-      return;
-    }
-    if (contentType === "api/response" || contentType === "command/reply") {
-      const replyText = headers["Reply-Text"] || body.trim();
-      if (!this.authenticated) {
-        if (replyText.startsWith("+OK accepted")) {
-          this.authenticated = true;
-          this.connected = true;
-          this.reconnectAttempts = 0;
-          this.sendRaw("event plain CHANNEL_CREATE CHANNEL_ANSWER CHANNEL_HANGUP CHANNEL_DESTROY\n\n");
-          this.sendRaw("event plain CUSTOM mod_audio_fork::play_audio\n\n");
-          this.expectedDiscards = 2;
-          console.log("[ESL] Authenticated successfully, waiting for subscription confirmations...");
-        } else if (replyText.startsWith("-ERR")) {
-          const err = new Error(`ESL authentication failed: ${replyText}`);
-          this.emit("error", err);
-          this.socket?.destroy();
-        } else {
-          const err = new Error(`ESL auth reply unexpected: ${replyText}`);
-          this.emit("error", err);
-          this.socket?.destroy();
-        }
-        return;
-      }
-      if (this.expectedDiscards > 0) {
-        this.expectedDiscards--;
-        if (this.expectedDiscards === 0) {
-          console.log("[ESL] Subscription confirmations received, connection ready");
-          this.emit("ready");
-        }
-        return;
-      }
-      const pending = this.pendingCommands.shift();
-      if (pending) {
-        if (replyText.startsWith("-ERR")) {
-          pending.reject(new Error(replyText));
-        } else {
-          pending.resolve(body.trim() || replyText);
-        }
-      }
-      return;
-    }
-    if (contentType === "text/event-plain") {
-      const eventHeaders = {};
-      const lines = body.split("\n");
-      let eventBody = "";
-      let inEventBody = false;
-      for (const line of lines) {
-        if (inEventBody) {
-          eventBody += line + "\n";
-          continue;
-        }
-        if (line.trim() === "") {
-          inEventBody = true;
-          continue;
-        }
-        const colonIdx = line.indexOf(":");
-        if (colonIdx > 0) {
-          const key = line.substring(0, colonIdx).trim();
-          const value = line.substring(colonIdx + 1).trim();
-          eventHeaders[key] = decodeURIComponent(value);
-        }
-      }
-      const event = {
-        eventName: eventHeaders["Event-Name"] || "UNKNOWN",
-        eventSubclass: eventHeaders["Event-Subclass"],
-        headers: eventHeaders,
-        body: eventBody.trim() || void 0
-      };
-      const keyEvents = ["CHANNEL_CREATE", "CHANNEL_ANSWER", "CHANNEL_HANGUP", "CHANNEL_DESTROY"];
-      if (keyEvents.includes(event.eventName)) {
-        console.log(`[ESL] Received event: ${event.eventName}`);
-      }
-      this.emit("event", event);
-      this.emit(`event:${event.eventName}`, event);
-    }
-  }
-  scheduleReconnect() {
-    if (this.reconnectAttempts >= (this.config.maxReconnectAttempts || 10)) {
-      console.error("[ESL] Max reconnect attempts reached");
-      this.emit("maxReconnectAttempts");
-      return;
-    }
-    this.reconnecting = true;
-    this.reconnectAttempts++;
-    const delay = this.config.reconnectIntervalMs || 5e3;
-    console.log(`[ESL] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
-    this.reconnectTimer = setTimeout(async () => {
-      try {
-        await this.connect();
-        this.reconnecting = false;
-      } catch (err) {
-        console.error("[ESL] Reconnect failed:", err.message);
-        this.reconnecting = false;
-        this.scheduleReconnect();
-      }
-    }, delay);
-  }
-};
-
-// plugins/custom-voice-engine/services/audio-pipeline/ws-audio-server.ts
 function camelizeKeys(obj) {
   if (Array.isArray(obj)) {
     return obj.map((v) => camelizeKeys(v));
   } else if (obj !== null && obj.constructor === Object) {
     return Object.keys(obj).reduce((result, key) => {
-      if (key === 'compiled_tools' || key === 'compiledTools') {
-        const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-        result[camelKey] = obj[key];
+      if (key === "compiled_tools" || key === "compiledTools") {
+        const camelKey2 = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+        result[camelKey2] = obj[key];
         return result;
       }
       const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
@@ -13700,7 +14892,8 @@ var AudioWebSocketServer = class {
                               fromNumber: sessionData.from_number || "Unknown",
                               toNumber: sessionData.to_number || "Unknown",
                               durationSeconds: totalDuration - oldDuration,
-                              engine: "custom-voice-engine"
+                              engine: "custom-voice-engine",
+                              isByok: session?.isByok
                             });
                             if (creditResult.success || creditResult.alreadyDeducted) {
                               newCreditsUsed += creditsToDeduct;
@@ -13780,7 +14973,8 @@ var AudioWebSocketServer = class {
         ws.close(4e3, "Missing session ID");
         return;
       }
-      console.log(`[AudioWS] Incoming connection for sessionId: ${sessionId}`);
+      const isWidgetClient = url.searchParams.get("client") === "widget";
+      console.log(`[AudioWS] Incoming connection for sessionId: ${sessionId} (widget: ${isWidgetClient})`);
       let session = this.sessions.get(sessionId);
       if (!session) {
         console.log(`[AudioWS] Session not found in cache. Querying DB/FreeSWITCH for ${sessionId}...`);
@@ -13795,6 +14989,12 @@ var AudioWebSocketServer = class {
       let audioPlayCount = 0;
       session.onAudioOut(async (audio) => {
         try {
+          if (isWidgetClient) {
+            if (ws.readyState === WebSocket4.OPEN) {
+              ws.send(audio);
+            }
+            return;
+          }
           audioPlayCount++;
           const samplesCount = audio.length / 2;
           const wavHeader = Buffer.alloc(44);
@@ -13819,7 +15019,7 @@ var AudioWebSocketServer = class {
           wavHeader.writeUInt32LE(dataSize, 40);
           const wavBuffer = Buffer.concat([wavHeader, audio]);
           const filePath = `/tmp/${sessionId}_tts_${Date.now()}_${audioPlayCount}.wav`;
-          await fs2.promises.writeFile(filePath, wavBuffer);
+          await fs3.promises.writeFile(filePath, wavBuffer);
           console.log(`[AudioWS] Wrote TTS audio to ${filePath} (${wavBuffer.length} bytes), playing via ESL uuid_broadcast...`);
           for (const esl of this.eslConnections) {
             try {
@@ -13837,7 +15037,7 @@ var AudioWebSocketServer = class {
       });
       session.onControlOut((msg) => {
         try {
-          if (ws.readyState === WebSocket2.OPEN) {
+          if (ws.readyState === WebSocket4.OPEN) {
             ws.send(JSON.stringify(msg));
           }
         } catch (err) {
@@ -13847,6 +15047,16 @@ var AudioWebSocketServer = class {
       session.on("pipelineEvent", async (event) => {
         if (event.type === "interruption") {
           console.log(`[AudioWS] Interruption detected, breaking playback for session ${sessionId}`);
+          if (isWidgetClient) {
+            try {
+              if (ws.readyState === WebSocket4.OPEN) {
+                ws.send(JSON.stringify({ type: "interruption" }));
+              }
+            } catch (err) {
+              console.error(`[AudioWS] Failed to send interruption to widget client:`, err.message);
+            }
+            return;
+          }
           for (const esl of this.eslConnections) {
             try {
               if (esl.isConnected()) {
@@ -13859,7 +15069,7 @@ var AudioWebSocketServer = class {
           }
           if (session.isStreamingPlayback) {
             try {
-              if (ws.readyState === WebSocket2.OPEN) {
+              if (ws.readyState === WebSocket4.OPEN) {
                 ws.send(JSON.stringify({ type: "killAudio" }));
               }
             } catch (err) {
@@ -13871,6 +15081,18 @@ var AudioWebSocketServer = class {
       session.once("transfer", async (targetNumber) => {
         session.isTransferred = true;
         console.log(`[AudioWS] Session ${sessionId} initiating transfer to ${targetNumber}`);
+        if (isWidgetClient) {
+          try {
+            if (ws.readyState === WebSocket4.OPEN) {
+              ws.send(JSON.stringify({ type: "transfer", targetNumber }));
+              ws.close(1e3, "Call transferred");
+            }
+          } catch (err) {
+            console.error(`[AudioWS] Failed to send transfer to widget client:`, err.message);
+          }
+          this.unregisterSession(sessionId);
+          return;
+        }
         let activeGateway = null;
         try {
           const userId = session.userId;
@@ -13883,7 +15105,7 @@ var AudioWebSocketServer = class {
         } catch (err) {
           console.error(`[AudioWS] Failed to fetch active gateway for transfer:`, err.message);
         }
-        const gatewayProxy = (activeGateway == null ? void 0 : activeGateway.proxy) || "testhr.pstn.twilio.com";
+        const gatewayProxy = activeGateway?.proxy || "testhr.pstn.twilio.com";
         const isTwilio = !activeGateway || gatewayProxy.includes("twilio.com");
         let formattedTo = !targetNumber.startsWith("+") && !targetNumber.startsWith("sip:") ? `+${targetNumber}` : targetNumber;
         if (!isTwilio && formattedTo.startsWith("+")) {
@@ -13914,7 +15136,7 @@ var AudioWebSocketServer = class {
                 await esl.api(`uuid_setvar ${targetUuid} sip_from_uri sip:${cleanCallerId}@${gatewayProxy}`);
                 await esl.api(`uuid_setvar ${targetUuid} sip_invite_req_uri sip:${formattedTo}@${gatewayProxy}`);
                 let exportList = "origination_caller_id_number,origination_caller_id_name,effective_caller_id_number,effective_caller_id_name,sip_from_uri,sip_invite_req_uri";
-                if ((activeGateway == null ? void 0 : activeGateway.username) && (activeGateway == null ? void 0 : activeGateway.password)) {
+                if (activeGateway?.username && activeGateway?.password) {
                   await esl.api(`uuid_setvar ${targetUuid} sip_auth_username ${activeGateway.username}`);
                   await esl.api(`uuid_setvar ${targetUuid} sip_auth_password ${activeGateway.password}`);
                   exportList += ",sip_auth_username,sip_auth_password";
@@ -13938,13 +15160,23 @@ var AudioWebSocketServer = class {
         } catch (err) {
           console.error(`[AudioWS] Failed to mark session as transferred:`, err.message);
         }
-        if (ws.readyState === WebSocket2.OPEN) {
+        if (ws.readyState === WebSocket4.OPEN) {
           ws.close(1e3, "Call transferred");
         }
         this.unregisterSession(sessionId);
       });
       session.on("play_audio", async (audioUrl) => {
         console.log(`[AudioWS] Session ${sessionId} playing audio: ${audioUrl}`);
+        if (isWidgetClient) {
+          try {
+            if (ws.readyState === WebSocket4.OPEN) {
+              ws.send(JSON.stringify({ type: "play_audio", url: audioUrl }));
+            }
+          } catch (err) {
+            console.error(`[AudioWS] Failed to send play_audio to widget client:`, err.message);
+          }
+          return;
+        }
         const targetUuid = session.channelUuid || sessionId;
         for (const esl of this.eslConnections) {
           try {
@@ -13963,6 +15195,18 @@ var AudioWebSocketServer = class {
           return;
         }
         console.log(`[AudioWS] Session ${sessionId} ended (reason: ${reason}), issuing ESL uuid_kill`);
+        if (isWidgetClient) {
+          try {
+            if (ws.readyState === WebSocket4.OPEN) {
+              ws.send(JSON.stringify({ type: "hangup", reason }));
+              ws.close(1e3, reason);
+            }
+          } catch (err) {
+            console.error(`[AudioWS] Failed to send hangup to widget client:`, err.message);
+          }
+          this.unregisterSession(sessionId);
+          return;
+        }
         for (const esl of this.eslConnections) {
           try {
             if (esl.isConnected()) {
@@ -13973,7 +15217,7 @@ var AudioWebSocketServer = class {
             console.error(`[AudioWS] Failed to send uuid_kill for ${sessionId}:`, err.message);
           }
         }
-        if (ws.readyState === WebSocket2.OPEN) {
+        if (ws.readyState === WebSocket4.OPEN) {
           ws.close(1e3, "Session ended");
         }
         this.unregisterSession(sessionId);
@@ -14183,6 +15427,23 @@ var AudioWebSocketServer = class {
         return null;
       }
       const agent = camelizeKeys(agentResult.rows[0]);
+      if (sessionData?.metadata) {
+        try {
+          const meta = typeof sessionData.metadata === "string" ? JSON.parse(sessionData.metadata) : sessionData.metadata;
+          if (meta?.language) agent.language = meta.language;
+          if (meta?.ttsVoice) agent.ttsVoice = meta.ttsVoice;
+          if (meta?.llmModel) agent.llmModel = meta.llmModel;
+          if (meta?.sttProvider) agent.sttProvider = meta.sttProvider;
+          if (meta?.ttsProvider) agent.ttsProvider = meta.ttsProvider;
+          if (meta?.sttModel) agent.sttModel = meta.sttModel;
+          if (meta?.ttsModel) agent.ttsModel = meta.ttsModel;
+          if (meta?.isPublicDemo) {
+            agent.firstMessage = "Welcome to the AgentLab call test! I can tell you about this project, talk about accounting, or explain our tools and active plugins. This project was made by the Diploy team.";
+            agent.systemPrompt = "You are the official AgentLab AI Assistant, built by the Diploy team (main website: https://diploy.in/, project: https://agentlabs.diploy.in). You are demonstrating the platform's capabilities to a tester. Keep answers brief (1-3 sentences) and conversational. Do not use markdown. If asked, explain any of these features:\n1. Custom Voice Engine: Powered by FreeSWITCH for real-time voice streaming. Supports Deepgram and Sarvam for STT and TTS, and OpenRouter for LLM. Features customer memory, semantic caching, and call recording.\n2. Messaging Plugin: Sends emails via SMTP and WhatsApp messages via WhatsWay API or Meta Cloud API during or after calls.\n3. SIP Engine Plugin: Supports ElevenLabs SIP with 13 providers and OpenAI SIP for incoming calls, allowing users to use their own SIP trunks.\n4. REST API Plugin: Provides rate-limited API access, API keys, audit logging, and webhook event integration.\n5. Team Management Plugin: Supports role-based access control, separate logins, and custom CRUD permissions for team members.\n6. Platform Tools: Includes Forms for collecting data, Appointments for managing bookings, Website Widget for chat, Quick CRM with a Kanban board, and Google Sheets integration to push data in real time.\n7. Accounting: Real-time credit-based billing system for call duration.";
+          }
+        } catch {
+        }
+      }
       if (agent.firstMessage && fromNumber) {
         const spacedDigits = (fromNumber.startsWith("+") ? "plus " : "") + fromNumber.replace(/\+/g, "").split("").join(" ");
         agent.firstMessage = agent.firstMessage.replace(/\{\{(phone|phone_number)\}\}/gi, spacedDigits);
@@ -14316,100 +15577,157 @@ ${agent.systemPrompt || ""}`;
         });
         console.log(`[AudioWS] Added end_call tool`);
       }
-
-      // Add System Tools (Email Sending)
+      if (agent.transferEnabled) {
+        tools2.push({
+          type: "function",
+          function: {
+            name: "transfer_call",
+            description: 'Transfer the call to a human agent. IMPORTANT: Before calling this function, you MUST first say a brief transfer announcement like "Sure, let me transfer you to an agent now" or "One moment, I will connect you with a representative". After speaking this announcement, immediately call this function. You MUST call this function when: (1) the user explicitly asks to speak to a human, agent, or real person, (2) the user says "transfer", "connect me", or similar phrases, (3) you cannot help them with their request.',
+            parameters: {
+              type: "object",
+              properties: {
+                reason: {
+                  type: "string",
+                  description: "Brief reason for the transfer"
+                }
+              },
+              required: ["reason"]
+            }
+          }
+        });
+        toolMetadata.set("transfer_call", { phoneNumber: agent.transferPhoneNumber });
+        console.log(`[AudioWS] Added transfer_call tool pointing to ${agent.transferPhoneNumber}`);
+      }
+      if (agent.appointmentBookingEnabled) {
+        const callerPhone = sessionData?.direction === "outbound" ? toNumber || sessionData?.toNumber || "" : fromNumber || sessionData?.fromNumber || "";
+        tools2.push({
+          type: "function",
+          function: {
+            name: "book_appointment",
+            description: callerPhone ? `Book an appointment for the caller. The caller's phone number is ${callerPhone} - do NOT ask for their phone number unless they want to use a different one. For contactPhone, use "${callerPhone}" unless they explicitly provide a different number. Collect their name, preferred date and time before calling this tool.` : "Book an appointment for the caller. Collect their name, phone number, preferred date and time before calling this tool.",
+            parameters: {
+              type: "object",
+              properties: {
+                contactName: {
+                  type: "string",
+                  description: "The name of the person booking the appointment"
+                },
+                contactPhone: {
+                  type: "string",
+                  description: callerPhone ? `The caller's phone number. Default to "${callerPhone}" (the number they are calling from). Only use a different number if the caller explicitly provides one.` : "Phone number exactly as spoken. Accept any format."
+                },
+                contactEmail: {
+                  type: "string",
+                  description: "Optional email address"
+                },
+                appointmentDate: {
+                  type: "string",
+                  description: "Appointment date in YYYY-MM-DD format"
+                },
+                appointmentTime: {
+                  type: "string",
+                  description: "Appointment time in HH:MM format (24-hour)"
+                },
+                duration: {
+                  type: "number",
+                  description: "Duration in minutes (default 30)"
+                },
+                serviceName: {
+                  type: "string",
+                  description: "Name of the service being booked"
+                },
+                notes: {
+                  type: "string",
+                  description: "Additional notes or requirements"
+                }
+              },
+              required: ["contactName", "contactPhone", "appointmentDate", "appointmentTime"]
+            }
+          }
+        });
+        console.log(`[AudioWS] Added book_appointment tool`);
+      }
       if (agent.messagingEmailEnabled) {
         const agentIdSuffix = agent.id.slice(-8);
         const emailToolName = `send_email_${agentIdSuffix}`;
-        
-        let templateInstruction = 'Use the template name configured by the user.';
+        let templateInstruction = "Use the template name configured by the user.";
         if (agent.messagingEmailTemplate) {
           templateInstruction = `You MUST use the template named "${agent.messagingEmailTemplate}".`;
         }
-
         tools2.push({
-          type: 'function',
+          type: "function",
           function: {
             name: emailToolName,
             description: `Send an email to the caller. You MUST ask for their email address and CONFIRM it with them first (e.g., "Just to confirm, is your email address...") before invoking this tool. Do NOT invoke this tool until the caller has explicitly confirmed that the email address is correct. ${templateInstruction} Fill in any dynamic variables like contact_name with information collected during the conversation.`,
             parameters: {
-              type: 'object',
+              type: "object",
               properties: {
                 recipient_email: {
-                  type: 'string',
-                  description: 'The email address to send the email to. You must ask the caller for this.'
+                  type: "string",
+                  description: "The email address to send the email to. You must ask the caller for this."
                 },
                 template_name: {
-                  type: 'string',
-                  description: agent.messagingEmailTemplate
-                    ? `The email template to use. ALWAYS use "${agent.messagingEmailTemplate}".`
-                    : 'The name of the email template to use.'
+                  type: "string",
+                  description: agent.messagingEmailTemplate ? `The email template to use. ALWAYS use "${agent.messagingEmailTemplate}".` : "The name of the email template to use."
                 },
                 dynamic_variables: {
-                  type: 'object',
-                  description: 'Key-value pairs for template variable substitution (e.g., contact_name, appointment_date)'
+                  type: "object",
+                  description: "Key-value pairs for template variable substitution (e.g., contact_name, appointment_date)"
                 }
               },
-              required: ['recipient_email', 'template_name']
+              required: ["recipient_email", "template_name"]
             }
           }
         });
         toolMetadata.set(emailToolName, { templateName: agent.messagingEmailTemplate });
         console.log(`[AudioWS] Added send_email tool: ${emailToolName}`);
       }
-
-      // Add System Tools (WhatsApp Sending)
       if (agent.messagingWhatsappEnabled) {
         const agentIdSuffix = agent.id.slice(-8);
         const whatsappToolName = `send_whatsapp_${agentIdSuffix}`;
-        
-        let templateInstruction = 'Use the template name configured by the user.';
+        let templateInstruction = "Use the template name configured by the user.";
         if (agent.messagingWhatsappTemplate) {
           templateInstruction = `You MUST use the template named "${agent.messagingWhatsappTemplate}".`;
         }
-
         tools2.push({
-          type: 'function',
+          type: "function",
           function: {
             name: whatsappToolName,
             description: `Send a WhatsApp message to the caller. You MUST confirm their phone number first before using this tool. ${templateInstruction}`,
             parameters: {
-              type: 'object',
+              type: "object",
               properties: {
                 phone_number: {
-                  type: 'string',
-                  description: 'The phone number to send the WhatsApp message to. Defaults to the caller\'s phone number.'
+                  type: "string",
+                  description: "The phone number to send the WhatsApp message to. Defaults to the caller's phone number."
                 },
                 template_name: {
-                  type: 'string',
-                  description: agent.messagingWhatsappTemplate
-                    ? `The WhatsApp template to use. ALWAYS use "${agent.messagingWhatsappTemplate}".`
-                    : 'The name of the WhatsApp template to use.'
+                  type: "string",
+                  description: agent.messagingWhatsappTemplate ? `The WhatsApp template to use. ALWAYS use "${agent.messagingWhatsappTemplate}".` : "The name of the WhatsApp template to use."
                 },
                 template_variables: {
-                  type: 'array',
+                  type: "array",
                   items: {
-                    type: 'object',
+                    type: "object",
                     properties: {
-                      position: { type: 'number' },
-                      value: { type: 'string' }
+                      position: { type: "number" },
+                      value: { type: "string" }
                     },
-                    required: ['position', 'value']
+                    required: ["position", "value"]
                   },
-                  description: 'Positional variables for template substitution.'
+                  description: "Positional variables for template substitution."
                 }
               },
-              required: ['template_name']
+              required: ["template_name"]
             }
           }
         });
-        toolMetadata.set(whatsappToolName, { 
+        toolMetadata.set(whatsappToolName, {
           templateName: agent.messagingWhatsappTemplate,
-          templateVariables: agent.messagingWhatsappVariables 
+          templateVariables: agent.messagingWhatsappVariables
         });
         console.log(`[AudioWS] Added send_whatsapp tool: ${whatsappToolName}`);
       }
-
       const userId = agent.userId;
       if (isNewSession) {
         const checkAgentInVe = await db.execute(sql18`
@@ -14463,7 +15781,7 @@ ${agent.systemPrompt || ""}`;
       const globalSettingsResult = await db.execute(sql18`
         SELECT key, value FROM global_settings WHERE key IN (
           've_stt_active_provider', 've_llm_active_provider', 've_tts_active_provider',
-          've_deepgram_api_key', 've_sarvam_api_key', 've_openrouter_api_key',
+          've_deepgram_api_key', 've_sarvam_api_key', 've_openrouter_api_key', 've_gemini_api_key',
           've_stt_deepgram_model', 've_stt_sarvam_model',
           've_llm_default_model',
           've_tts_deepgram_model', 've_tts_sarvam_model',
@@ -14479,8 +15797,8 @@ ${agent.systemPrompt || ""}`;
       let sttModel = sttProvider === "sarvam" ? globalSettingsMap["ve_stt_sarvam_model"] || "saaras:v3" : globalSettingsMap["ve_stt_deepgram_model"] || "nova-2";
       let sttConfig = {};
       let llmProvider = globalSettingsMap["ve_llm_active_provider"] || "openrouter";
-      let llmApiKey = globalSettingsMap["ve_openrouter_api_key"] || process.env.OPENROUTER_API_KEY || "";
-      let llmModel = globalSettingsMap["ve_llm_default_model"] || "openai/gpt-4o-mini";
+      let llmApiKey = llmProvider === "gemini" ? globalSettingsMap["ve_gemini_api_key"] || process.env.GEMINI_API_KEY || "" : globalSettingsMap["ve_openrouter_api_key"] || process.env.OPENROUTER_API_KEY || "";
+      let llmModel = globalSettingsMap["ve_llm_default_model"] || (llmProvider === "gemini" ? "gemini-1.5-flash" : "openai/gpt-4o-mini");
       let llmConfig = {};
       let ttsProvider = globalSettingsMap["ve_tts_active_provider"] || "deepgram";
       let ttsApiKey = ttsProvider === "sarvam" ? globalSettingsMap["ve_sarvam_api_key"] || process.env.SARVAM_API_KEY || "" : globalSettingsMap["ve_deepgram_api_key"] || process.env.DEEPGRAM_API_KEY || "";
@@ -14508,7 +15826,8 @@ ${agent.systemPrompt || ""}`;
       const effectiveSttProvider = agent.sttProvider || agent.config?.sttProvider || sttProvider;
       const effectiveTtsProvider = agent.ttsProvider || agent.config?.ttsProvider || ttsProvider;
       const resolvedSttApiKey = effectiveSttProvider === "sarvam" ? globalSettingsMap["ve_sarvam_api_key"] || process.env.SARVAM_API_KEY || "" : globalSettingsMap["ve_deepgram_api_key"] || process.env.DEEPGRAM_API_KEY || "";
-      const providerConfig = providerConfigResult.rows.length > 0 ? camelizeKeys(providerConfigResult.rows[0]) : null;
+      const allowUserByok = globalSettingsMap["allow_user_byok"] !== "false";
+      const providerConfig = providerConfigResult.rows.length > 0 && allowUserByok ? camelizeKeys(providerConfigResult.rows[0]) : null;
       const finalSttApiKey = providerConfig && providerConfig.sttProvider === effectiveSttProvider && providerConfig.sttApiKey ? providerConfig.sttApiKey : resolvedSttApiKey;
       const resolvedTtsApiKey = effectiveTtsProvider === "sarvam" ? globalSettingsMap["ve_sarvam_api_key"] || process.env.SARVAM_API_KEY || "" : globalSettingsMap["ve_deepgram_api_key"] || process.env.DEEPGRAM_API_KEY || "";
       const finalTtsApiKey = providerConfig && providerConfig.ttsProvider === effectiveTtsProvider && providerConfig.ttsApiKey ? providerConfig.ttsApiKey : resolvedTtsApiKey;
@@ -14556,12 +15875,8 @@ ${apptSettingsText}`;
 ## CRITICAL LANGUAGE REQUIREMENT (FINAL OVERRIDE)
 You MUST speak ONLY in ${languageName}. From the very first word you say, speak in ${languageName}. Do NOT speak English or any other language. This overrides any previous language instructions in this prompt. This is mandatory.`;
       }
-      const effectiveLlmProvider = (
-        (agent.llmModel && agent.llmModel.toLowerCase().includes("gemini")) ||
-        (providerConfig && providerConfig.llmProvider === "gemini") ||
-        llmProvider === "gemini"
-      ) ? "gemini" : llmProvider;
-      const finalLlmApiKey = providerConfig && (providerConfig.llmProvider === effectiveLlmProvider || (effectiveLlmProvider === "gemini" && providerConfig.llmProvider === "gemini")) && providerConfig.llmApiKey ? providerConfig.llmApiKey : effectiveLlmProvider === "gemini" ? globalSettingsMap["ve_gemini_api_key"] || process.env.GEMINI_API_KEY || "" : globalSettingsMap["ve_openrouter_api_key"] || process.env.OPENROUTER_API_KEY || "";
+      const effectiveLlmProvider = agent.llmModel && agent.llmModel.toLowerCase().includes("gemini") || providerConfig && providerConfig.llmProvider === "gemini" || llmProvider === "gemini" ? "gemini" : llmProvider;
+      const finalLlmApiKey = providerConfig && (providerConfig.llmProvider === effectiveLlmProvider || effectiveLlmProvider === "gemini" && providerConfig.llmProvider === "gemini") && providerConfig.llmApiKey ? providerConfig.llmApiKey : effectiveLlmProvider === "gemini" ? globalSettingsMap["ve_gemini_api_key"] || process.env.GEMINI_API_KEY || "" : globalSettingsMap["ve_openrouter_api_key"] || process.env.OPENROUTER_API_KEY || "";
       const llmConfigObj = {
         provider: effectiveLlmProvider,
         apiKey: finalLlmApiKey,
@@ -14598,6 +15913,21 @@ You MUST speak ONLY in ${languageName}. From the very first word you say, speak 
         },
         ...ttsConfig
       };
+      const uniqueTools = [];
+      const seenNames = /* @__PURE__ */ new Set();
+      for (const tool of tools2) {
+        const name = tool.function?.name;
+        if (name) {
+          if (!seenNames.has(name)) {
+            seenNames.add(name);
+            uniqueTools.push(tool);
+          } else {
+            console.log(`[AudioWS] Filtered out duplicate tool declaration: ${name}`);
+          }
+        } else {
+          uniqueTools.push(tool);
+        }
+      }
       const audioSession = new AudioSession(
         sessionId,
         sessionData,
@@ -14606,9 +15936,13 @@ You MUST speak ONLY in ${languageName}. From the very first word you say, speak 
         llmConfigObj,
         ttsConfigObj,
         void 0,
-        tools2,
+        uniqueTools,
         toolMetadata
       );
+      const isByok = allowUserByok && Boolean(
+        providerConfig?.sttApiKey && providerConfig?.sttProvider === effectiveSttProvider || providerConfig?.llmApiKey && (providerConfig?.llmProvider === effectiveLlmProvider || effectiveLlmProvider === "gemini" && providerConfig?.llmProvider === "gemini") || providerConfig?.ttsApiKey && providerConfig?.ttsProvider === effectiveTtsProvider
+      );
+      audioSession.isByok = isByok;
       this.setupDatabaseSync(audioSession);
       this.registerSession(audioSession);
       return audioSession;
@@ -14713,7 +16047,8 @@ You MUST speak ONLY in ${languageName}. From the very first word you say, speak 
               fromNumber: sess.fromNumber || "Unknown",
               toNumber: sess.toNumber || "Unknown",
               durationSeconds: duration,
-              engine: "custom-voice-engine"
+              engine: "custom-voice-engine",
+              isByok: session.isByok
             });
             if (creditResult.success || creditResult.alreadyDeducted) {
               session.session.creditsUsed = creditsToDeduct;
@@ -14835,6 +16170,25 @@ ${name}_avg ${avg.toFixed(2)}`);
 };
 
 // plugins/custom-voice-engine/index.ts
+function getContainerIp2() {
+  if (process.env.VE_AUDIO_WS_IP) {
+    return process.env.VE_AUDIO_WS_IP;
+  }
+  if (process.env.PUBLIC_IP) {
+    return process.env.PUBLIC_IP;
+  }
+  const interfaces = os2.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const net2 of interfaces[name] || []) {
+      if (net2.family === "IPv4" && !net2.internal) {
+        if (net2.address.startsWith("10.") || net2.address.startsWith("172.") || net2.address.startsWith("192.168.")) {
+          return net2.address;
+        }
+      }
+    }
+  }
+  return "127.0.0.1";
+}
 var PLUGIN_VERSION = "1.0.0";
 var PLUGIN_NAME = "ai-voice-engine";
 var audioWsServer = null;
@@ -14856,6 +16210,170 @@ function registerAiVoiceEngineRoutes(app, options) {
   app.use("/api/voice-engine/memory", sessionAuthMiddleware, createMemoryRouter());
   app.use("/api/voice-engine/analytics", sessionAuthMiddleware, createAnalyticsRouter());
   app.use("/api/voice-engine/agents", sessionAuthMiddleware, createAgentsRouter());
+  app.post("/api/public/voice-engine/calls/outbound", async (req, res) => {
+    try {
+      const { toNumber, language, ttsVoice, llmModel, sttProvider, ttsProvider, sttModel, ttsModel } = req.body;
+      if (!toNumber) {
+        return res.status(400).json({ success: false, error: "toNumber is required" });
+      }
+      const agentResult = await db.execute(
+        sql19`SELECT * FROM ve_voice_agents WHERE is_active = true ORDER BY created_at DESC LIMIT 1`
+      );
+      if (agentResult.rows.length === 0) {
+        const fallbackResult = await db.execute(
+          sql19`SELECT * FROM ve_voice_agents ORDER BY created_at DESC LIMIT 1`
+        );
+        if (fallbackResult.rows.length === 0) {
+          return res.status(404).json({ success: false, error: "No voice agents found in the system" });
+        }
+        agentResult.rows.push(fallbackResult.rows[0]);
+      }
+      const agent = agentResult.rows[0];
+      const userId = agent.user_id;
+      const agentId = agent.id;
+      const metadata = {
+        language,
+        ttsVoice,
+        llmModel,
+        sttProvider,
+        ttsProvider,
+        sttModel,
+        ttsModel,
+        isPublicDemo: true
+      };
+      const sessionResult = await db.execute(sql19`
+        INSERT INTO ve_sessions (user_id, agent_id, to_number, from_number, direction, status, metadata)
+        VALUES (${userId}, ${agentId}, ${toNumber}, 'FreeSWITCH', 'outbound', 'initializing', ${JSON.stringify(metadata)})
+        RETURNING *
+      `);
+      const session = sessionResult.rows[0];
+      const nodesResult = await db.execute(sql19`SELECT * FROM ve_freeswitch_nodes WHERE status = 'online' ORDER BY created_at ASC`);
+      const nodes = nodesResult.rows;
+      if (nodes.length === 0) {
+        throw new Error("No active FreeSWITCH nodes available");
+      }
+      const node = nodes[0];
+      const eslHost = node.esl_host || node.eslHost;
+      const eslPort = node.esl_port || node.eslPort;
+      const eslPassword = node.esl_password || node.eslPassword || "ClueCon";
+      const eslConnection = new EslConnection({ host: eslHost, port: eslPort, password: eslPassword, reconnect: false });
+      await eslConnection.connect();
+      let activeGateway = null;
+      const userGatewayResult = await db.execute(sql19`
+        SELECT id, name, proxy, username, password FROM user_sip_gateways WHERE user_id = ${userId} AND is_active = true LIMIT 1
+      `);
+      if (userGatewayResult.rows.length > 0) {
+        activeGateway = userGatewayResult.rows[0];
+      }
+      let activePhoneNumber = "FreeSWITCH";
+      if (activeGateway) {
+        const sipPhoneResult = await db.execute(sql19`
+          SELECT phone_number FROM user_sip_phone_numbers WHERE gateway_id = ${activeGateway.id} LIMIT 1
+        `);
+        if (sipPhoneResult.rows.length > 0) {
+          activePhoneNumber = sipPhoneResult.rows[0].phone_number;
+        }
+      }
+      const gatewayProxy = activeGateway ? activeGateway.proxy : "testhr.pstn.twilio.com";
+      const gatewayUsername = activeGateway?.username;
+      const gatewayPassword = activeGateway?.password;
+      const formattedTo = !toNumber.startsWith("+") ? `+${toNumber}` : toNumber;
+      const dialString = `sofia/external/${formattedTo}@${gatewayProxy}`;
+      const destination = `${formattedTo} XML public`;
+      const formattedCallerId = activePhoneNumber !== "FreeSWITCH" && !activePhoneNumber.startsWith("+") ? `+${activePhoneNumber}` : activePhoneNumber;
+      const options2 = {
+        origination_uuid: session.id,
+        origination_caller_id_number: formattedCallerId,
+        origination_caller_id_name: formattedCallerId,
+        effective_caller_id_number: formattedCallerId,
+        effective_caller_id_name: formattedCallerId,
+        sip_from_uri: `sip:${formattedCallerId}@${gatewayProxy}`,
+        sip_invite_req_uri: `sip:${formattedTo}@${gatewayProxy}`,
+        ve_audio_ws_url: `ws://${getContainerIp2()}:${process.env.PORT || "5000"}/voice-engine/ws/audio`,
+        ...gatewayUsername && { sip_auth_username: gatewayUsername },
+        ...gatewayPassword && { sip_auth_password: gatewayPassword }
+      };
+      try {
+        await eslConnection.originate(dialString, destination, options2);
+        await db.execute(sql19`
+          UPDATE ve_sessions SET status = 'active', channel_uuid = ${session.id} WHERE id = ${session.id}
+        `);
+      } catch (originateErr) {
+        await db.execute(sql19`
+          UPDATE ve_sessions SET status = 'failed' WHERE id = ${session.id}
+        `);
+        throw originateErr;
+      } finally {
+        await eslConnection.disconnect().catch(() => {
+        });
+      }
+      res.json({ success: true, data: session });
+    } catch (err) {
+      console.error("[Public Call Error]:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+  app.get("/api/public/voice-engine/calls/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await db.execute(
+        sql19`SELECT id, status, started_at, answered_at, ended_at, duration_seconds, end_reason FROM ve_sessions WHERE id = ${id} LIMIT 1`
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ success: false, error: "Session not found" });
+      }
+      res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+  app.post("/api/public/voice-engine/agents/preview", async (req, res) => {
+    try {
+      const { voiceId, text: text2, provider, language, ttsModel } = req.body;
+      if (!voiceId) {
+        return res.status(400).json({ success: false, error: "voiceId is required" });
+      }
+      const previewText = text2 || "Hello! This is a preview of how I'll sound. I can adjust my tone and style based on your preferences.";
+      const isSarvam = provider === "sarvam";
+      const providerName = isSarvam ? "sarvam" : "deepgram";
+      const keyName = isSarvam ? "ve_sarvam_api_key" : "ve_deepgram_api_key";
+      const [setting] = await db.select().from(globalSettings).where(eq14(globalSettings.key, keyName)).limit(1);
+      const apiKey = setting?.value;
+      if (!apiKey) {
+        return res.status(400).json({ success: false, error: `API key for ${providerName} is not configured in settings.` });
+      }
+      const ttsProvider = TtsProviderFactory.create(providerName);
+      const effectiveModel = isSarvam ? ttsModel || "bulbul:v3" : void 0;
+      const config = isSarvam ? {
+        apiKey,
+        voice: voiceId,
+        sarvamSpeaker: voiceId,
+        sarvamModel: effectiveModel,
+        language: language || "en-IN",
+        outputFormat: {
+          encoding: "linear16",
+          sampleRate: 8e3
+        },
+        speed: 1
+      } : {
+        apiKey,
+        voice: voiceId,
+        language: language || "en",
+        outputFormat: {
+          encoding: "mp3",
+          sampleRate: 24e3
+        }
+      };
+      const audioBuffer = await ttsProvider.synthesize(previewText, config);
+      const isMp3 = !isSarvam;
+      res.setHeader("Content-Type", isMp3 ? "audio/mpeg" : "audio/wav");
+      res.setHeader("Content-Length", audioBuffer.length);
+      res.end(audioBuffer);
+    } catch (err) {
+      console.error("[Public Preview Error]:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
   if (httpServer) {
     try {
       if (audioWsServer) {
@@ -14875,9 +16393,9 @@ function registerAiVoiceEngineRoutes(app, options) {
   }
   (async () => {
     try {
-      const os = await import("os");
-      const getContainerIp = () => {
-        const interfaces = os.networkInterfaces();
+      const os3 = await import("os");
+      const getContainerIp3 = () => {
+        const interfaces = os3.networkInterfaces();
         for (const name of Object.keys(interfaces)) {
           for (const net2 of interfaces[name] || []) {
             if (net2.family === "IPv4" && !net2.internal) {
@@ -14889,7 +16407,7 @@ function registerAiVoiceEngineRoutes(app, options) {
         }
         return "127.0.0.1";
       };
-      const containerIp = getContainerIp();
+      const containerIp = getContainerIp3();
       if (process.env.DISABLE_FREESWITCH_ESL === "true" || process.env.DISABLE_FREESWITCH_ESL === "1") {
         console.log("[AI Voice Engine] FreeSWITCH ESL connection initialization disabled via DISABLE_FREESWITCH_ESL environment variable.");
         return;

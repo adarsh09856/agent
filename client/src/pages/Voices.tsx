@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Platform: Native Master AI Engine v5.4.5
@@ -28,7 +28,7 @@ interface AccountVoice {
 interface NativeVoiceInfo {
   id: string;
   name: string;
-  provider: 'deepgram' | 'sarvam' | 'openai';
+  provider: 'deepgram' | 'sarvam' | 'openai' | 'navana' | 'cartesia';
   description: string;
   gender: string;
   language: string;
@@ -58,6 +58,20 @@ const SARVAM_VOICES: NativeVoiceInfo[] = [
   { id: 'pavithra:v1', name: 'Pavithra (Female)', provider: 'sarvam', description: 'Articulate South Indian voice with native Tamil and Indian English clarity.', gender: 'Female', language: 'Tamil / Indian English', accent: 'South Indian', style: 'Clear & Expressive', sampleText: 'Vanakkam! Ungaluku enna udhavi thevai padugiradhu? How may I help you today?' },
   { id: 'arvind:v1', name: 'Arvind (Male)', provider: 'sarvam', description: 'Professional Indian male voice with clean diction for business, banking, and order dispatch.', gender: 'Male', language: 'Hindi / Indian English', accent: 'Indian', style: 'Professional & Clear', sampleText: 'Namaste ji. Aapka order successfully confirm ho chuka hai. Anything else I can help with?' },
   { id: 'amartya:v1', name: 'Amartya (Male)', provider: 'sarvam', description: 'Warm, friendly Indian male voice supporting Bengali, Hindi, and Indian English.', gender: 'Male', language: 'Bengali / Hindi / English', accent: 'Indian', style: 'Warm & Friendly', sampleText: 'Nomoshkar! Apnar call er jonno dhonyobad. I am here to help you.' },
+];
+
+const NAVANA_VOICES: NativeVoiceInfo[] = [
+  { id: 'bodhi-aarav', name: 'Bodhi Hindi (Aarav)', provider: 'navana', description: 'Hyper-realistic Indic voice with colloquial fluency in Hindi & Hinglish. Pronounces Aadhaar, PAN, and ₹ INR accurately.', gender: 'Male', language: 'Hindi / Hinglish', accent: 'Delhi/North Indian', style: 'Conversational & Contextual', sampleText: 'नमस्ते! मैं आपका कोडेवेव्स वॉइस एजेंट हूँ। आज मैं आपकी क्या सहायता कर सकता हूँ?' },
+  { id: 'bodhi-diya', name: 'Bodhi Hindi (Diya)', provider: 'navana', description: 'Polite, clear Hindi female assistant for banking, insurance, and enterprise outreach.', gender: 'Female', language: 'Hindi / English', accent: 'North Indian', style: 'Warm & Professional', sampleText: 'नमस्कार, आपकी सेवा में उपस्थित हूँ। क्या आप अपना खाता विवरण सत्यापित करना चाहते हैं?' },
+  { id: 'bodhi-karthik', name: 'Bodhi Tamil (Karthik)', provider: 'navana', description: 'Fluent Tamil voice with native Chennai pronunciation and natural intonation.', gender: 'Male', language: 'Tamil', accent: 'Chennai/Tamil Nadu', style: 'Natural & Energetic', sampleText: 'வணக்கம்! கோடேவேவ்ஸ் வாய்ஸ் ஏஐக்கு உங்களை வரவேற்கிறோம். நான் உங்களுக்கு எப்படி உதவ முடியும்?' },
+  { id: 'bodhi-sravani', name: 'Bodhi Telugu (Sravani)', provider: 'navana', description: 'Authentic Telugu female voice with crystal clear diction for customer care.', gender: 'Female', language: 'Telugu', accent: 'Andhra/Telangana', style: 'Pleasant & Articulate', sampleText: 'నమస్కారం! మీ ఆర్డర్ వివరాలు విజయవంతంగా అప్‌డేట్ చేయబడ్డాయి. ఇంకా ఏమైనా సహాయం కావాలా?' },
+  { id: 'bodhi-chetan', name: 'Bodhi Kannada (Chetan)', provider: 'navana', description: 'Native Bengaluru Kannada male voice ideal for retail, support, and appointments.', gender: 'Male', language: 'Kannada', accent: 'Karnataka', style: 'Polite & Friendly', sampleText: 'ನಮಸ್ಕಾರ! ನಿಮ್ಮ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಬುಕ್ ಆಗಿದೆ. ನಿಮಗೆ ಬೇರೆ ಸಹಾಯ ಬೇಕೇ?' },
+];
+
+const CARTESIA_VOICES: NativeVoiceInfo[] = [
+  { id: 'sonic-barbershop', name: 'Sonic British (Barbershop)', provider: 'cartesia', description: 'Ultra-low latency (90ms) British conversational voice for rapid-fire dialog.', gender: 'Male', language: 'English (UK)', accent: 'British', style: 'Fast & Conversational', sampleText: 'Hello there! Let us jump straight into your questions without delay.' },
+  { id: 'sonic-katie', name: 'Sonic California (Katie)', provider: 'cartesia', description: 'Natural 90ms American conversational voice, instantly responsive with zero dead air.', gender: 'Female', language: 'English (US)', accent: 'American', style: 'Upbeat & Expressive', sampleText: 'Hi! I can hear you loud and clear. What would you like to know?' },
+  { id: 'sonic-dev', name: 'Sonic Multilingual (Dev)', provider: 'cartesia', description: 'Low latency multilingual speaker capable of instant code-switching across languages.', gender: 'Male', language: 'Multilingual', accent: 'International', style: 'Adaptive & Sharp', sampleText: 'Welcome! I am ready to handle customer inquiries in multiple languages.' },
 ];
 
 interface OpenAIVoiceInfo {
@@ -138,6 +152,28 @@ export default function Voices() {
     );
   }, [debouncedSearch]);
 
+  const filteredNavanaVoices = useMemo(() => {
+    if (!debouncedSearch) return NAVANA_VOICES;
+    const q = debouncedSearch.toLowerCase();
+    return NAVANA_VOICES.filter(v =>
+      v.name.toLowerCase().includes(q) ||
+      v.description.toLowerCase().includes(q) ||
+      v.language.toLowerCase().includes(q) ||
+      v.gender.toLowerCase().includes(q)
+    );
+  }, [debouncedSearch]);
+
+  const filteredCartesiaVoices = useMemo(() => {
+    if (!debouncedSearch) return CARTESIA_VOICES;
+    const q = debouncedSearch.toLowerCase();
+    return CARTESIA_VOICES.filter(v =>
+      v.name.toLowerCase().includes(q) ||
+      v.description.toLowerCase().includes(q) ||
+      v.accent.toLowerCase().includes(q) ||
+      v.gender.toLowerCase().includes(q)
+    );
+  }, [debouncedSearch]);
+
   const filteredOpenAIVoices = useMemo(() => {
     if (!debouncedSearch) return OPENAI_VOICES;
     const q = debouncedSearch.toLowerCase();
@@ -206,6 +242,8 @@ export default function Voices() {
   const getTotalVoiceCount = () => {
     if (activeTab === "deepgram") return DEEPGRAM_AURA_VOICES.length;
     if (activeTab === "sarvam") return SARVAM_VOICES.length;
+    if (activeTab === "navana") return NAVANA_VOICES.length;
+    if (activeTab === "cartesia") return CARTESIA_VOICES.length;
     if (activeTab === "openai") return OPENAI_VOICES.length;
     return accountVoices?.length || 0;
   };
@@ -213,6 +251,8 @@ export default function Voices() {
   const getFilteredCount = () => {
     if (activeTab === "deepgram") return filteredDeepgramVoices.length;
     if (activeTab === "sarvam") return filteredSarvamVoices.length;
+    if (activeTab === "navana") return filteredNavanaVoices.length;
+    if (activeTab === "cartesia") return filteredCartesiaVoices.length;
     if (activeTab === "openai") return filteredOpenAIVoices.length;
     return filteredElevenVoices.length;
   };
@@ -249,6 +289,12 @@ export default function Voices() {
           </TabsTrigger>
           <TabsTrigger value="sarvam" className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
             <Globe className="h-3.5 w-3.5 mr-1.5" /> Sarvam AI ({SARVAM_VOICES.length})
+          </TabsTrigger>
+          <TabsTrigger value="navana" className="data-[state=active]:bg-amber-600 data-[state=active]:text-white">
+            🇮🇳 Navana AI ({NAVANA_VOICES.length})
+          </TabsTrigger>
+          <TabsTrigger value="cartesia" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white">
+            ⚡ Cartesia (90ms) ({CARTESIA_VOICES.length})
           </TabsTrigger>
           <TabsTrigger value="openai">
             OpenAI ({OPENAI_VOICES.length})
@@ -369,6 +415,104 @@ export default function Voices() {
                 <div className="flex items-center justify-between text-xs pt-2 border-t text-muted-foreground">
                   <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400">{voice.id}</span>
                   <span className="truncate max-w-[140px]">{voice.language}</span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Navana AI Bodhi Indic Tab */}
+        <TabsContent value="navana" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredNavanaVoices.map((voice) => (
+              <Card
+                key={voice.id}
+                className="p-4 hover-elevate relative overflow-visible border-amber-200 dark:border-amber-800/50"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-t-lg" />
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold truncate mb-1 text-base">{voice.name}</h3>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge variant="secondary" className="text-xs bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200">
+                        {voice.gender}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {voice.accent}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button
+                    variant={playingVoice === voice.id ? "default" : "ghost"}
+                    size="icon"
+                    onClick={() => handlePlayPreview(voice.id, undefined, voice.sampleText)}
+                    title="Audition voice"
+                    className="shrink-0"
+                  >
+                    {playingVoice === voice.id ? (
+                      <Square className="h-4 w-4 text-amber-600 animate-pulse" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground line-clamp-3 mb-3">
+                  {voice.description}
+                </p>
+
+                <div className="flex items-center justify-between text-xs pt-2 border-t text-muted-foreground">
+                  <span className="font-mono text-[11px] text-amber-600 dark:text-amber-400">bodhi-indic</span>
+                  <span className="truncate max-w-[140px] font-medium">{voice.language}</span>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Cartesia Sonic Tab */}
+        <TabsContent value="cartesia" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredCartesiaVoices.map((voice) => (
+              <Card
+                key={voice.id}
+                className="p-4 hover-elevate relative overflow-visible border-cyan-200 dark:border-cyan-800/50"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500 rounded-t-lg" />
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold truncate mb-1 text-base">{voice.name}</h3>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge variant="secondary" className="text-xs bg-cyan-50 dark:bg-cyan-950/50 text-cyan-700 dark:text-cyan-300 border-cyan-200">
+                        {voice.gender}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        90ms Latency
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button
+                    variant={playingVoice === voice.id ? "default" : "ghost"}
+                    size="icon"
+                    onClick={() => handlePlayPreview(voice.id, undefined, voice.sampleText)}
+                    title="Audition voice"
+                    className="shrink-0"
+                  >
+                    {playingVoice === voice.id ? (
+                      <Square className="h-4 w-4 text-cyan-600 animate-pulse" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground line-clamp-3 mb-3">
+                  {voice.description}
+                </p>
+
+                <div className="flex items-center justify-between text-xs pt-2 border-t text-muted-foreground">
+                  <span className="font-mono text-[11px] text-cyan-600 dark:text-cyan-400">sonic-fast</span>
+                  <span className="truncate max-w-[140px] font-medium">{voice.accent}</span>
                 </div>
               </Card>
             ))}

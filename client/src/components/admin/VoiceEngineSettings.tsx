@@ -1288,7 +1288,11 @@ interface ProviderSettings {
     sarvamAllowedModels?: string[];
     elevenlabsModel?: string;
     elevenlabsAllowedModels?: string[];
-    providers: Record<string, ProviderInfo>
+    navanaModel?: string;
+    navanaAllowedModels?: string[];
+    cartesiaModel?: string;
+    cartesiaAllowedModels?: string[];
+    providers: Record<string, ProviderInfo>;
   };
   freeswitch: { eslHost: string; eslPort: number; eslPassword: string };
   pluginEnabled: boolean;
@@ -1354,7 +1358,7 @@ function ProviderKeyCard({
   provider, label, currentMasked, hasKey, onSave, onTest, isTesting, testResult,
 }: {
   provider: string; label: string; currentMasked: string; hasKey: boolean;
-  onSave: (key: string) => void; onTest: () => void;
+  onSave: (key: string) => void; onTest: (typedKey?: string) => void;
   isTesting: boolean; testResult: { connected: boolean; details: string } | null;
 }) {
   const [value, setValue] = useState("");
@@ -1362,7 +1366,6 @@ function ProviderKeyCard({
   const { toast } = useToast();
 
   const handleSave = () => {
-    
     onSave(value);
     setValue("");
   };
@@ -1399,12 +1402,18 @@ function ProviderKeyCard({
           </Button>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" className="shrink-0" onClick={onTest} disabled={!hasKey || isTesting}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => onTest(value.trim() || undefined)}
+            disabled={(!hasKey && !value.trim()) || isTesting}
+          >
             {isTesting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <TestTube className="h-3.5 w-3.5 mr-1" />}
             Test Connection
           </Button>
           {testResult && (
-            <span className={`text-xs ${testResult.connected ? "text-emerald-600" : "text-red-500"}`}>
+            <span className={`text-xs ${testResult.connected ? "text-emerald-600 font-medium" : "text-red-500 font-medium"}`}>
               {testResult.details}
             </span>
           )}
@@ -1929,10 +1938,10 @@ export default function VoiceEngineSettings() {
     },
   });
 
-  const testProvider = async (provider: string) => {
+  const testProvider = async (provider: string, apiKey?: string) => {
     setTestingProvider(provider);
     try {
-      const res = await apiRequest("POST", `/api/voice-engine/admin/provider-keys/test/${provider}`);
+      const res = await apiRequest("POST", `/api/voice-engine/admin/provider-keys/test/${provider}`, apiKey ? { apiKey } : undefined);
       const result = await res.json();
       setTestResults((prev) => ({ ...prev, [provider]: result.data }));
     } catch {
@@ -2074,6 +2083,22 @@ export default function VoiceEngineSettings() {
     restcomm: {
       guide: `1. Open your Restcomm instance or cloud account.\n2. Set up a SIP Connection routing to your FreeSWITCH nodes.\n3. Set up gateway XML configuration with credentials.`,
       gatewayXml: `<gateway name="restcomm">\n  <param name="username" value="YOUR_RESTCOMM_USERNAME"/>\n  <param name="password" value="YOUR_RESTCOMM_PASSWORD"/>\n  <param name="proxy" value="sip.restcomm.com"/>\n  <param name="register" value="true"/>\n</gateway>`
+    },
+    callhippo: {
+      guide: `1. Log in to CallHippo Enterprise Dashboard > Settings > SIP / Integrations.\n2. Obtain your SIP Trunk Domain or API Token and configure your Outbound Trunk.\n3. Route incoming Indian Virtual Numbers / DIDs to your media streaming IP:5060.\n4. Save and configure the gateway XML profile below.`,
+      gatewayXml: `<gateway name="callhippo">\n  <param name="username" value="YOUR_CALLHIPPO_USER_OR_DID"/>\n  <param name="password" value="YOUR_CALLHIPPO_SIP_TOKEN"/>\n  <param name="proxy" value="sip.callhippo.com"/>\n  <param name="register" value="true"/>\n</gateway>`
+    },
+    telecmi: {
+      guide: `1. Log in to TeleCMI Cloud Telephony Portal.\n2. Go to Webhook & SIP Trunking settings. Create a SIP Trunk with App ID & Secret.\n3. Map your Indian 10-digit virtual phone numbers to your voice server IP.\n4. Save and configure the gateway XML profile below.`,
+      gatewayXml: `<gateway name="telecmi">\n  <param name="username" value="YOUR_TELECMI_APP_ID"/>\n  <param name="password" value="YOUR_TELECMI_SECRET"/>\n  <param name="proxy" value="sip.telecmi.com"/>\n  <param name="register" value="true"/>\n</gateway>`
+    },
+    voicelink: {
+      guide: `1. Log in to VoiceLink Universal SIP Trunking Portal.\n2. Configure your carrier SIP Trunk endpoint (e.g. sip.voicelink.co.in or your allotted gateway IP).\n3. Register your Indian DIDs / 1800 Toll-Free numbers to forward to this instance.\n4. Save and configure the gateway XML profile below.`,
+      gatewayXml: `<gateway name="voicelink">\n  <param name="username" value="YOUR_VOICELINK_ACCOUNT_ID"/>\n  <param name="password" value="YOUR_VOICELINK_SIP_KEY"/>\n  <param name="proxy" value="sip.voicelink.co.in"/>\n  <param name="register" value="true"/>\n</gateway>`
+    },
+    exotel: {
+      guide: `1. Log in to Exotel Dashboard and go to API & Webhooks > App Bazaar.\n2. Configure Custom Passthru or SIP Connect pointing to your voice server endpoint.\n3. Use your Exotel Account SID and API Token for authentication.\n4. Save and configure the gateway XML profile below.`,
+      gatewayXml: `<gateway name="exotel">\n  <param name="username" value="YOUR_EXOTEL_SID"/>\n  <param name="password" value="YOUR_EXOTEL_API_KEY"/>\n  <param name="proxy" value="sip.exotel.com"/>\n  <param name="register" value="false"/>\n</gateway>`
     }
   };
 
@@ -2147,23 +2172,37 @@ export default function VoiceEngineSettings() {
                   hasKey={settings.stt.providers.deepgram?.hasKey ?? false}
                   currentMasked={settings.stt.providers.deepgram?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ deepgramApiKey: key })}
-                  onTest={() => testProvider("deepgram")}
+                  onTest={(key) => testProvider("deepgram", key)}
                   isTesting={testingProvider === "deepgram"}
                   testResult={testResults.deepgram ?? null} />
                 <ProviderKeyCard provider="sarvam" label="Sarvam AI API Key"
                   hasKey={settings.stt.providers.sarvam?.hasKey ?? false}
                   currentMasked={settings.stt.providers.sarvam?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ sarvamApiKey: key })}
-                  onTest={() => testProvider("sarvam")}
+                  onTest={(key) => testProvider("sarvam", key)}
                   isTesting={testingProvider === "sarvam"}
                   testResult={testResults.sarvam ?? null} />
-{/* <ProviderKeyCard provider="elevenlabs" label="ElevenLabs API Key"
-                  hasKey={settings.tts.providers.elevenlabs?.hasKey ?? false}
-                  currentMasked={settings.tts.providers.elevenlabs?.maskedKey ?? ""}
+                <ProviderKeyCard provider="navana" label="Navana AI (Bodhi Indic TTS)"
+                  hasKey={settings.tts.providers?.navana?.hasKey ?? false}
+                  currentMasked={settings.tts.providers?.navana?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ navanaApiKey: key })}
+                  onTest={(key) => testProvider("navana", key)}
+                  isTesting={testingProvider === "navana"}
+                  testResult={testResults.navana ?? null} />
+                <ProviderKeyCard provider="cartesia" label="Cartesia Sonic (90ms TTS)"
+                  hasKey={settings.tts.providers?.cartesia?.hasKey ?? false}
+                  currentMasked={settings.tts.providers?.cartesia?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ cartesiaApiKey: key })}
+                  onTest={(key) => testProvider("cartesia", key)}
+                  isTesting={testingProvider === "cartesia"}
+                  testResult={testResults.cartesia ?? null} />
+                <ProviderKeyCard provider="elevenlabs" label="ElevenLabs API Key"
+                  hasKey={settings.tts.providers?.elevenlabs?.hasKey ?? false}
+                  currentMasked={settings.tts.providers?.elevenlabs?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ elevenlabsApiKey: key })}
-                  onTest={() => testProvider("elevenlabs")}
+                  onTest={(key) => testProvider("elevenlabs", key)}
                   isTesting={testingProvider === "elevenlabs"}
-                  testResult={testResults.elevenlabs ?? null} /> */}
+                  testResult={testResults.elevenlabs ?? null} />
               </div>
             </CardContent>
           </Card>
@@ -2317,17 +2356,21 @@ export default function VoiceEngineSettings() {
                   <Label className="text-sm font-semibold">Allowed TTS Providers</Label>
                   <p className="text-xs text-muted-foreground -mt-2">Select which providers are available for text-to-speech.</p>
                   <div className="grid grid-cols-2 gap-4">
-                    {['deepgram', 'sarvam'].map(provider => {
+                    {['deepgram', 'sarvam', 'navana', 'cartesia', 'elevenlabs'].map(provider => {
                       const ttsAllowed = settings.tts.allowedProviders || ['deepgram'];
                       const isChecked = ttsAllowed.includes(provider);
                       const getDisplayName = (p: string) => {
-                        if (p === 'deepgram') return 'Deepgram';
-                        if (p === 'sarvam') return 'Sarvam AI';
+                        if (p === 'deepgram') return 'Deepgram Aura';
+                        if (p === 'sarvam') return 'Sarvam AI Bulbul';
+                        if (p === 'navana') return 'Navana AI (Bodhi Indic)';
+                        if (p === 'cartesia') return 'Cartesia Sonic (90ms)';
                         return 'ElevenLabs';
                       };
                       const getDescription = (p: string) => {
                         if (p === 'deepgram') return 'High quality, low latency voices';
-                        if (p === 'sarvam') return 'Expressive Indic voices';
+                        if (p === 'sarvam') return 'Expressive Indic regional voices';
+                        if (p === 'navana') return 'Real-time Indic vernacular speech (<100ms)';
+                        if (p === 'cartesia') return 'Ultra-low latency conversational streaming';
                         return 'Ultra-realistic conversational voices';
                       };
                       return (
@@ -2370,25 +2413,6 @@ export default function VoiceEngineSettings() {
                   {/* Default Models for each allowed provider */}
                   {(settings.tts.allowedProviders || ['deepgram']).map(provider => {
                     const isDeepgram = provider === 'deepgram';
-                    const models = isDeepgram
-                      ? [
-                        { value: 'aura-2', label: 'Deepgram Aura 2' },
-                        { value: 'aura', label: 'Deepgram Aura' }
-                      ]
-                      : [
-                        { value: 'bulbul:v3', label: 'Sarvam Bulbul V3' },
-                        { value: 'bulbul:v2', label: 'Sarvam Bulbul V2' }
-                      ];
-
-                    const allowedModelsRaw = isDeepgram
-                      ? (settings.tts.deepgramAllowedModels || ['aura-2', 'aura'])
-                      : provider === 'sarvam'
-                        ? (settings.tts.sarvamAllowedModels || ['bulbul:v3', 'bulbul:v2'])
-                        : (settings.tts.elevenlabsAllowedModels || ['eleven_turbo_v2_5', 'eleven_turbo_v2']);
-
-                    const allowedModels = isDeepgram
-                      ? Array.from(new Set((allowedModelsRaw as string[]).map((x: string) => x.startsWith('aura-2') ? 'aura-2' : 'aura')))
-                      : allowedModelsRaw;
 
                     const getModelValue = (val: string) => {
                       if (provider === 'deepgram') {
@@ -2398,16 +2422,44 @@ export default function VoiceEngineSettings() {
                         return val;
                       }
                       if (provider === 'sarvam') return val || "bulbul:v3";
+                      if (provider === 'navana') return val || "bodhi-indic-tts-v1";
+                      if (provider === 'cartesia') return val || "sonic-english";
                       return val || "eleven_turbo_v2_5";
                     };
+
+                    const currentModelValue = provider === 'deepgram'
+                      ? getModelValue(settings.tts.deepgramModel || "")
+                      : provider === 'sarvam'
+                      ? (settings.tts.sarvamModel || "bulbul:v3")
+                      : provider === 'navana'
+                      ? (settings.tts.navanaModel || "bodhi-indic-tts-v1")
+                      : provider === 'cartesia'
+                      ? (settings.tts.cartesiaModel || "sonic-english")
+                      : (settings.tts.elevenlabsModel || "eleven_turbo_v2_5");
+
+                    const providerLabel = provider === 'deepgram'
+                      ? 'Deepgram'
+                      : provider === 'sarvam'
+                      ? 'Sarvam AI'
+                      : provider === 'navana'
+                      ? 'Navana AI'
+                      : provider === 'cartesia'
+                      ? 'Cartesia Sonic'
+                      : 'ElevenLabs';
 
                     return (
                       <div key={`tts-model-${provider}`} className="space-y-4 border rounded-md p-4 bg-muted/20">
                         <div className="space-y-2">
-                          <Label>Default Voice Model ({provider === 'deepgram' ? 'Deepgram' : provider === 'sarvam' ? 'Sarvam' : 'ElevenLabs'})</Label>
+                          <Label>Default Voice Model ({providerLabel})</Label>
                           <Select
-                            value={provider === 'deepgram' ? getModelValue(settings.tts.deepgramModel || "") : provider === 'sarvam' ? (settings.tts.sarvamModel || "") : (settings.tts.elevenlabsModel || "")}
-                            onValueChange={(v) => updateMutation.mutate(provider === 'deepgram' ? { ttsDeepgramModel: v } : provider === 'sarvam' ? { ttsSarvamModel: v } : { ttsElevenlabsModel: v })}>
+                            value={currentModelValue}
+                            onValueChange={(v) => updateMutation.mutate(
+                              provider === 'deepgram' ? { ttsDeepgramModel: v } :
+                              provider === 'sarvam' ? { ttsSarvamModel: v } :
+                              provider === 'navana' ? { ttsNavanaModel: v } :
+                              provider === 'cartesia' ? { ttsCartesiaModel: v } :
+                              { ttsElevenlabsModel: v }
+                            )}>
                             <SelectTrigger className="w-full"><SelectValue placeholder="Select a voice model" /></SelectTrigger>
                             <SelectContent>
                               {provider === 'deepgram' ? (
@@ -2420,7 +2472,22 @@ export default function VoiceEngineSettings() {
                                   <SelectItem value="bulbul:v3">Sarvam Bulbul V3</SelectItem>
                                   <SelectItem value="bulbul:v2">Sarvam Bulbul V2</SelectItem>
                                 </>
-                              ) : null}
+                              ) : provider === 'navana' ? (
+                                <>
+                                  <SelectItem value="bodhi-indic-tts-v1">Bodhi Indic TTS v1 (10 Languages)</SelectItem>
+                                </>
+                              ) : provider === 'cartesia' ? (
+                                <>
+                                  <SelectItem value="sonic-english">Sonic English (90ms Latency)</SelectItem>
+                                  <SelectItem value="sonic-multilingual">Sonic Multilingual</SelectItem>
+                                </>
+                              ) : (
+                                <>
+                                  <SelectItem value="eleven_turbo_v2_5">Eleven Turbo v2.5</SelectItem>
+                                  <SelectItem value="eleven_turbo_v2">Eleven Turbo v2</SelectItem>
+                                  <SelectItem value="eleven_multilingual_v2">Eleven Multilingual v2</SelectItem>
+                                </>
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
@@ -2502,42 +2569,42 @@ export default function VoiceEngineSettings() {
                   hasKey={settings.llm.providers?.gemini?.hasKey ?? false}
                   currentMasked={settings.llm.providers?.gemini?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ geminiApiKey: key })}
-                  onTest={() => testProvider("gemini")}
+                  onTest={(key) => testProvider("gemini", key)}
                   isTesting={testingProvider === "gemini"}
                   testResult={testResults.gemini ?? null} />
                 <ProviderKeyCard provider="groq" label="Groq API Key"
                   hasKey={settings.llm.providers?.groq?.hasKey ?? false}
                   currentMasked={settings.llm.providers?.groq?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ groqApiKey: key })}
-                  onTest={() => testProvider("groq")}
+                  onTest={(key) => testProvider("groq", key)}
                   isTesting={testingProvider === "groq"}
                   testResult={testResults.groq ?? null} />
                 <ProviderKeyCard provider="openai" label="OpenAI API Key"
                   hasKey={settings.llm.providers?.openai?.hasKey ?? false}
                   currentMasked={settings.llm.providers?.openai?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ openaiApiKey: key })}
-                  onTest={() => testProvider("openai")}
+                  onTest={(key) => testProvider("openai", key)}
                   isTesting={testingProvider === "openai"}
                   testResult={testResults.openai ?? null} />
                 <ProviderKeyCard provider="deepseek" label="DeepSeek API Key"
                   hasKey={settings.llm.providers?.deepseek?.hasKey ?? false}
                   currentMasked={settings.llm.providers?.deepseek?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ deepseekApiKey: key })}
-                  onTest={() => testProvider("deepseek")}
+                  onTest={(key) => testProvider("deepseek", key)}
                   isTesting={testingProvider === "deepseek"}
                   testResult={testResults.deepseek ?? null} />
                 <ProviderKeyCard provider="anthropic" label="Anthropic Claude API Key"
                   hasKey={settings.llm.providers?.anthropic?.hasKey ?? false}
                   currentMasked={settings.llm.providers?.anthropic?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ anthropicApiKey: key })}
-                  onTest={() => testProvider("anthropic")}
+                  onTest={(key) => testProvider("anthropic", key)}
                   isTesting={testingProvider === "anthropic"}
                   testResult={testResults.anthropic ?? null} />
                 <ProviderKeyCard provider="openrouter" label="OpenRouter API Key"
                   hasKey={settings.llm.providers?.openrouter?.hasKey ?? false}
                   currentMasked={settings.llm.providers?.openrouter?.maskedKey ?? ""}
                   onSave={(key) => updateMutation.mutate({ openrouterApiKey: key })}
-                  onTest={() => testProvider("openrouter")}
+                  onTest={(key) => testProvider("openrouter", key)}
                   isTesting={testingProvider === "openrouter"}
                   testResult={testResults.openrouter ?? null} />
               </div>
@@ -2923,6 +2990,10 @@ export default function VoiceEngineSettings() {
                     <Select value={selectedSipProvider} onValueChange={setSelectedSipProvider}>
                       <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="callhippo">🇮🇳 CallHippo</SelectItem>
+                        <SelectItem value="telecmi">🇮🇳 TeleCMI</SelectItem>
+                        <SelectItem value="voicelink">🇮🇳 VoiceLink (Universal SIP)</SelectItem>
+                        <SelectItem value="exotel">🇮🇳 Exotel</SelectItem>
                         <SelectItem value="twilio">Twilio</SelectItem>
                         <SelectItem value="telnyx">Telnyx</SelectItem>
                         <SelectItem value="plivo">Plivo</SelectItem>

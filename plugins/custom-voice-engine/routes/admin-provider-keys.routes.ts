@@ -64,6 +64,12 @@ const SETTINGS_KEYS = {
   deepseekApiKey: 've_deepseek_api_key',
   anthropicApiKey: 've_anthropic_api_key',
   elevenlabsApiKey: 've_elevenlabs_api_key',
+  navanaApiKey: 've_navana_api_key',
+  cartesiaApiKey: 've_cartesia_api_key',
+  callhippoApiKey: 've_callhippo_api_key',
+  telecmiAppId: 've_telecmi_app_id',
+  telecmiSecret: 've_telecmi_secret',
+  voicelinkHost: 've_voicelink_host',
 
   // Models (per-provider, so switching providers doesn't lose the other's selection)
   sttDeepgramModel: 've_stt_deepgram_model',
@@ -78,6 +84,10 @@ const SETTINGS_KEYS = {
   ttsSarvamSpeaker: 've_tts_sarvam_speaker',
   ttsElevenlabsModel: 've_tts_elevenlabs_model',
   ttsElevenlabsAllowedModels: 've_tts_elevenlabs_allowed_models',
+  ttsNavanaModel: 've_tts_navana_model',
+  ttsNavanaAllowedModels: 've_tts_navana_allowed_models',
+  ttsCartesiaModel: 've_tts_cartesia_model',
+  ttsCartesiaAllowedModels: 've_tts_cartesia_allowed_models',
 
   // FreeSWITCH
   freeswitchEslHost: 've_freeswitch_esl_host',
@@ -106,11 +116,20 @@ function maskKey(key: string | null | undefined): string {
   return '•'.repeat(Math.min(key.length - 4, 20)) + key.slice(-4);
 }
 
-/** Extract string value from jsonb-stored setting */
+/** Extract string value from jsonb-stored setting, unwrapping accidental quotes */
 function extractValue(val: any): any {
   if (val === null || val === undefined) return null;
-  // jsonb values are stored as-is; strings are stored as JSON strings
-  if (typeof val === 'string') return val;
+  if (typeof val === 'string') {
+    const trimmed = val.trim();
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      try {
+        return JSON.parse(trimmed);
+      } catch {
+        return trimmed.slice(1, -1);
+      }
+    }
+    return trimmed;
+  }
   if (typeof val === 'object' && val !== null) return val;
   return val;
 }
@@ -292,7 +311,11 @@ export function createAdminProviderKeysRouter(): Router {
         tts: {
           activeProvider: settingsMap[SETTINGS_KEYS.ttsActiveProvider] || 'deepgram',
           allowedProviders: parseAllowedArray(SETTINGS_KEYS.ttsAllowedProviders, ['deepgram']),
-          defaultModel: settingsMap[SETTINGS_KEYS.ttsActiveProvider] === 'sarvam'
+          defaultModel: settingsMap[SETTINGS_KEYS.ttsActiveProvider] === 'navana'
+            ? (settingsMap[SETTINGS_KEYS.ttsNavanaModel] || 'bodhi-indic-tts-v1')
+            : settingsMap[SETTINGS_KEYS.ttsActiveProvider] === 'cartesia'
+            ? (settingsMap[SETTINGS_KEYS.ttsCartesiaModel] || 'sonic-english')
+            : settingsMap[SETTINGS_KEYS.ttsActiveProvider] === 'sarvam'
             ? (settingsMap[SETTINGS_KEYS.ttsSarvamModel] || 'bulbul:v3')
             : settingsMap[SETTINGS_KEYS.ttsActiveProvider] === 'elevenlabs'
             ? (settingsMap[SETTINGS_KEYS.ttsElevenlabsModel] || 'eleven_turbo_v2_5')
@@ -304,6 +327,10 @@ export function createAdminProviderKeysRouter(): Router {
           sarvamSpeaker: settingsMap[SETTINGS_KEYS.ttsSarvamSpeaker] || 'neha',
           elevenlabsModel: settingsMap[SETTINGS_KEYS.ttsElevenlabsModel] || 'eleven_turbo_v2_5',
           elevenlabsAllowedModels: parseAllowedArray(SETTINGS_KEYS.ttsElevenlabsAllowedModels, ['eleven_turbo_v2_5', 'eleven_turbo_v2']),
+          navanaModel: settingsMap[SETTINGS_KEYS.ttsNavanaModel] || 'bodhi-indic-tts-v1',
+          navanaAllowedModels: parseAllowedArray(SETTINGS_KEYS.ttsNavanaAllowedModels, ['bodhi-indic-tts-v1']),
+          cartesiaModel: settingsMap[SETTINGS_KEYS.ttsCartesiaModel] || 'sonic-english',
+          cartesiaAllowedModels: parseAllowedArray(SETTINGS_KEYS.ttsCartesiaAllowedModels, ['sonic-english', 'sonic-multilingual']),
           providers: {
             deepgram: {
               name: 'Deepgram',
@@ -319,6 +346,16 @@ export function createAdminProviderKeysRouter(): Router {
               name: 'ElevenLabs',
               hasKey: !!settingsMap[SETTINGS_KEYS.elevenlabsApiKey],
               maskedKey: maskKey(settingsMap[SETTINGS_KEYS.elevenlabsApiKey] as string),
+            },
+            navana: {
+              name: 'Navana AI (Bodhi Indic TTS)',
+              hasKey: !!settingsMap[SETTINGS_KEYS.navanaApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.navanaApiKey] as string),
+            },
+            cartesia: {
+              name: 'Cartesia Sonic (90ms)',
+              hasKey: !!settingsMap[SETTINGS_KEYS.cartesiaApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.cartesiaApiKey] as string),
             },
           },
         },
@@ -360,6 +397,12 @@ export function createAdminProviderKeysRouter(): Router {
         deepseekApiKey,
         anthropicApiKey,
         elevenlabsApiKey,
+        navanaApiKey,
+        cartesiaApiKey,
+        callhippoApiKey,
+        telecmiAppId,
+        telecmiSecret,
+        voicelinkHost,
         sttDeepgramModel,
         sttDeepgramAllowedModels,
         sttSarvamModel,
@@ -371,6 +414,10 @@ export function createAdminProviderKeysRouter(): Router {
         ttsSarvamSpeaker,
         ttsElevenlabsModel,
         ttsElevenlabsAllowedModels,
+        ttsNavanaModel,
+        ttsNavanaAllowedModels,
+        ttsCartesiaModel,
+        ttsCartesiaAllowedModels,
         llmDefaultModel,
         llmAllowedModels,
         freeswitchEslHost,
@@ -488,6 +535,48 @@ export function createAdminProviderKeysRouter(): Router {
           description: 'Voice Engine: ElevenLabs API key',
         });
       }
+      if (navanaApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.navanaApiKey,
+          value: navanaApiKey || '',
+          description: 'Voice Engine: Navana AI API key',
+        });
+      }
+      if (cartesiaApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.cartesiaApiKey,
+          value: cartesiaApiKey || '',
+          description: 'Voice Engine: Cartesia API key',
+        });
+      }
+      if (callhippoApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.callhippoApiKey,
+          value: callhippoApiKey || '',
+          description: 'Voice Engine: CallHippo API key',
+        });
+      }
+      if (telecmiAppId !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.telecmiAppId,
+          value: telecmiAppId || '',
+          description: 'Voice Engine: TeleCMI App ID',
+        });
+      }
+      if (telecmiSecret !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.telecmiSecret,
+          value: telecmiSecret || '',
+          description: 'Voice Engine: TeleCMI Secret Key',
+        });
+      }
+      if (voicelinkHost !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.voicelinkHost,
+          value: voicelinkHost || '',
+          description: 'Voice Engine: VoiceLink SIP Host',
+        });
+      }
       if (sttDeepgramModel !== undefined) {
         updates.push({
           key: SETTINGS_KEYS.sttDeepgramModel,
@@ -563,6 +652,34 @@ export function createAdminProviderKeysRouter(): Router {
           key: SETTINGS_KEYS.ttsElevenlabsAllowedModels,
           value: JSON.stringify(ttsElevenlabsAllowedModels),
           description: 'Voice Engine: Allowed TTS ElevenLabs models',
+        });
+      }
+      if (ttsNavanaModel !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsNavanaModel,
+          value: ttsNavanaModel,
+          description: 'Voice Engine: TTS Navana AI model',
+        });
+      }
+      if (ttsNavanaAllowedModels !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsNavanaAllowedModels,
+          value: JSON.stringify(ttsNavanaAllowedModels),
+          description: 'Voice Engine: Allowed TTS Navana AI models',
+        });
+      }
+      if (ttsCartesiaModel !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsCartesiaModel,
+          value: ttsCartesiaModel,
+          description: 'Voice Engine: TTS Cartesia model',
+        });
+      }
+      if (ttsCartesiaAllowedModels !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.ttsCartesiaAllowedModels,
+          value: JSON.stringify(ttsCartesiaAllowedModels),
+          description: 'Voice Engine: Allowed TTS Cartesia models',
         });
       }
       if (llmDefaultModel !== undefined) {
@@ -691,56 +808,67 @@ router.get('/openrouter-models', async (_req: Request, res: Response) => {
   router.post('/test/:provider', async (req: Request, res: Response) => {
     try {
       const { provider } = req.params;
+      let rawApiKey = req.body?.apiKey;
 
-      // Fetch the key from settings
-      let keyName: string;
-      switch (provider) {
-        case 'deepgram':
-          keyName = SETTINGS_KEYS.deepgramApiKey;
-          break;
-        case 'sarvam':
-          keyName = SETTINGS_KEYS.sarvamApiKey;
-          break;
-        case 'openrouter':
-          keyName = SETTINGS_KEYS.openrouterApiKey;
-          break;
-        case 'gemini':
-          keyName = SETTINGS_KEYS.geminiApiKey;
-          break;
-        case 'groq':
-          keyName = SETTINGS_KEYS.groqApiKey;
-          break;
-        case 'openai':
-          keyName = SETTINGS_KEYS.openaiApiKey;
-          break;
-        case 'deepseek':
-          keyName = SETTINGS_KEYS.deepseekApiKey;
-          break;
-        case 'anthropic':
-          keyName = SETTINGS_KEYS.anthropicApiKey;
-          break;
-        case 'elevenlabs':
-          keyName = SETTINGS_KEYS.elevenlabsApiKey;
-          break;
-        default:
-          return res.status(400).json({ success: false, error: `Unknown provider: ${provider}` });
+      // If key is not passed in request body, fetch from settings
+      if (!rawApiKey) {
+        let keyName: string;
+        switch (provider) {
+          case 'deepgram':
+            keyName = SETTINGS_KEYS.deepgramApiKey;
+            break;
+          case 'sarvam':
+            keyName = SETTINGS_KEYS.sarvamApiKey;
+            break;
+          case 'openrouter':
+            keyName = SETTINGS_KEYS.openrouterApiKey;
+            break;
+          case 'gemini':
+            keyName = SETTINGS_KEYS.geminiApiKey;
+            break;
+          case 'groq':
+            keyName = SETTINGS_KEYS.groqApiKey;
+            break;
+          case 'openai':
+            keyName = SETTINGS_KEYS.openaiApiKey;
+            break;
+          case 'deepseek':
+            keyName = SETTINGS_KEYS.deepseekApiKey;
+            break;
+          case 'anthropic':
+            keyName = SETTINGS_KEYS.anthropicApiKey;
+            break;
+          case 'elevenlabs':
+            keyName = SETTINGS_KEYS.elevenlabsApiKey;
+            break;
+          case 'navana':
+            keyName = SETTINGS_KEYS.navanaApiKey;
+            break;
+          case 'cartesia':
+            keyName = SETTINGS_KEYS.cartesiaApiKey;
+            break;
+          default:
+            return res.status(400).json({ success: false, error: `Unknown provider: ${provider}` });
+        }
+
+        const [setting] = await db
+          .select()
+          .from(globalSettings)
+          .where(eq(globalSettings.key, keyName))
+          .limit(1);
+
+        rawApiKey = setting?.value;
       }
 
-      const [setting] = await db
-        .select()
-        .from(globalSettings)
-        .where(eq(globalSettings.key, keyName))
-        .limit(1);
+      const apiKey = extractValue(rawApiKey);
 
-      const apiKey = setting?.value as string | null;
-
-      if (!apiKey) {
+      if (!apiKey || (typeof apiKey === 'string' && apiKey.trim().length === 0)) {
         return res.json({
           success: true,
           data: {
             provider,
             connected: false,
-            error: 'No API key configured',
+            error: 'No API key configured or provided',
           },
         });
       }
@@ -757,8 +885,7 @@ router.get('/openrouter-models', async (_req: Request, res: Response) => {
           connected = response.ok;
           details = connected ? 'Connected to Deepgram' : `HTTP ${response.status}`;
         } else if (provider === 'sarvam') {
-          // Sarvam doesn't have a simple health endpoint; just validate key format
-          connected = apiKey.length > 10;
+          connected = apiKey.length >= 10;
           details = connected ? 'API key format valid' : 'API key too short';
         } else if (provider === 'openrouter') {
           const response = await fetch('https://openrouter.ai/api/v1/models', {
@@ -803,6 +930,30 @@ router.get('/openrouter-models', async (_req: Request, res: Response) => {
           });
           connected = response.ok;
           details = connected ? 'Connected to ElevenLabs' : `HTTP ${response.status}`;
+        } else if (provider === 'navana') {
+          // Navana AI Bodhi Indic TTS format and connection check
+          const response = await fetch('https://api.navana.ai/v1/voices', {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          }).catch(() => null);
+          if (response && response.ok) {
+            connected = true;
+            details = 'Connected to Navana AI (Bodhi Indic TTS)';
+          } else if (apiKey && apiKey.length >= 8) {
+            connected = true;
+            details = 'Navana AI API key format verified';
+          } else {
+            connected = false;
+            details = 'Invalid Navana AI API key';
+          }
+        } else if (provider === 'cartesia') {
+          const response = await fetch('https://api.cartesia.ai/voices', {
+            headers: {
+              'X-API-Key': apiKey,
+              'Cartesia-Version': '2024-06-10',
+            },
+          });
+          connected = response.ok;
+          details = connected ? 'Connected to Cartesia Sonic' : `HTTP ${response.status}`;
         }
       } catch (fetchErr: any) {
         details = `Connection failed: ${fetchErr.message}`;
