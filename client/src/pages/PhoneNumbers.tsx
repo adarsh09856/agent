@@ -591,19 +591,18 @@ export default function PhoneNumbers() {
           </div>
           <div className="flex flex-wrap gap-2">
             <Button 
-              variant="outline" 
               onClick={() => {
                 setCurrentTab("my-sip-gateways");
                 setTimeout(() => {
-                  const el = document.getElementById("add-sip-gateway-btn");
+                  const el = document.getElementById("add-phone-number-btn");
                   if (el) el.click();
                 }, 50);
               }}
-              className="bg-white/80 dark:bg-white/10 border-emerald-200 dark:border-emerald-800"
-              data-testid="button-connect-sip"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+              data-testid="button-connect-phone"
             >
-              <Server className="h-4 w-4 mr-2 text-emerald-600 dark:text-emerald-400" />
-              + Connect SIP Number / Trunk
+              <Plus className="h-4 w-4 mr-2" />
+              + Connect Phone Number
             </Button>
             <Button 
               variant="outline" 
@@ -612,15 +611,7 @@ export default function PhoneNumbers() {
               data-testid="button-manage-connections"
             >
               <LinkIcon className="h-4 w-4 mr-2" />
-              {t('phoneNumbers.manageConnections')}
-            </Button>
-            <Button 
-              onClick={() => plivoEnabled ? handleBuyClick('select') : handleBuyClick('twilio')} 
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              data-testid="button-buy-number"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              {t('phoneNumbers.buyNumber')}
+              Manage Inbound Routing
             </Button>
           </div>
         </div>
@@ -663,12 +654,14 @@ export default function PhoneNumbers() {
         <TabsList>
           <TabsTrigger value="my-sip-gateways" data-testid="tab-my-sip-gateways">
             <Server className="h-4 w-4 mr-1 text-primary" />
-            SIP Gateways & Wholesale DIDs
+            Wholesale SIP Numbers & Trunks
           </TabsTrigger>
-          <TabsTrigger value="owned" data-testid="tab-owned-numbers">
-            Twilio Numbers ({ownedNumbers.length})
-          </TabsTrigger>
-          {plivoEnabled && (
+          {ownedNumbers.length > 0 && (
+            <TabsTrigger value="owned" data-testid="tab-owned-numbers">
+              Twilio Numbers ({ownedNumbers.length})
+            </TabsTrigger>
+          )}
+          {plivoEnabled && plivoNumbers.length > 0 && (
             <TabsTrigger value="plivo" data-testid="tab-plivo-numbers">
               Plivo Numbers ({plivoNumbers.length})
             </TabsTrigger>

@@ -102,6 +102,16 @@ const emptyGatewayForm = () => ({
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+const SIP_PRESETS = [
+  { id: "telnyx", name: "Telnyx", proxy: "sip.telnyx.com", register: true },
+  { id: "twilio", name: "Twilio BYOC", proxy: "sip.twilio.com", register: false },
+  { id: "tata", name: "Tata Tele", proxy: "sip.tatatelebusiness.com", register: true },
+  { id: "airtel", name: "Airtel IQ", proxy: "sip.airtel.in", register: true },
+  { id: "zadarma", name: "Zadarma", proxy: "sip.zadarma.com", register: true },
+  { id: "voipms", name: "VoipMS", proxy: "newyork.voip.ms", register: true },
+  { id: "custom", name: "Custom SIP", proxy: "", register: true },
+];
+
 export default function UserSipGatewaysTab() {
   const { toast } = useToast();
 
@@ -120,6 +130,16 @@ export default function UserSipGatewaysTab() {
   const [phoneGatewayId, setPhoneGatewayId] = useState<string>("none");
   const [phoneAgentId, setPhoneAgentId] = useState<string>("none");
 
+  // In-modal all-in-one SIP trunk credential state
+  const [phoneTrunkMode, setPhoneTrunkMode] = useState<"existing" | "new">("new");
+  const [phoneGwPreset, setPhoneGwPreset] = useState("telnyx");
+  const [phoneGwName, setPhoneGwName] = useState("Telnyx Primary");
+  const [phoneGwProxy, setPhoneGwProxy] = useState("sip.telnyx.com");
+  const [phoneGwUsername, setPhoneGwUsername] = useState("");
+  const [phoneGwPassword, setPhoneGwPassword] = useState("");
+  const [phoneGwRegister, setPhoneGwRegister] = useState(true);
+  const [isSubmittingAllInOne, setIsSubmittingAllInOne] = useState(false);
+
   // ── Queries ──
   const { data: gatewaysData, isLoading: gatewaysLoading, refetch: refetchGateways } = useQuery<{ success: boolean; data: UserSipGateway[] }>({
     queryKey: ["/api/user/sip-gateways"],
@@ -135,6 +155,18 @@ export default function UserSipGatewaysTab() {
     queryKey: ["/api/agents"],
   });
   const agents = agentsData || [];
+
+  const applyPreset = (presetId: string) => {
+    setPhoneGwPreset(presetId);
+    const p = SIP_PRESETS.find(x => x.id === presetId);
+    if (p) {
+      if (p.id !== "custom") {
+        setPhoneGwName(`${p.name} Trunk`);
+      }
+      setPhoneGwProxy(p.proxy);
+      setPhoneGwRegister(p.register);
+    }
+  };
 
   // ── Gateway mutations ──
   const saveGatewayMutation = useMutation({
@@ -273,8 +305,12 @@ export default function UserSipGatewaysTab() {
     setEditingPhone(null);
     setPhoneNumber("");
     setPhoneLabel("");
+    setPhoneTrunkMode(gateways.length > 0 ? "existing" : "new");
     setPhoneGatewayId(gateways.find(g => g.is_active)?.id || (gateways[0]?.id) || "none");
     setPhoneAgentId("none");
+    applyPreset("telnyx");
+    setPhoneGwUsername("");
+    setPhoneGwPassword("");
     setPhoneDialogOpen(true);
   };
 
@@ -299,17 +335,86 @@ export default function UserSipGatewaysTab() {
     saveGatewayMutation.mutate(gwForm);
   };
 
-  const handleSavePhone = () => {
+  const handleSavePhone = async () => {
     if (!editingPhone && !phoneNumber.trim()) {
       toast({ title: "Validation error", description: "Phone number is required.", variant: "destructive" });
       return;
     }
-    savePhoneMutation.mutate({
-      phoneNumber: phoneNumber.trim(),
-      label: phoneLabel.trim() || undefined,
-      gatewayId: phoneGatewayId,
-      agentId: phoneAgentId,
-    });
+
+    if (editingPhone) {
+      savePhoneMutation.mutate({
+        phoneNumber: phoneNumber.trim(),
+        label: phoneLabel.trim() || undefined,
+        gatewayId: phoneGatewayId,
+        agentId: phoneAgentId,
+      });
+      return;
+    }
+
+    // Creating new phone number
+    if (phoneTrunkMode === "new") {
+      if (!phoneGwName.trim() || !phoneGwUsername.trim() || !phoneGwPassword.trim() || !phoneGwProxy.trim()) {
+        toast({
+          title: "Validation error",
+          description: "All SIP trunk credentials (Trunk Name, Username, Password, Proxy Host) are required.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsSubmittingAllInOne(true);
+      try {
+        // 1. Create the SIP Gateway
+        const gwRes = await apiRequest("POST", "/api/user/sip-gateways", {
+          name: phoneGwName.trim(),
+          username: phoneGwUsername.trim(),
+          password: phoneGwPassword.trim(),
+          proxy: phoneGwProxy.trim(),
+          register: phoneGwRegister,
+          callerIdInFrom: true,
+        });
+        const gwJson = await gwRes.json();
+        const createdGwId = gwJson?.data?.id;
+
+        // 2. Activate it
+        if (createdGwId) {
+          await apiRequest("POST", `/api/user/sip-gateways/${createdGwId}/activate`).catch(() => {});
+        }
+
+        // 3. Create phone number linked to new gateway
+        await apiRequest("POST", "/api/user/sip-phone-numbers", {
+          phoneNumber: phoneNumber.trim(),
+          label: phoneLabel.trim() || undefined,
+          gatewayId: createdGwId || null,
+          agentId: phoneAgentId === "none" ? null : phoneAgentId,
+        });
+
+        // 4. Invalidate and close
+        queryClient.invalidateQueries({ queryKey: ["/api/user/sip-gateways"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/user/sip-phone-numbers"] });
+        setPhoneDialogOpen(false);
+        toast({
+          title: "Phone Number & SIP Trunk Connected!",
+          description: `${phoneNumber.trim()} is now active on FreeSWITCH linked to ${phoneGwName.trim()}.`,
+        });
+      } catch (err: any) {
+        toast({
+          title: "Connection Failed",
+          description: err.message || "Failed to create SIP trunk and phone number",
+          variant: "destructive",
+        });
+      } finally {
+        setIsSubmittingAllInOne(false);
+      }
+    } else {
+      // Existing gateway
+      savePhoneMutation.mutate({
+        phoneNumber: phoneNumber.trim(),
+        label: phoneLabel.trim() || undefined,
+        gatewayId: phoneGatewayId,
+        agentId: phoneAgentId,
+      });
+    }
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -360,13 +465,13 @@ export default function UserSipGatewaysTab() {
             <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 flex items-center justify-center">
               <Server className="h-7 w-7 text-indigo-500 dark:text-indigo-400" />
             </div>
-            <h3 className="text-base font-semibold mb-1">No Custom Voice Engine Gateways Yet</h3>
-            <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
-              Add your SIP trunk credentials to enable outbound calls through your own Custom Voice Engine.
+            <h3 className="text-base font-semibold mb-1">No SIP Gateways Connected Yet</h3>
+            <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+              Add your wholesale SIP trunk credentials (Telnyx, Twilio BYOC, Tata, Airtel, DIDLogic, VoipMS) to route inbound and outbound calls through FreeSWITCH.
             </p>
             <Button onClick={openAddGateway}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Your First Gateway
+              Add SIP Gateway Credentials
             </Button>
           </Card>
         ) : (
@@ -448,7 +553,7 @@ export default function UserSipGatewaysTab() {
         )}
       </section>
 
-      {/* ── Custom SIP Phone Numbers Section ─────────────── */}
+      {/* ── Wholesale SIP Phone Numbers Section ─────────────── */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -456,8 +561,8 @@ export default function UserSipGatewaysTab() {
               <Phone className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">Phone Numbers</h2>
-              <p className="text-sm text-muted-foreground">Phone numbers imported from your Custom Voice Engine gateways</p>
+              <h2 className="text-lg font-semibold">Phone Numbers (DIDs)</h2>
+              <p className="text-sm text-muted-foreground">Phone numbers (DIDs) routed through your SIP trunk credentials to AI agents</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -469,9 +574,9 @@ export default function UserSipGatewaysTab() {
             >
               <RefreshCw className={`h-4 w-4 ${phonesLoading ? "animate-spin" : ""}`} />
             </Button>
-            <Button size="sm" onClick={openAddPhone}>
+            <Button size="sm" id="add-phone-number-btn" onClick={openAddPhone} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               <Plus className="h-4 w-4 mr-1.5" />
-              Import Number
+              Connect Phone Number
             </Button>
           </div>
         </div>
@@ -490,13 +595,13 @@ export default function UserSipGatewaysTab() {
             <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-gradient-to-br from-teal-100 to-emerald-100 dark:from-teal-900/40 dark:to-emerald-900/40 flex items-center justify-center">
               <Phone className="h-7 w-7 text-teal-500 dark:text-teal-400" />
             </div>
-            <h3 className="text-base font-semibold mb-1">No Phone Numbers</h3>
-            <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
-              Import phone numbers you own from your Custom Voice Engine gateway.
+            <h3 className="text-base font-semibold mb-1">No Phone Numbers Connected Yet</h3>
+            <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
+              Connect your phone numbers (DIDs) directly with your SIP credentials to route incoming and outgoing calls through FreeSWITCH.
             </p>
-            <Button onClick={openAddPhone}>
+            <Button onClick={openAddPhone} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               <Plus className="h-4 w-4 mr-2" />
-              Add / Import Number
+              Connect Phone Number
             </Button>
           </Card>
         ) : (
@@ -572,9 +677,9 @@ export default function UserSipGatewaysTab() {
       <Dialog open={gatewayDialogOpen} onOpenChange={open => { if (!open) { setGatewayDialogOpen(false); setEditingGateway(null); setGwForm(emptyGatewayForm()); } }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{editingGateway ? "Edit Custom Voice Engine Gateway" : "Add Custom Voice Engine Gateway"}</DialogTitle>
+            <DialogTitle>{editingGateway ? "Edit SIP Gateway Credentials" : "Add Wholesale SIP Trunk / Gateway"}</DialogTitle>
             <DialogDescription>
-              Enter your Custom Voice Engine credentials from your VoIP provider.
+              Enter your wholesale SIP trunk credentials (username, password, proxy host) from your VoIP provider (Telnyx, Twilio BYOC, Tata, Airtel, Zadarma, VoipMS).
             </DialogDescription>
           </DialogHeader>
 
@@ -584,7 +689,7 @@ export default function UserSipGatewaysTab() {
               <Label htmlFor="gw-name">Gateway Name <span className="text-destructive">*</span></Label>
               <Input
                 id="gw-name"
-                placeholder="e.g. My Twilio Gateway"
+                placeholder="e.g. My Telnyx Gateway"
                 value={gwForm.name}
                 onChange={e => setGwForm(f => ({ ...f, name: e.target.value }))}
               />
@@ -618,7 +723,7 @@ export default function UserSipGatewaysTab() {
               <Label htmlFor="gw-proxy">Proxy / SIP Host <span className="text-destructive">*</span></Label>
               <Input
                 id="gw-proxy"
-                placeholder="e.g. sip.twilio.com"
+                placeholder="e.g. sip.telnyx.com"
                 value={gwForm.proxy}
                 onChange={e => setGwForm(f => ({ ...f, proxy: e.target.value }))}
               />
@@ -662,15 +767,15 @@ export default function UserSipGatewaysTab() {
         </DialogContent>
       </Dialog>
 
-      {/* ══ Phone Number Add/Edit Dialog ════════════════════════════════════ */}
+      {/* ══ All-in-One Phone Number & Credentials Dialog ════════════════════════════════════ */}
       <Dialog open={phoneDialogOpen} onOpenChange={open => { if (!open) { setPhoneDialogOpen(false); setEditingPhone(null); setPhoneNumber(""); setPhoneLabel(""); setPhoneGatewayId("none"); setPhoneAgentId("none"); } }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingPhone ? "Edit Phone Number" : "Import Phone Number"}</DialogTitle>
+            <DialogTitle>{editingPhone ? "Edit Phone Number" : "Connect Phone Number"}</DialogTitle>
             <DialogDescription>
               {editingPhone
-                ? "Update the label or gateway link for this phone number."
-                : "Import a phone number from your Custom Voice Engine gateway."}
+                ? "Update the label, linked trunk, or assigned AI agent for this phone number."
+                : "Connect your phone number (DID) with your wholesale SIP credentials to route calls to FreeSWITCH."}
             </DialogDescription>
           </DialogHeader>
 
@@ -681,11 +786,12 @@ export default function UserSipGatewaysTab() {
                 <Label htmlFor="phone-number">Phone Number <span className="text-destructive">*</span></Label>
                 <Input
                   id="phone-number"
-                  placeholder="+1234567890"
+                  placeholder="+12025550199 or +919876543210"
                   value={phoneNumber}
                   onChange={e => setPhoneNumber(e.target.value)}
+                  className="font-mono"
                 />
-                <p className="text-xs text-muted-foreground">Use E.164 format — start with + and country code.</p>
+                <p className="text-xs text-muted-foreground">Enter your DID in international E.164 format (with country code).</p>
               </div>
             )}
 
@@ -694,45 +800,21 @@ export default function UserSipGatewaysTab() {
               <Label htmlFor="phone-label">Label (optional)</Label>
               <Input
                 id="phone-label"
-                placeholder="e.g. Sales Line, Support"
+                placeholder="e.g. Main Sales Line, Support Hotline"
                 value={phoneLabel}
                 onChange={e => setPhoneLabel(e.target.value)}
               />
             </div>
 
-            {/* Gateway link */}
-            <div className="space-y-1.5">
-              <Label>Link to Custom Voice Engine Gateway</Label>
-              <Select value={phoneGatewayId} onValueChange={setPhoneGatewayId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select gateway (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">— No gateway —</SelectItem>
-                  {gateways.map(gw => (
-                    <SelectItem key={gw.id} value={gw.id}>
-                      {gw.name}
-                      {gw.is_active ? " ★" : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {gateways.length === 0 && (
-                <p className="text-xs text-amber-600 dark:text-amber-400">
-                  Add a Custom Voice Engine Gateway first to link this number to one.
-                </p>
-              )}
-            </div>
-
             {/* Agent link */}
             <div className="space-y-1.5">
-              <Label>Link to AI Agent</Label>
+              <Label>Assign to AI Voice Agent</Label>
               <Select value={phoneAgentId} onValueChange={setPhoneAgentId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select agent (optional)" />
+                  <SelectValue placeholder="Select an AI agent" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">— No agent —</SelectItem>
+                  <SelectItem value="none">— No agent (Inbound unassigned) —</SelectItem>
                   {agents.map(agent => (
                     <SelectItem key={agent.id} value={agent.id}>
                       {agent.name}
@@ -740,16 +822,165 @@ export default function UserSipGatewaysTab() {
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">The AI Voice Agent that answers inbound calls to this number.</p>
             </div>
+
+            {/* SIP Credentials Section */}
+            {!editingPhone ? (
+              <div className="rounded-xl border p-4 bg-muted/20 space-y-3 mt-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold flex items-center gap-1.5">
+                    <KeyRound className="h-4 w-4 text-emerald-600" />
+                    SIP Trunk & Carrier Credentials
+                  </Label>
+                  {gateways.length > 0 && (
+                    <div className="flex items-center gap-1 bg-muted p-1 rounded-lg text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setPhoneTrunkMode("existing")}
+                        className={`px-2.5 py-1 rounded font-medium transition-all ${phoneTrunkMode === "existing" ? "bg-background shadow-xs text-foreground" : "text-muted-foreground"}`}
+                      >
+                        Saved Trunk
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPhoneTrunkMode("new")}
+                        className={`px-2.5 py-1 rounded font-medium transition-all ${phoneTrunkMode === "new" ? "bg-background shadow-xs text-foreground" : "text-muted-foreground"}`}
+                      >
+                        + New Trunk
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {phoneTrunkMode === "existing" && gateways.length > 0 ? (
+                  <div className="space-y-2 pt-1">
+                    <Label className="text-xs">Select Connected SIP Trunk</Label>
+                    <Select value={phoneGatewayId} onValueChange={setPhoneGatewayId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gateway" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {gateways.map(gw => (
+                          <SelectItem key={gw.id} value={gw.id}>
+                            {gw.name} ({gw.proxy}) {gw.is_active ? "★ Active" : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <div className="space-y-3 pt-1">
+                    <div>
+                      <Label className="text-xs mb-1.5 block">Quick Carrier Preset</Label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {SIP_PRESETS.map(p => (
+                          <Button
+                            key={p.id}
+                            type="button"
+                            size="sm"
+                            variant={phoneGwPreset === p.id ? "default" : "outline"}
+                            className="h-7 text-xs px-2.5"
+                            onClick={() => applyPreset(p.id)}
+                          >
+                            {p.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="new-gw-name" className="text-xs">Trunk Label <span className="text-destructive">*</span></Label>
+                        <Input
+                          id="new-gw-name"
+                          placeholder="e.g. Telnyx Trunk"
+                          value={phoneGwName}
+                          onChange={e => setPhoneGwName(e.target.value)}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="new-gw-proxy" className="text-xs">SIP Host / Proxy <span className="text-destructive">*</span></Label>
+                        <Input
+                          id="new-gw-proxy"
+                          placeholder="sip.telnyx.com"
+                          value={phoneGwProxy}
+                          onChange={e => setPhoneGwProxy(e.target.value)}
+                          className="h-8 text-xs font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <Label htmlFor="new-gw-user" className="text-xs">SIP Username <span className="text-destructive">*</span></Label>
+                        <Input
+                          id="new-gw-user"
+                          placeholder="SIP username or Auth ID"
+                          value={phoneGwUsername}
+                          onChange={e => setPhoneGwUsername(e.target.value)}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="new-gw-pass" className="text-xs">SIP Password <span className="text-destructive">*</span></Label>
+                        <Input
+                          id="new-gw-pass"
+                          type="password"
+                          placeholder="SIP secret / password"
+                          value={phoneGwPassword}
+                          onChange={e => setPhoneGwPassword(e.target.value)}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs text-muted-foreground">Register with carrier (SIP REGISTER)</span>
+                      <Switch
+                        checked={phoneGwRegister}
+                        onCheckedChange={setPhoneGwRegister}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* When editing phone, just choose trunk */
+              <div className="space-y-1.5">
+                <Label>Link to SIP Gateway / Trunk</Label>
+                <Select value={phoneGatewayId} onValueChange={setPhoneGatewayId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gateway" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— No gateway —</SelectItem>
+                    {gateways.map(gw => (
+                      <SelectItem key={gw.id} value={gw.id}>
+                        {gw.name} ({gw.proxy})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => { setPhoneDialogOpen(false); setEditingPhone(null); setPhoneNumber(""); setPhoneLabel(""); setPhoneGatewayId("none"); setPhoneAgentId("none"); }}>
+          <DialogFooter className="gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => { setPhoneDialogOpen(false); setEditingPhone(null); setPhoneNumber(""); setPhoneLabel(""); setPhoneGatewayId("none"); setPhoneAgentId("none"); }}
+            >
               Cancel
             </Button>
-            <Button onClick={handleSavePhone} disabled={savePhoneMutation.isPending}>
-              {savePhoneMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {editingPhone ? "Save Changes" : "Import"}
+            <Button
+              onClick={handleSavePhone}
+              disabled={isSubmittingAllInOne || savePhoneMutation.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {(isSubmittingAllInOne || savePhoneMutation.isPending) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {editingPhone ? "Save Changes" : "Connect Phone Number"}
             </Button>
           </DialogFooter>
         </DialogContent>
