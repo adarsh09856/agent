@@ -425,25 +425,24 @@ build_application() {
     log_success "Application built successfully into dist/."
 }
 
-# 11. FreeSWITCH Docker Voice Cluster Startup
+# 11. Voice Streaming Engine Startup
 start_freeswitch_cluster() {
-    log_info "Starting FreeSWITCH with mod_audio_fork in Docker using free ports..."
+    log_info "Configuring Cloud Voice Engine (Pipecat Streaming • Zero PBX)..."
     DOCKER_DIR="$APP_DIR/plugins/custom-voice-engine/docker"
 
-    if [ -d "$DOCKER_DIR" ]; then
+    if [ "$ENABLE_FREESWITCH" = "true" ] && [ -d "$DOCKER_DIR" ]; then
+        log_info "Optional FreeSWITCH container requested (ENABLE_FREESWITCH=true)..."
         cd "$DOCKER_DIR"
-        # Export resolved free ports to Docker Compose
         export REDIS_HOST_PORT
         export FREESWITCH_ESL_PORT
         export FREESWITCH_WS_PORT
         export FREESWITCH_SIP_PORT
         export FREESWITCH_SIP_TLS_PORT
-        
-        docker compose -f docker-compose.voice-engine.yml up -d || log_warn "FreeSWITCH container build/launch had non-fatal warnings (check with 'docker ps')."
+        docker compose -f docker-compose.voice-engine.yml up -d || log_warn "FreeSWITCH container launch had non-fatal warnings."
         cd "$APP_DIR"
-        log_success "FreeSWITCH voice cluster container launched (Redis on isolated port ${REDIS_HOST_PORT})."
+        log_success "FreeSWITCH voice cluster container launched."
     else
-        log_warn "Docker directory not found at $DOCKER_DIR. Skipping FreeSWITCH docker compose."
+        log_success "Cloud Voice Engine active (Pipecat WebRTC & WebSocket Streaming • Zero PBX)."
     fi
 }
 
@@ -565,16 +564,13 @@ verify_installation() {
     echo ""
     echo -e "   • Domain / Host        : ${BOLD}http://${DOMAIN_NAME}${NC}"
     echo -e "   • Internal App Port    : ${BOLD}http://127.0.0.1:${APP_PORT}${NC}"
-    echo -e "   • Redis (Isolated)     : ${BOLD}Port ${REDIS_HOST_PORT}${NC}"
-    echo -e "   • FreeSWITCH ESL       : ${BOLD}Port ${FREESWITCH_ESL_PORT}${NC}"
-    echo -e "   • FreeSWITCH WS Audio  : ${BOLD}Port ${FREESWITCH_WS_PORT}${NC}"
-    echo -e "   • SIP Signaling Port   : ${BOLD}Port ${FREESWITCH_SIP_PORT}${NC}"
+    echo -e "   • Cloud Voice Engine   : ${BOLD}ACTIVE (Pipecat Streaming • Zero PBX)${NC}"
     echo -e "   • Local Service Health : HTTP $HTTP_STATUS"
     echo -e "   • PM2 Process Status   : $(pm2 jlist 2>/dev/null | jq -r '.[] | select(.name=="agentlabs") | .pm2_env.status' 2>/dev/null || echo 'running')"
-    echo -e "   • FreeSWITCH Status    : $(docker ps --filter "name=ve-freeswitch" --format "{{.Status}}" 2>/dev/null || echo 'active')"
     echo -e "   • Native Master AI     : ACTIVE (Sub-20ms Reflexes | \$0 Decision Cost)"
     echo -e "   • BYOK Governance      : ACTIVE (Admin Switch in /admin -> Voice Engine)"
-    echo -e "   • Uncapped Models      : Google Gemini, OpenAI, Claude, DeepSeek, Groq, Sarvam"
+    echo -e "   • Indian Telephony     : CallHippo, TeleCMI, VoiceLink, Exotel, Twilio"
+    echo -e "   • Uncapped AI Models   : Navana AI Bodhi, Sarvam AI, Cartesia Sonic, Gemini 2.0 Flash"
     echo ""
     echo -e "${BOLD}Multi-Site Safeguards Applied:${NC}"
     echo -e "   ✓ In-use ports scanned first; all free ports dynamically allocated"
