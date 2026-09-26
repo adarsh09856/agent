@@ -50,9 +50,6 @@ const PROVIDERS = [
 const SIP_PRESETS: Record<string, { name: string; proxy: string; port: number }> = {
   tata: { name: "Tata Tele Business", proxy: "sip.tatatelebusiness.com", port: 5060 },
   airtel: { name: "Airtel IQ", proxy: "sip.airtel.in", port: 5060 },
-  callhippo: { name: "CallHippo India", proxy: "sip.callhippo.com", port: 5060 },
-  telecmi: { name: "TeleCMI India", proxy: "sip.telecmi.com", port: 5060 },
-  voicelink: { name: "VoiceLink Universal", proxy: "sip.voicelink.cloud", port: 5060 },
   jio: { name: "Jio Enterprise SIP", proxy: "sip.jio.com", port: 5060 },
   custom: { name: "Custom SIP", proxy: "", port: 5060 },
 };

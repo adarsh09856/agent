@@ -60,7 +60,7 @@ export default function ProviderCardsGrid({
           </div>
           <CardTitle className="text-lg">No telephony configurations yet</CardTitle>
           <CardDescription className="text-xs">
-            Connect one or more provider accounts (Twilio, Exotel, Plivo, Asterisk, or Indian SIP) to make and receive calls.
+            Connect one or more provider accounts (Twilio, Plivo, Telnyx, or Indian SIP) to make and receive calls.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center pb-6">

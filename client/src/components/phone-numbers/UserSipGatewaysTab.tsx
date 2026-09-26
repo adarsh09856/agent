@@ -108,10 +108,6 @@ const emptyGatewayForm = () => ({
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const SIP_PRESETS = [
-  { id: "callhippo", name: "CallHippo India", proxy: "sip.callhippo.com", register: true },
-  { id: "telecmi", name: "TeleCMI India", proxy: "sip.telecmi.com", register: true },
-  { id: "exotel", name: "Exotel India", proxy: "sip.exotel.com", register: true },
-  { id: "voicelink", name: "VoiceLink Universal", proxy: "sip.voicelink.cloud", register: true },
   { id: "tata", name: "Tata Tele", proxy: "sip.tatatelebusiness.com", register: true },
   { id: "airtel", name: "Airtel IQ", proxy: "sip.airtel.in", register: true },
   { id: "twilio", name: "Twilio BYOC", proxy: "sip.twilio.com", register: false },
@@ -155,10 +151,10 @@ export default function UserSipGatewaysTab() {
   const [showTwilioToken, setShowTwilioToken] = useState(false);
 
   // SIP / Indian Carrier Quick Connect State
-  const [sipPresetSelected, setSipPresetSelected] = useState('callhippo');
+  const [sipPresetSelected, setSipPresetSelected] = useState('tata');
   const [sipCarrierPhone, setSipCarrierPhone] = useState('');
-  const [sipCarrierName, setSipCarrierName] = useState('CallHippo India');
-  const [sipCarrierProxy, setSipCarrierProxy] = useState('sip.callhippo.com');
+  const [sipCarrierName, setSipCarrierName] = useState('Tata Tele');
+  const [sipCarrierProxy, setSipCarrierProxy] = useState('sip.tatatelebusiness.com');
   const [sipCarrierUsername, setSipCarrierUsername] = useState('');
   const [sipCarrierPassword, setSipCarrierPassword] = useState('');
   const [sipCarrierPort, setSipCarrierPort] = useState(5060);
@@ -534,7 +530,7 @@ export default function UserSipGatewaysTab() {
             </div>
             <div>
               <h2 className="text-lg font-semibold">SIP Gateways & Carrier Trunks</h2>
-              <p className="text-sm text-muted-foreground">Your carrier SIP credentials (CallHippo, TeleCMI, VoiceLink, Exotel, Twilio BYOC, Tata, Airtel) routed directly through Cloud Streaming Engine (Zero PBX)</p>
+              <p className="text-sm text-muted-foreground">Your carrier SIP credentials (Twilio, Plivo, Telnyx, Tata, Airtel, Custom SIP) routed directly through Cloud Streaming Engine (Zero PBX)</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -570,7 +566,7 @@ export default function UserSipGatewaysTab() {
             </div>
             <h3 className="text-base font-semibold mb-1">No SIP Gateways Connected Yet</h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-              Add your carrier SIP trunk credentials (CallHippo, TeleCMI, VoiceLink, Exotel, Twilio, Tata, Airtel) to route inbound and outbound calls with sub-100ms real-time audio.
+              Add your carrier SIP trunk credentials (Twilio, Plivo, Telnyx, Tata, Airtel, Custom SIP) to route inbound and outbound calls with sub-100ms real-time audio.
             </p>
             <Button onClick={openAddGateway}>
               <Plus className="h-4 w-4 mr-2" />
@@ -665,7 +661,7 @@ export default function UserSipGatewaysTab() {
               Telephony Configurations & Phone Numbers
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Connect carrier accounts (Twilio, Exotel, Plivo, Telnyx, Cloudonix, Asterisk, and Indian SIP) with 1-click Inbound AI Agent routing.
+              Connect carrier accounts (Twilio, Plivo, Telnyx, and Indian SIP) with 1-click Inbound AI Agent routing.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -745,7 +741,7 @@ export default function UserSipGatewaysTab() {
             </div>
             <h3 className="text-base font-semibold mb-1">No Phone Numbers Connected Yet</h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-sm mx-auto">
-              Connect your Indian & Global SIP phone numbers (CallHippo, TeleCMI, Exotel, VoiceLink) or import directly from Twilio.
+              Connect your Indian & Global SIP phone numbers (Tata, Airtel, Twilio, Plivo, Telnyx) or import directly from Twilio.
             </p>
             <div className="flex flex-wrap justify-center gap-2">
               <Button onClick={openAddPhone} className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium shadow-sm">
@@ -842,7 +838,7 @@ export default function UserSipGatewaysTab() {
           <DialogHeader>
             <DialogTitle>{editingGateway ? "Edit SIP Gateway Credentials" : "Add Carrier SIP Trunk / Gateway"}</DialogTitle>
             <DialogDescription>
-              Enter your carrier SIP trunk credentials (username, password, proxy host) from your VoIP provider (CallHippo, TeleCMI, Exotel, VoiceLink, Twilio BYOC, Tata, Airtel, Telnyx).
+              Enter your carrier SIP trunk credentials (username, password, proxy host) from your VoIP provider (Tata, Airtel, Twilio BYOC, Plivo, Telnyx).
             </DialogDescription>
           </DialogHeader>
 
@@ -1064,7 +1060,7 @@ export default function UserSipGatewaysTab() {
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-foreground">Connect Carrier & Phone Number</DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Connect phone numbers via Twilio API or Indian & Global SIP Trunks (CallHippo, TeleCMI, Exotel, VoiceLink).
+              Connect phone numbers via Twilio API or Indian & Global SIP Trunks (Tata, Airtel, Plivo, Telnyx).
             </DialogDescription>
           </DialogHeader>
 

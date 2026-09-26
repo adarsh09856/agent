@@ -2330,7 +2330,7 @@ export default function Agents() {
                                 )}
                               </div>
                               <p className="text-xs text-muted-foreground leading-relaxed">
-                                Real-time cloud voice streaming supporting Indian & Global SIP trunks (CallHippo, TeleCMI, Exotel, Twilio) with ultra-low latency voice AI.
+                                Real-time cloud voice streaming supporting Indian & Global SIP trunks (Twilio, Plivo, Telnyx, Tata, Airtel) with ultra-low latency voice AI.
                               </p>
                             </div>
                           </div>

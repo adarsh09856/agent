@@ -650,7 +650,7 @@ export default function PhoneNumbers() {
               </div>
               <CardTitle className="text-lg">No telephony configurations yet</CardTitle>
               <CardDescription className="text-sm max-w-md mx-auto">
-                Add one to enable outbound calls and receive inbound calls. Connect Twilio, Exotel, Plivo, Telnyx, Asterisk, or Indian SIP trunks.
+                Add one to enable outbound calls and receive inbound calls. Connect Twilio, Plivo, Telnyx, or Indian SIP trunks.
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center pb-6">
@@ -807,7 +807,7 @@ export default function PhoneNumbers() {
             </div>
             <h3 className="text-base font-semibold mb-1">No Phone Numbers Connected Yet</h3>
             <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
-              Attach your carrier phone numbers (Indian SIP, Twilio, Exotel, Plivo, Telnyx) and route live inbound calls directly to your conversational AI Agents.
+              Attach your carrier phone numbers (Indian SIP, Twilio, Plivo, Telnyx) and route live inbound calls directly to your conversational AI Agents.
             </p>
             <Button onClick={openAddPhoneModal} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
               <Plus className="h-4 w-4" />
