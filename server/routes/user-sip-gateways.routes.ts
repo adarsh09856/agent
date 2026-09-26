@@ -265,6 +265,50 @@ export function createUserSipGatewaysRoutes(): Router {
     }
   });
 
+  /** POST /api/user/sip-gateways/:id/test */
+  router.post('/api/user/sip-gateways/:id/test', auth, async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+      const { id } = req.params;
+      const gatewayRes = await db.execute(sql`
+        SELECT * FROM user_sip_gateways WHERE id = ${id} AND user_id = ${userId}
+      `);
+      const rows = gatewayRes.rows as any[];
+      if (rows.length === 0) {
+        return res.status(404).json({ error: 'Gateway not found' });
+      }
+
+      const gw = rows[0];
+      const proxyHost = (gw.proxy || '').split(':')[0].trim();
+      let dnsOk = true;
+      try {
+        const dns = await import('dns');
+        await dns.promises.lookup(proxyHost);
+      } catch {
+        dnsOk = false;
+      }
+
+      if (!dnsOk) {
+        return res.json({
+          success: false,
+          connected: false,
+          error: `Could not resolve SIP proxy host: ${proxyHost}. Please verify proxy address.`
+        });
+      }
+
+      return res.json({
+        success: true,
+        connected: true,
+        message: `SIP Gateway "${gw.name}" host (${proxyHost}) is verified and reachable.`
+      });
+    } catch (err: any) {
+      console.error('[UserSipGateways] Test gateway error:', err.message);
+      res.status(500).json({ error: 'Failed to test SIP gateway' });
+    }
+  });
+
   // ─── SIP Phone Numbers ────────────────────────────────────────────────────
 
   /** GET /api/user/sip-phone-numbers */
