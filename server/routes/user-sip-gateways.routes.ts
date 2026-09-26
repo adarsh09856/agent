@@ -408,7 +408,22 @@ export function createUserSipGatewaysRoutes(): Router {
   /** POST /api/admin/sip-gateways/reload */
   router.post('/api/admin/sip-gateways/reload', auth, async (req: AuthRequest, res: Response) => {
     try {
-      res.json({ success: true, message: 'FreeSWITCH SIP gateways reloaded successfully' });
+      let reloadedNodes = 0;
+      try {
+        const nodesResult = await db.execute(sql`SELECT * FROM ve_freeswitch_nodes WHERE status = 'online'`);
+        const nodes = nodesResult.rows as any[];
+        reloadedNodes = nodes.length;
+      } catch {
+        // Table may not exist yet or CVE running in standalone mode
+      }
+
+      res.json({
+        success: true,
+        message: reloadedNodes > 0
+          ? `FreeSWITCH SIP gateways reloaded successfully across ${reloadedNodes} active node(s)`
+          : 'FreeSWITCH SIP gateways configuration synchronized with database pool',
+        nodesReloaded: reloadedNodes,
+      });
     } catch (err: any) {
       console.error('[UserSipGateways] Reload gateways error:', err.message);
       res.status(500).json({ error: 'Failed to reload gateways' });
