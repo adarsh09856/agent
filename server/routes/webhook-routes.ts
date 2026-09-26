@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 /**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
@@ -1036,40 +1036,76 @@ export async function handleIncomingCallWebhook(req: Request, res: Response) {
       return res.send(response.toString());
     }
 
-    // Fetch the agent details (type='incoming')
-    const agent = await db
+    // Fetch the agent details from agents table or ve_voice_agents table
+    let incomingAgent: any = null;
+    const agentRecords = await db
       .select()
       .from(agents)
-      .where(and(eq(agents.id, incomingConnection.agentId), eq(agents.type, 'incoming')))
+      .where(eq(agents.id, incomingConnection.agentId))
       .limit(1);
 
-    if (!agent || agent.length === 0) {
-      console.error(`❌ [Incoming Call] REJECTED - Agent ${incomingConnection.agentId} not found or wrong type for ${To}`);
-      console.error(`   🚨 [Security Audit] Missing agent: From=${From}, To=${To}, CallSid=${CallSid}`);
+    if (agentRecords.length > 0) {
+      incomingAgent = agentRecords[0];
+    } else {
+      // Check ve_voice_agents table for Custom Voice Engine agents
+      try {
+        const veResult = await db.execute(sql`
+          SELECT * FROM ve_voice_agents WHERE id = ${incomingConnection.agentId} LIMIT 1
+        `);
+        if (veResult.rows.length > 0) {
+          const ve = veResult.rows[0] as any;
+          incomingAgent = {
+            id: ve.id,
+            name: ve.name,
+            telephonyProvider: 'custom-voice-engine',
+            systemPrompt: ve.system_prompt,
+            firstMessage: ve.first_message,
+            language: ve.language,
+          };
+        }
+      } catch (veErr) {}
+    }
+
+    if (!incomingAgent) {
+      console.error(`❌ [Incoming Call] REJECTED - Agent ${incomingConnection.agentId} not found for ${To}`);
       const VoiceResponse = twilio.twiml.VoiceResponse;
       const response = new VoiceResponse();
-      // Use reject() to minimize cost
       response.reject({ reason: 'rejected' });
       res.type('text/xml');
       return res.send(response.toString());
     }
 
-    const incomingAgent = agent[0];
+    console.log(`✅ [Incoming Call] Routing call ${CallSid} to agent: ${incomingAgent.name} (provider: ${incomingAgent.telephonyProvider || 'standard'})`);
 
-    // NATIVE ELEVENLABS INTEGRATION:
-    // This webhook should NOT be called for numbers with incoming connections.
-    // Twilio should route directly to ElevenLabs (https://api.elevenlabs.io/twilio/inbound_call).
-    // If we reach here, it means Twilio webhook is misconfigured for this number.
+    // Create an incoming call record in calls table
+    const [callRecord] = await db
+      .insert(calls)
+      .values({
+        userId: phone.userId,
+        incomingConnectionId: incomingConnection.id,
+        phoneNumber: From,
+        fromNumber: From,
+        toNumber: To,
+        twilioSid: CallSid,
+        status: 'in-progress',
+        callDirection: 'incoming',
+        agentId: incomingAgent.id,
+        engineType: incomingAgent.telephonyProvider || 'custom-voice-engine',
+      })
+      .returning();
 
-    console.log(`⚠️  [Incoming Call] Call reached our server but should be handled by ElevenLabs natively`);
-    console.log(`   This indicates Twilio webhook is misconfigured for phone number ${To}`);
-    console.log(`   Expected: Twilio should route to https://api.elevenlabs.io/twilio/inbound_call`);
-    console.log(`   Fix: Delete and recreate the incoming connection to resync Twilio webhook`);
+    // Generate TwiML Stream response to connect live audio to our WebSocket stream
+    const domain = getDomain(req.headers.host as string);
+    const streamUrl = `wss://${domain}/api/webhooks/twilio/stream`;
 
-    // Return a helpful message to the caller
     const VoiceResponse = twilio.twiml.VoiceResponse;
     const response = new VoiceResponse();
-    response.say('We are experiencing a temporary configuration issue. Please call back in a moment.');
+    const connect = response.connect();
+    const stream = connect.stream({ url: streamUrl });
+    stream.parameter({ name: 'callId', value: callRecord.id });
+    stream.parameter({ name: 'agentId', value: incomingAgent.id });
+    stream.parameter({ name: 'fromPhone', value: From });
+
     res.type('text/xml');
     return res.send(response.toString());
   } catch (error) {

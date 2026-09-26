@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -17,7 +17,7 @@
 import { Router } from "express";
 import { db } from "../db";
 import { incomingConnections, agents, phoneNumbers, insertIncomingConnectionSchema, campaigns } from "@shared/schema";
-import { eq, and, isNull, or, inArray, ne } from "drizzle-orm";
+import { eq, and, isNull, or, inArray, ne, sql } from "drizzle-orm";
 import { type AuthRequest } from "../middleware/auth";
 import { authenticateHybrid } from "../middleware/hybrid-auth";
 import { twilioService } from "../services/twilio";
@@ -136,18 +136,60 @@ router.get("/", authenticateHybrid, async (req: AuthRequest, res) => {
       };
     });
 
-    // Get incoming agents (type='incoming') for connection selection
-    // Filter to only include Twilio + ElevenLabs agents (exclude plivo and twilio_openai)
-    const allIncomingAgents = await db
+    // Query Custom Voice Engine agents from ve_voice_agents
+    let cveAgentsList: any[] = [];
+    try {
+      const veAgentsResult = await db.execute(sql`
+        SELECT * FROM ve_voice_agents WHERE user_id = ${userId} ORDER BY created_at DESC
+      `);
+      cveAgentsList = (veAgentsResult.rows as any[]).map((ve: any) => ({
+        id: ve.id,
+        name: ve.name,
+        type: 'incoming',
+        telephonyProvider: 'custom-voice-engine',
+        language: ve.language || 'en',
+        systemPrompt: ve.system_prompt,
+        isActive: Boolean(ve.is_active ?? true),
+      }));
+    } catch (e: any) {
+      console.warn("[IncomingConnections] Could not query ve_voice_agents:", e.message);
+    }
+
+    // Get all active agents for user from agents table
+    const allUserAgents = await db
       .select()
       .from(agents)
-      .where(and(eq(agents.userId, userId), eq(agents.type, "incoming"), eq(agents.isActive, true)));
+      .where(and(eq(agents.userId, userId), eq(agents.isActive, true)));
 
-    // Filter out OpenAI-based agents
-    const incomingAgents = allIncomingAgents.filter(a => {
-      const provider = a.telephonyProvider;
-      return !provider || provider === 'twilio'; // Include null/undefined or 'twilio' (ElevenLabs)
-    });
+    // Map agents, preserving telephonyProvider
+    const standardAgents = allUserAgents.map(a => ({
+      ...a,
+      telephonyProvider: a.telephonyProvider || 'twilio',
+    }));
+
+    // Backfill agent details in allConnections if agent was a custom-voice-engine agent
+    for (const conn of allConnections) {
+      if (!conn.agent || !conn.agent.name) {
+        const match = cveAgentsList.find(c => c.id === conn.agentId);
+        if (match) {
+          conn.agent = {
+            id: match.id,
+            name: match.name,
+            language: match.language,
+            elevenLabsAgentId: null,
+            systemPrompt: match.systemPrompt,
+            personality: null,
+            voiceTone: null,
+            firstMessage: null,
+            transferPhoneNumber: null,
+            transferEnabled: false,
+            telephonyProvider: 'custom-voice-engine',
+          };
+        }
+      }
+    }
+
+    const incomingAgents = [...standardAgents, ...cveAgentsList];
 
     res.json({
       connections,
@@ -183,15 +225,35 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
 
     const { agentId, phoneNumberId } = validatedData;
 
-    // Verify agent exists, belongs to user, and is type='incoming'
-    const agent = await db
-      .select()
-      .from(agents)
-      .where(and(eq(agents.id, agentId), eq(agents.userId, userId), eq(agents.type, "incoming")))
-      .limit(1);
+    // Verify agent exists and belongs to user (check both ve_voice_agents and agents)
+    let isCveAgent = false;
+    let agentName = "";
 
-    if (!agent.length) {
-      return res.status(404).json({ message: "Incoming agent not found or invalid type" });
+    try {
+      const veCheck = await db.execute(sql`
+        SELECT id, name FROM ve_voice_agents WHERE id = ${agentId} AND user_id = ${userId} LIMIT 1
+      `);
+      if (veCheck.rows.length > 0) {
+        isCveAgent = true;
+        agentName = (veCheck.rows[0] as any).name;
+      }
+    } catch (e: any) {}
+
+    let agent: any[] = [];
+    if (!isCveAgent) {
+      agent = await db
+        .select()
+        .from(agents)
+        .where(and(eq(agents.id, agentId), eq(agents.userId, userId)))
+        .limit(1);
+
+      if (!agent.length) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+      agentName = agent[0].name;
+      if (agent[0].telephonyProvider === 'custom-voice-engine') {
+        isCveAgent = true;
+      }
     }
 
     // Verify phone number exists, belongs to user, and is not in system pool
@@ -199,6 +261,7 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
       .select({
         id: phoneNumbers.id,
         phoneNumber: phoneNumbers.phoneNumber,
+        friendlyName: phoneNumbers.friendlyName,
         twilioSid: phoneNumbers.twilioSid,
         elevenLabsPhoneNumberId: phoneNumbers.elevenLabsPhoneNumberId,
         elevenLabsCredentialId: phoneNumbers.elevenLabsCredentialId,
@@ -219,7 +282,7 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
       return res.status(404).json({ message: "Phone number not found or not owned by user" });
     }
 
-    // Check if phone number is already connected (new system)
+    // If phone number is already connected, reassign / update the connection
     const existingConnection = await db
       .select()
       .from(incomingConnections)
@@ -227,7 +290,74 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
       .limit(1);
 
     if (existingConnection.length) {
-      return res.status(400).json({ message: "Phone number is already connected to an agent" });
+      await db
+        .update(incomingConnections)
+        .set({ agentId, updatedAt: new Date() })
+        .where(eq(incomingConnections.id, existingConnection[0].id));
+
+      if (isCveAgent) {
+        try {
+          const domain = process.env.BASE_URL || getDomain();
+          const incomingWebhookUrl = `${domain}/api/webhooks/twilio/incoming`;
+          await twilioService.updatePhoneNumber(phoneNumber[0].twilioSid, { voiceUrl: incomingWebhookUrl });
+        } catch (webhookErr) {}
+      }
+
+      return res.json({
+        success: true,
+        message: "Incoming connection updated successfully",
+        id: existingConnection[0].id,
+        agentId,
+        phoneNumberId,
+        agent: {
+          id: agentId,
+          name: agentName,
+          telephonyProvider: isCveAgent ? 'custom-voice-engine' : (agent[0]?.telephonyProvider || 'twilio'),
+        },
+        phoneNumber: {
+          id: phoneNumber[0].id,
+          phoneNumber: phoneNumber[0].phoneNumber,
+          friendlyName: phoneNumber[0].friendlyName,
+        }
+      });
+    }
+
+    // If it's a Custom Voice Engine agent, create connection directly
+    if (isCveAgent) {
+      const [newConn] = await db
+        .insert(incomingConnections)
+        .values({
+          userId,
+          agentId,
+          phoneNumberId,
+        })
+        .returning();
+
+      try {
+        const domain = process.env.BASE_URL || getDomain();
+        const incomingWebhookUrl = `${domain}/api/webhooks/twilio/incoming`;
+        await twilioService.updatePhoneNumber(phoneNumber[0].twilioSid, { voiceUrl: incomingWebhookUrl });
+        console.log(`✅ [CVE Incoming] Configured Twilio webhook for ${phoneNumber[0].phoneNumber}`);
+      } catch (webhookErr: any) {
+        console.warn(`⚠️ [CVE Incoming] Webhook update warning: ${webhookErr.message}`);
+      }
+
+      return res.status(201).json({
+        id: newConn.id,
+        agentId,
+        phoneNumberId,
+        createdAt: newConn.createdAt,
+        agent: {
+          id: agentId,
+          name: agentName,
+          telephonyProvider: 'custom-voice-engine',
+        },
+        phoneNumber: {
+          id: phoneNumber[0].id,
+          phoneNumber: phoneNumber[0].phoneNumber,
+          friendlyName: phoneNumber[0].friendlyName,
+        }
+      });
     }
 
     // Check if phone number has assignment via deprecated incoming_agents system

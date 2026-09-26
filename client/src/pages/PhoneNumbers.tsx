@@ -15,7 +15,7 @@
  * ============================================================
  */
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -67,21 +67,20 @@ import {
   Trash2,
   ChevronRight,
   Bot,
-  Check,
-  ExternalLink,
   RefreshCw,
-  Zap,
-  Globe,
-  Loader2,
   Search,
   ShoppingCart,
-  CheckCircle2,
+  ShieldCheck,
+  KeyRound,
+  Loader2,
+  Globe,
+  Radio,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { UnifiedTelephonyDialog } from "@/components/telephony/UnifiedTelephonyDialog";
 
-// ─── Interfaces ─────────────────────────────────────────────────────────────
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 interface TelephonyConfig {
   id: string | number;
@@ -95,7 +94,7 @@ interface TelephonyConfig {
   created_at?: string;
 }
 
-interface ConnectedPhoneNumber {
+interface SipPhoneNumber {
   id: string;
   phone_number: string;
   label: string | null;
@@ -107,9 +106,46 @@ interface ConnectedPhoneNumber {
   created_at: string;
 }
 
+interface TwilioPhoneNumber {
+  id: string;
+  phoneNumber: string;
+  twilioSid: string;
+  friendlyName?: string;
+  country: string;
+  status: string;
+  isSystemPool?: boolean;
+  purchasedAt?: string;
+  createdAt?: string;
+}
+
+interface IncomingConnectionItem {
+  id: string;
+  agentId: string;
+  phoneNumberId: string;
+  agent?: {
+    id: string;
+    name: string;
+    telephonyProvider?: string;
+  };
+}
+
 interface Agent {
   id: string;
   name: string;
+  telephonyProvider?: string;
+}
+
+interface UnifiedPhoneNumber {
+  id: string;
+  source: "sip" | "twilio";
+  phoneNumber: string;
+  label: string | null;
+  gatewayName: string;
+  provider: string;
+  agentId: string | null;
+  isActive: boolean;
+  connectionId?: string;
+  raw: any;
 }
 
 interface AvailableNumber {
@@ -141,17 +177,27 @@ export default function PhoneNumbers() {
   const [deleteConfigTarget, setDeleteConfigTarget] = useState<TelephonyConfig | null>(null);
 
   const [addPhoneOpen, setAddPhoneOpen] = useState(false);
-  const [editPhoneTarget, setEditPhoneTarget] = useState<ConnectedPhoneNumber | null>(null);
-  const [deletePhoneTarget, setDeletePhoneTarget] = useState<ConnectedPhoneNumber | null>(null);
+  const [editPhoneTarget, setEditPhoneTarget] = useState<UnifiedPhoneNumber | null>(null);
+  const [deletePhoneTarget, setDeletePhoneTarget] = useState<UnifiedPhoneNumber | null>(null);
 
-  // Add Phone form state
+  // Tab mode in Add Phone modal
+  const [phoneDialogTab, setPhoneDialogTab] = useState<"sip" | "twilio-import" | "inventory">("sip");
+
+  // Connect SIP form
   const [phoneInput, setPhoneInput] = useState("");
   const [labelInput, setLabelInput] = useState("");
   const [selectedGatewayId, setSelectedGatewayId] = useState<string>("none");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("none");
 
-  // Buy Inventory tab state inside add phone dialog
-  const [phoneDialogTab, setPhoneDialogTab] = useState<"manual" | "inventory">("manual");
+  // Twilio Import form
+  const [importTwilioNumber, setImportTwilioNumber] = useState("");
+  const [importTwilioSid, setImportTwilioSid] = useState("");
+  const [importTwilioToken, setImportTwilioToken] = useState("");
+  const [importTwilioLabel, setImportTwilioLabel] = useState("");
+  const [importTwilioAgentId, setImportTwilioAgentId] = useState("none");
+  const [isImportingTwilio, setIsImportingTwilio] = useState(false);
+
+  // Inventory search
   const [searchCountry, setSearchCountry] = useState("US");
   const [searchNumberType, setSearchNumberType] = useState<"local" | "toll-free">("local");
   const [searchContains, setSearchContains] = useState("");
@@ -160,6 +206,7 @@ export default function PhoneNumbers() {
   const [buyingNumber, setBuyingNumber] = useState<string | null>(null);
 
   // ── Queries ──
+  // 1. Telephony Configurations
   const {
     data: configsData,
     isLoading: configsLoading,
@@ -173,19 +220,47 @@ export default function PhoneNumbers() {
   });
   const configs = configsData?.data || [];
 
+  // 2. SIP Phone numbers
   const {
-    data: phonesData,
-    isLoading: phonesLoading,
-    refetch: refetchPhones,
-  } = useQuery<{ success: boolean; data: ConnectedPhoneNumber[] }>({
+    data: sipPhonesData,
+    isLoading: sipPhonesLoading,
+    refetch: refetchSipPhones,
+  } = useQuery<{ success: boolean; data: SipPhoneNumber[] }>({
     queryKey: ["/api/user/sip-phone-numbers"],
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/user/sip-phone-numbers");
       return res.json();
     },
   });
-  const phones = phonesData?.data || [];
+  const sipPhones = sipPhonesData?.data || [];
 
+  // 3. Twilio Platform Phone numbers
+  const {
+    data: twilioPhones = [],
+    isLoading: twilioPhonesLoading,
+    refetch: refetchTwilioPhones,
+  } = useQuery<TwilioPhoneNumber[]>({
+    queryKey: ["/api/phone-numbers"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/phone-numbers");
+      return res.json();
+    },
+  });
+
+  // 4. Incoming Connections (Twilio number to Agent mappings)
+  const {
+    data: incomingConnectionsData,
+    refetch: refetchConnections,
+  } = useQuery<{ connections: IncomingConnectionItem[]; allConnections?: IncomingConnectionItem[] }>({
+    queryKey: ["/api/incoming-connections"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/incoming-connections");
+      return res.json();
+    },
+  });
+  const incomingConnectionsList = incomingConnectionsData?.connections || incomingConnectionsData?.allConnections || [];
+
+  // 5. Available AI Agents (Both standard and Custom Voice agents)
   const { data: agents = [] } = useQuery<Agent[]>({
     queryKey: ["/api/agents"],
     queryFn: async () => {
@@ -193,6 +268,46 @@ export default function PhoneNumbers() {
       return res.json();
     },
   });
+
+  // ── Merge All Phone Numbers into One Unified List ──
+  const unifiedPhoneNumbers = useMemo<UnifiedPhoneNumber[]>(() => {
+    const list: UnifiedPhoneNumber[] = [];
+
+    // 1. Add SIP phone numbers
+    for (const sp of sipPhones) {
+      list.push({
+        id: sp.id,
+        source: "sip",
+        phoneNumber: sp.phone_number,
+        label: sp.label,
+        gatewayName: sp.gateway_name || "SIP Trunk",
+        provider: "sip",
+        agentId: sp.agent_id,
+        isActive: sp.is_active,
+        raw: sp,
+      });
+    }
+
+    // 2. Add Twilio platform phone numbers
+    for (const tp of twilioPhones) {
+      if (tp.isSystemPool) continue;
+      const conn = incomingConnectionsList.find((c: any) => c.phoneNumberId === tp.id);
+      list.push({
+        id: tp.id,
+        source: "twilio",
+        phoneNumber: tp.phoneNumber,
+        label: tp.friendlyName || null,
+        gatewayName: "Twilio Carrier Account",
+        provider: "twilio",
+        agentId: conn?.agentId || null,
+        connectionId: conn?.id,
+        isActive: tp.status === "active",
+        raw: tp,
+      });
+    }
+
+    return list;
+  }, [sipPhones, twilioPhones, incomingConnectionsList]);
 
   // ── Mutations ──
   const setDefaultConfigMutation = useMutation({
@@ -229,9 +344,85 @@ export default function PhoneNumbers() {
     },
   });
 
-  const savePhoneMutation = useMutation({
+  // Assign Inbound AI Agent to ANY phone number (SIP or Twilio)
+  const assignAgentMutation = useMutation({
+    mutationFn: async ({ phone, agentId }: { phone: UnifiedPhoneNumber; agentId: string | null }) => {
+      if (phone.source === "sip") {
+        const res = await apiRequest("PUT", `/api/user/sip-phone-numbers/${phone.id}`, {
+          agentId: agentId === "none" ? null : agentId,
+        });
+        return res.json();
+      } else {
+        // Twilio phone number
+        if (agentId === "none" || !agentId) {
+          if (phone.connectionId) {
+            const res = await apiRequest("DELETE", `/api/incoming-connections/${phone.connectionId}`);
+            return res.json();
+          }
+          return { success: true };
+        } else {
+          const res = await apiRequest("POST", "/api/incoming-connections", {
+            agentId,
+            phoneNumberId: phone.id,
+          });
+          return res.json();
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/phone-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/incoming-connections"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/sip-phone-numbers"] });
+      toast({
+        title: "Inbound Routing Updated",
+        description: "Phone number is assigned to the selected AI Agent.",
+      });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Routing Update Failed",
+        description: err.message || "Failed to update inbound routing.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Disconnect Phone Number (Safely unlinks from AgentLabs WITHOUT deleting from Twilio!)
+  const deleteUnifiedPhoneMutation = useMutation({
+    mutationFn: async (phone: UnifiedPhoneNumber) => {
+      if (phone.source === "sip") {
+        const res = await apiRequest("DELETE", `/api/user/sip-phone-numbers/${phone.id}`);
+        return res.json();
+      } else {
+        // Twilio number - safely unlinks without releasing from Twilio
+        const res = await apiRequest("DELETE", `/api/phone-numbers/${phone.id}`);
+        return res.json();
+      }
+    },
+    onSuccess: (_, phone) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/phone-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/incoming-connections"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user/sip-phone-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/telephony-configs"] });
+      setDeletePhoneTarget(null);
+      toast({
+        title: "Phone Number Disconnected",
+        description: `${phone.phoneNumber} unlinked from AgentLabs (remains safely active in your carrier account).`,
+      });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Disconnection Failed",
+        description: err.message || "Could not disconnect phone number.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Connect / Save SIP Phone number
+  const saveSipPhoneMutation = useMutation({
     mutationFn: async (payload: { phoneNumber: string; label?: string; gatewayId?: string; agentId?: string }) => {
-      if (editPhoneTarget) {
+      if (editPhoneTarget && editPhoneTarget.source === "sip") {
         const res = await apiRequest("PUT", `/api/user/sip-phone-numbers/${editPhoneTarget.id}`, {
           label: payload.label || null,
           gatewayId: payload.gatewayId === "none" ? null : payload.gatewayId,
@@ -255,13 +446,9 @@ export default function PhoneNumbers() {
       setEditPhoneTarget(null);
       setPhoneInput("");
       setLabelInput("");
-      setSelectedGatewayId("none");
-      setSelectedAgentId("none");
       toast({
-        title: editPhoneTarget ? "Phone Number Updated" : "Phone Number Connected",
-        description: editPhoneTarget
-          ? "Phone number configuration has been updated."
-          : "Your phone number is connected and ready to route calls.",
+        title: "Phone Number Saved",
+        description: "Your carrier phone number has been configured.",
       });
     },
     onError: (err: any) => {
@@ -269,54 +456,58 @@ export default function PhoneNumbers() {
     },
   });
 
-  const updatePhoneAgentMutation = useMutation({
-    mutationFn: async ({ phoneId, agentId }: { phoneId: string; agentId: string | null }) => {
-      const res = await apiRequest("PUT", `/api/user/sip-phone-numbers/${phoneId}`, {
-        agentId: agentId === "none" ? null : agentId,
+  // Import Twilio Number
+  const handleImportTwilio = async () => {
+    if (!importTwilioNumber.trim() || !importTwilioSid.trim() || !importTwilioToken.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Phone Number, Twilio Account SID, and Auth Token are all required.",
+        variant: "destructive",
       });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user/sip-phone-numbers"] });
-      toast({ title: "Inbound Routing Updated", description: "Phone number is assigned to the selected AI Agent." });
-    },
-    onError: (err: any) => {
-      toast({ title: "Routing Failed", description: err.message, variant: "destructive" });
-    },
-  });
+      return;
+    }
 
-  const togglePhoneStatusMutation = useMutation({
-    mutationFn: async ({ phoneId, isActive }: { phoneId: string; isActive: boolean }) => {
-      const res = await apiRequest("PUT", `/api/user/sip-phone-numbers/${phoneId}`, {
-        isActive,
+    setIsImportingTwilio(true);
+    try {
+      const res = await apiRequest("POST", "/api/phone-numbers/import-twilio", {
+        phoneNumber: importTwilioNumber.trim(),
+        accountSid: importTwilioSid.trim(),
+        authToken: importTwilioToken.trim(),
+        label: importTwilioLabel.trim() || undefined,
+        agentId: importTwilioAgentId === "none" ? undefined : importTwilioAgentId,
+        smsEnabled: true,
       });
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user/sip-phone-numbers"] });
-    },
-    onError: (err: any) => {
-      toast({ title: "Status Update Failed", description: err.message, variant: "destructive" });
-    },
-  });
 
-  const deletePhoneMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await apiRequest("DELETE", `/api/user/sip-phone-numbers/${id}`);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user/sip-phone-numbers"] });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to import number from Twilio");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["/api/phone-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/incoming-connections"] });
       queryClient.invalidateQueries({ queryKey: ["/api/telephony-configs"] });
-      setDeletePhoneTarget(null);
-      toast({ title: "Phone Number Released", description: "The phone number has been removed from your account." });
-    },
-    onError: (err: any) => {
-      toast({ title: "Release Failed", description: err.message, variant: "destructive" });
-    },
-  });
 
-  // Search inventory numbers (Twilio/Plivo)
+      setAddPhoneOpen(false);
+      setImportTwilioNumber("");
+      setImportTwilioSid("");
+      setImportTwilioToken("");
+      setImportTwilioLabel("");
+      toast({
+        title: "Twilio Number Connected",
+        description: `${importTwilioNumber} successfully imported from your Twilio account!`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Import Failed",
+        description: err.message || "Failed to import number from Twilio",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImportingTwilio(false);
+    }
+  };
+
+  // Search inventory
   const handleSearchInventory = async () => {
     setIsSearching(true);
     setSearchResults([]);
@@ -337,7 +528,7 @@ export default function PhoneNumbers() {
     }
   };
 
-  // Buy number from inventory
+  // Buy inventory number
   const handleBuyNumber = async (number: AvailableNumber) => {
     setBuyingNumber(number.phoneNumber);
     try {
@@ -352,22 +543,13 @@ export default function PhoneNumbers() {
         throw new Error(errorData.error || errorData.message || "Failed to purchase number");
       }
 
-      // Also register into sip phone numbers for unified view
-      try {
-        await apiRequest("POST", "/api/user/sip-phone-numbers", {
-          phoneNumber: number.phoneNumber,
-          label: number.friendlyName,
-        });
-      } catch (e) {
-        // already handled by hook
-      }
-
-      queryClient.invalidateQueries({ queryKey: ["/api/user/sip-phone-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/phone-numbers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/incoming-connections"] });
       queryClient.invalidateQueries({ queryKey: ["/api/telephony-configs"] });
       setAddPhoneOpen(false);
       toast({
-        title: "Number Acquired",
-        description: `${number.phoneNumber} has been purchased and connected to your account.`,
+        title: "Number Purchased",
+        description: `${number.phoneNumber} is now connected to your account.`,
       });
     } catch (err: any) {
       toast({ title: "Purchase Failed", description: err.message, variant: "destructive" });
@@ -387,31 +569,8 @@ export default function PhoneNumbers() {
     setLabelInput("");
     setSelectedGatewayId(configs[0] ? String(configs[0].id) : "none");
     setSelectedAgentId("none");
-    setPhoneDialogTab("manual");
+    setPhoneDialogTab("sip");
     setAddPhoneOpen(true);
-  };
-
-  const openEditPhoneModal = (phone: ConnectedPhoneNumber) => {
-    setEditPhoneTarget(phone);
-    setPhoneInput(phone.phone_number);
-    setLabelInput(phone.label || "");
-    setSelectedGatewayId(phone.gateway_id ? String(phone.gateway_id) : "none");
-    setSelectedAgentId(phone.agent_id ? String(phone.agent_id) : "none");
-    setPhoneDialogTab("manual");
-    setAddPhoneOpen(true);
-  };
-
-  const handleSavePhoneForm = () => {
-    if (!phoneInput.trim()) {
-      toast({ title: "Phone number required", description: "Please enter a valid phone number in E.164 format.", variant: "destructive" });
-      return;
-    }
-    savePhoneMutation.mutate({
-      phoneNumber: phoneInput.trim(),
-      label: labelInput.trim() || undefined,
-      gatewayId: selectedGatewayId,
-      agentId: selectedAgentId,
-    });
   };
 
   return (
@@ -430,12 +589,14 @@ export default function PhoneNumbers() {
             size="sm"
             onClick={() => {
               refetchConfigs();
-              refetchPhones();
+              refetchSipPhones();
+              refetchTwilioPhones();
+              refetchConnections();
             }}
-            disabled={configsLoading || phonesLoading}
+            disabled={configsLoading || sipPhonesLoading || twilioPhonesLoading}
             title="Refresh configurations and phone numbers"
           >
-            <RefreshCw className={`h-4 w-4 ${(configsLoading || phonesLoading) ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${(configsLoading || sipPhonesLoading || twilioPhonesLoading) ? "animate-spin" : ""}`} />
           </Button>
           <Button
             variant="outline"
@@ -608,7 +769,7 @@ export default function PhoneNumbers() {
         )}
       </div>
 
-      {/* ── Connected Phone Numbers Section (Single Unified Model) ── */}
+      {/* ── Connected Phone Numbers Section (Single Unified Model: Twilio + SIP) ── */}
       <div className="space-y-4 pt-6 border-t border-border/60">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
@@ -617,7 +778,7 @@ export default function PhoneNumbers() {
               Connected Phone Numbers & Inbound AI Routing
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-              Route inbound phone numbers to your AI Agents with 1-click real-time binding across all telephony carriers.
+              Route inbound phone numbers to your AI Agents with 1-click real-time binding across all your connected telephony carriers.
             </p>
           </div>
           <Button
@@ -630,7 +791,7 @@ export default function PhoneNumbers() {
           </Button>
         </div>
 
-        {phonesLoading ? (
+        {sipPhonesLoading || twilioPhonesLoading ? (
           <div className="grid gap-2">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="p-4 animate-pulse">
@@ -639,7 +800,7 @@ export default function PhoneNumbers() {
               </Card>
             ))}
           </div>
-        ) : phones.length === 0 ? (
+        ) : unifiedPhoneNumbers.length === 0 ? (
           <Card className="border-dashed border-2 border-border/80 bg-card/30 p-10 text-center">
             <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center">
               <Phone className="h-7 w-7 text-emerald-600" />
@@ -667,19 +828,19 @@ export default function PhoneNumbers() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {phones.map((phone) => {
-                  const currentAgent = agents.find((a) => a.id === phone.agent_id);
+                {unifiedPhoneNumbers.map((phone) => {
+                  const badgeClass = PROVIDER_COLORS[phone.provider] || "bg-secondary text-secondary-foreground";
 
                   return (
-                    <TableRow key={phone.id} className="hover:bg-muted/30 transition-colors">
+                    <TableRow key={`${phone.source}-${phone.id}`} className="hover:bg-muted/30 transition-colors">
                       {/* Phone Number */}
                       <TableCell className="font-mono font-medium text-sm">
                         <div className="flex items-center gap-2">
                           <Phone className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                          <span>{phone.phone_number}</span>
+                          <span>{phone.phoneNumber}</span>
                           <button
                             type="button"
-                            onClick={() => copyText(phone.phone_number, "Phone number")}
+                            onClick={() => copyText(phone.phoneNumber, "Phone number")}
                             className="text-muted-foreground hover:text-foreground opacity-60 hover:opacity-100"
                             title="Copy number"
                           >
@@ -693,30 +854,30 @@ export default function PhoneNumbers() {
                         {phone.label || <span className="italic text-muted-foreground/60">—</span>}
                       </TableCell>
 
-                      {/* Gateway / Configuration */}
+                      {/* Gateway / Carrier */}
                       <TableCell>
-                        {phone.gateway_name ? (
-                          <Badge variant="outline" className="font-mono text-xs gap-1 border-border/80">
-                            <Server className="h-3 w-3 text-primary" />
-                            {phone.gateway_name}
+                        <div className="flex items-center gap-1.5">
+                          <Badge variant="outline" className={`text-[10px] uppercase font-mono px-1.5 py-0 border ${badgeClass}`}>
+                            {phone.provider}
                           </Badge>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">Direct / Default</span>
-                        )}
+                          <span className="text-xs text-muted-foreground truncate max-w-[140px]">
+                            {phone.gatewayName}
+                          </span>
+                        </div>
                       </TableCell>
 
                       {/* 1-Click Inbound AI Agent Selector */}
                       <TableCell>
                         <Select
-                          value={phone.agent_id || "none"}
+                          value={phone.agentId || "none"}
                           onValueChange={(val) => {
-                            updatePhoneAgentMutation.mutate({
-                              phoneId: phone.id,
-                              agentId: val === "none" ? null : val,
+                            assignAgentMutation.mutate({
+                              phone,
+                              agentId: val,
                             });
                           }}
                         >
-                          <SelectTrigger className="w-[200px] h-8 text-xs bg-background">
+                          <SelectTrigger className="w-[210px] h-8 text-xs bg-background">
                             <SelectValue placeholder="Select Agent" />
                           </SelectTrigger>
                           <SelectContent>
@@ -737,42 +898,22 @@ export default function PhoneNumbers() {
 
                       {/* Active Status */}
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <Switch
-                            checked={phone.is_active}
-                            onCheckedChange={(checked) =>
-                              togglePhoneStatusMutation.mutate({ phoneId: phone.id, isActive: checked })
-                            }
-                            title={phone.is_active ? "Active" : "Inactive"}
-                          />
-                          <span className="text-xs text-muted-foreground">
-                            {phone.is_active ? "Active" : "Paused"}
-                          </span>
-                        </div>
+                        <Badge variant={phone.isActive ? "default" : "secondary"} className="text-[11px]">
+                          {phone.isActive ? "Active" : "Inactive"}
+                        </Badge>
                       </TableCell>
 
                       {/* Actions */}
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => openEditPhoneModal(phone)}
-                            title="Edit label & gateway"
-                            className="h-8 px-2"
-                          >
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeletePhoneTarget(phone)}
-                            title="Release phone number"
-                            className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeletePhoneTarget(phone)}
+                          title="Disconnect phone number from AgentLabs"
+                          className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   );
@@ -790,53 +931,64 @@ export default function PhoneNumbers() {
         existingConfig={editConfigTarget}
         onSaved={() => {
           refetchConfigs();
-          refetchPhones();
+          refetchSipPhones();
+          refetchTwilioPhones();
+          refetchConnections();
         }}
       />
 
       {/* ── Dialog 2: Connect Phone Number (Unified Modal) ── */}
       <Dialog open={addPhoneOpen} onOpenChange={setAddPhoneOpen}>
-        <DialogContent className="sm:max-w-[540px]">
+        <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Phone className="h-5 w-5 text-emerald-600" />
-              {editPhoneTarget ? "Edit Phone Number" : "Connect Phone Number"}
+              Connect Phone Number
             </DialogTitle>
             <DialogDescription>
-              {editPhoneTarget
-                ? "Update your phone number's friendly label and associated carrier trunk."
-                : "Attach an existing carrier phone number or search available numbers from inventory."}
+              Attach a phone number to your telephony account to start making and receiving AI voice calls.
             </DialogDescription>
           </DialogHeader>
 
-          {!editPhoneTarget && (
-            <div className="flex border-b border-border/80 mb-2">
-              <button
-                type="button"
-                onClick={() => setPhoneDialogTab("manual")}
-                className={`py-2 px-4 text-xs font-semibold border-b-2 -mb-px transition-colors ${
-                  phoneDialogTab === "manual"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Connect Carrier DID / SIP
-              </button>
-              <button
-                type="button"
-                onClick={() => setPhoneDialogTab("inventory")}
-                className={`py-2 px-4 text-xs font-semibold border-b-2 -mb-px transition-colors ${
-                  phoneDialogTab === "inventory"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                Search & Buy Inventory
-              </button>
-            </div>
-          )}
+          {/* Dialog Tabs */}
+          <div className="flex border-b border-border/80 mb-2">
+            <button
+              type="button"
+              onClick={() => setPhoneDialogTab("sip")}
+              className={`py-2 px-3 text-xs font-semibold border-b-2 -mb-px transition-colors ${
+                phoneDialogTab === "sip"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Connect DID / Carrier SIP
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhoneDialogTab("twilio-import")}
+              className={`py-2 px-3 text-xs font-semibold border-b-2 -mb-px transition-colors ${
+                phoneDialogTab === "twilio-import"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Import Twilio Number
+            </button>
+            <button
+              type="button"
+              onClick={() => setPhoneDialogTab("inventory")}
+              className={`py-2 px-3 text-xs font-semibold border-b-2 -mb-px transition-colors ${
+                phoneDialogTab === "inventory"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Search & Buy Inventory
+            </button>
+          </div>
 
-          {phoneDialogTab === "manual" ? (
+          {/* TAB 1: Connect DID / SIP Number */}
+          {phoneDialogTab === "sip" && (
             <div className="space-y-4 py-2">
               <div className="space-y-1.5">
                 <Label htmlFor="input-phone" className="text-xs font-medium">
@@ -847,7 +999,6 @@ export default function PhoneNumbers() {
                   placeholder="+919876543210 or +12025550123"
                   value={phoneInput}
                   onChange={(e) => setPhoneInput(e.target.value)}
-                  disabled={!!editPhoneTarget}
                   className="font-mono text-sm"
                 />
                 <p className="text-[11px] text-muted-foreground">
@@ -919,17 +1070,123 @@ export default function PhoneNumbers() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleSavePhoneForm}
-                  disabled={savePhoneMutation.isPending}
+                  onClick={() => {
+                    if (!phoneInput.trim()) {
+                      toast({ title: "Phone number required", variant: "destructive" });
+                      return;
+                    }
+                    saveSipPhoneMutation.mutate({
+                      phoneNumber: phoneInput.trim(),
+                      label: labelInput.trim() || undefined,
+                      gatewayId: selectedGatewayId,
+                      agentId: selectedAgentId,
+                    });
+                  }}
+                  disabled={saveSipPhoneMutation.isPending}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
-                  {savePhoneMutation.isPending && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
-                  {editPhoneTarget ? "Update Number" : "Connect Number"}
+                  {saveSipPhoneMutation.isPending && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+                  Connect Number
                 </Button>
               </DialogFooter>
             </div>
-          ) : (
-            /* Search & Buy Inventory Tab */
+          )}
+
+          {/* TAB 2: Import Twilio Number */}
+          {phoneDialogTab === "twilio-import" && (
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground space-y-1">
+                <p className="font-semibold text-foreground flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                  Safe Twilio Connection
+                </p>
+                <p>
+                  Importing connects your number to AgentLabs webhooks. Your number always remains safely in your Twilio account and is never removed from Twilio.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Twilio Phone Number (E.164) *</Label>
+                <Input
+                  placeholder="+12025550123"
+                  value={importTwilioNumber}
+                  onChange={(e) => setImportTwilioNumber(e.target.value)}
+                  className="font-mono text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium">Twilio Account SID *</Label>
+                  <Input
+                    placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+                    value={importTwilioSid}
+                    onChange={(e) => setImportTwilioSid(e.target.value)}
+                    className="font-mono text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-medium">Twilio Auth Token *</Label>
+                  <Input
+                    type="password"
+                    placeholder="••••••••••••••••••••••••••••••••"
+                    value={importTwilioToken}
+                    onChange={(e) => setImportTwilioToken(e.target.value)}
+                    className="font-mono text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Friendly Label (Optional)</Label>
+                <Input
+                  placeholder="e.g. Inbound Twilio US"
+                  value={importTwilioLabel}
+                  onChange={(e) => setImportTwilioLabel(e.target.value)}
+                  className="text-sm"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-medium">Assign Inbound AI Agent</Label>
+                <Select value={importTwilioAgentId} onValueChange={setImportTwilioAgentId}>
+                  <SelectTrigger className="text-sm">
+                    <SelectValue placeholder="Select Agent to receive calls" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      <span className="text-muted-foreground">Unassigned (Route later)</span>
+                    </SelectItem>
+                    {agents.map((agent) => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        <div className="flex items-center gap-2">
+                          <Bot className="h-3.5 w-3.5 text-primary" />
+                          <span>{agent.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <DialogFooter className="pt-2">
+                <Button variant="outline" onClick={() => setAddPhoneOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleImportTwilio}
+                  disabled={isImportingTwilio}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  {isImportingTwilio && <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />}
+                  Import & Connect
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
+
+          {/* TAB 3: Search & Buy Inventory */}
+          {phoneDialogTab === "inventory" && (
             <div className="space-y-4 py-2">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
@@ -977,8 +1234,7 @@ export default function PhoneNumbers() {
                 </Button>
               </div>
 
-              {/* Search Results list */}
-              <div className="max-h-[260px] overflow-y-auto space-y-2 border border-border/80 rounded-lg p-2 bg-muted/20">
+              <div className="max-h-[240px] overflow-y-auto space-y-2 border border-border/80 rounded-lg p-2 bg-muted/20">
                 {isSearching ? (
                   <div className="py-8 text-center text-xs text-muted-foreground flex items-center justify-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -1022,7 +1278,7 @@ export default function PhoneNumbers() {
         </DialogContent>
       </Dialog>
 
-      {/* ── Dialog 3: Delete Telephony Configuration Confirmation (Dograh Parity) ── */}
+      {/* ── Dialog 3: Delete Configuration Confirmation ── */}
       <AlertDialog
         open={!!deleteConfigTarget}
         onOpenChange={(open) => !open && setDeleteConfigTarget(null)}
@@ -1046,25 +1302,30 @@ export default function PhoneNumbers() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ── Dialog 4: Release Phone Number Confirmation ── */}
+      {/* ── Dialog 4: Disconnect Phone Number Confirmation (Twilio Safeguard) ── */}
       <AlertDialog
         open={!!deletePhoneTarget}
         onOpenChange={(open) => !open && setDeletePhoneTarget(null)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Release phone number?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to release {deletePhoneTarget?.phone_number}? Inbound calls to this number will no longer be routed to your AI Agents.
+            <AlertDialogTitle>Disconnect Phone Number?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Are you sure you want to disconnect <span className="font-mono font-semibold">{deletePhoneTarget?.phoneNumber}</span> from AgentLabs?
+              </p>
+              <p className="text-xs text-muted-foreground bg-muted/60 p-2.5 rounded-lg border border-border/60">
+                <strong className="text-emerald-600 dark:text-emerald-400">✓ Safe Disconnection:</strong> This will unlink the phone number from AgentLabs. The number will <strong>NOT</strong> be deleted from your Twilio or carrier account.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deletePhoneTarget && deletePhoneMutation.mutate(deletePhoneTarget.id)}
+              onClick={() => deletePhoneTarget && deleteUnifiedPhoneMutation.mutate(deletePhoneTarget)}
               className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
             >
-              Release Number
+              Disconnect Number
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

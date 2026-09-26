@@ -650,14 +650,25 @@ export function createPhoneRoutes(ctx: RouteContext): Router {
         }
       }
 
-      try {
-        await twilioService.releasePhoneNumber(phoneNumber.twilioSid);
-      } catch (twilioError: any) {
-        console.error("Failed to release from Twilio:", twilioError);
+      // Delete any associated incoming connections
+      await db.delete(incomingConnections).where(eq(incomingConnections.phoneNumberId, req.params.id));
+
+      // IMPORTANT: DO NOT release from Twilio by default!
+      // This protects the user's purchased number from being cancelled and released on Twilio.
+      // Only release on Twilio if explicitly requested via ?releaseFromTwilio=true.
+      if (req.query.releaseFromTwilio === 'true') {
+        try {
+          await twilioService.releasePhoneNumber(phoneNumber.twilioSid);
+          console.log(`[Twilio Release] Explicitly released phone number ${phoneNumber.phoneNumber} from Twilio`);
+        } catch (twilioError: any) {
+          console.error("Failed to release from Twilio:", twilioError);
+        }
+      } else {
+        console.log(`[Twilio Disconnect] Safely disconnected ${phoneNumber.phoneNumber} from AgentLabs (number preserved on Twilio)`);
       }
 
       await storage.deletePhoneNumber(req.params.id);
-      res.json({ success: true });
+      res.json({ success: true, message: "Phone number disconnected from AgentLabs" });
     } catch (error: any) {
       console.error("Delete phone number error:", error);
       res.status(500).json({ error: "Failed to delete phone number" });
