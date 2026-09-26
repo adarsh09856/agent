@@ -1586,20 +1586,8 @@ async function placeFlowTestCall({
           });
         }
       } else {
-        const availableUserPhones = userTwilioPhones.filter(p => !connectedPhoneIdSet.has(p.id));
-        if (availableUserPhones.length > 0) {
-          fromPhone = availableUserPhones[0];
-          console.log(`📞 [Flow Test] Using Twilio phone: ${fromPhone.phoneNumber}`);
-        } else {
-          const agentNames = await getConnectedAgentNames(userTwilioPhones.map(p => p.id));
-          throw new FlowTestHttpError(409, {
-            error: "Phone number conflict",
-            message: `All your Twilio phone numbers are connected to incoming agents (${agentNames}). A phone number can only be used for either incoming calls OR outbound campaigns/tests, not both.`,
-            suggestion: "Please purchase a new Twilio phone number for outbound calls, or disconnect one of your numbers from the incoming agent first.",
-            conflictType: "incoming_connection",
-            connectedAgentName: agentNames,
-          });
-        }
+        fromPhone = userTwilioPhones[0];
+        console.log(`📞 [Flow Test] Using Twilio phone: ${fromPhone.phoneNumber}`);
       }
     }
 
@@ -1676,20 +1664,8 @@ async function placeFlowTestCall({
           });
         }
       } else {
-        const availableUserPhones = userTwilioPhones.filter(p => !connectedPhoneIdSet.has(p.id));
-        if (availableUserPhones.length > 0) {
-          fromPhone = availableUserPhones[0];
-          console.log(`📞 [Flow Test] Using Twilio phone: ${fromPhone.phoneNumber}`);
-        } else {
-          const agentNames = await getConnectedAgentNames(userTwilioPhones.map(p => p.id));
-          throw new FlowTestHttpError(409, {
-            error: "Phone number conflict",
-            message: `All your Twilio phone numbers are connected to incoming agents (${agentNames}). A phone number can only be used for either incoming calls OR outbound campaigns/tests, not both.`,
-            suggestion: "Please purchase a new Twilio phone number for outbound calls, or disconnect one of your numbers from the incoming agent first.",
-            conflictType: "incoming_connection",
-            connectedAgentName: agentNames,
-          });
-        }
+        fromPhone = userTwilioPhones[0];
+        console.log(`📞 [Flow Test] Using Twilio phone: ${fromPhone.phoneNumber}`);
       }
     }
 

@@ -400,39 +400,6 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
     }
 
     // ========================================
-    // PHONE CONFLICT CHECK: Ensure phone is not being used by active campaigns
-    // A phone used for outbound campaigns cannot be used for incoming calls
-    // ========================================
-    const activeCampaignStatuses = ['pending', 'running', 'scheduled', 'paused'];
-    const activeCampaignCheck = await db
-      .select({ id: campaigns.id, name: campaigns.name, status: campaigns.status })
-      .from(campaigns)
-      .where(
-        and(
-          eq(campaigns.phoneNumberId, phoneNumberId),
-          or(
-            eq(campaigns.status, 'pending'),
-            eq(campaigns.status, 'running'),
-            eq(campaigns.status, 'scheduled'),
-            eq(campaigns.status, 'paused')
-          )
-        )
-      )
-      .limit(1);
-
-    if (activeCampaignCheck.length > 0) {
-      const campaign = activeCampaignCheck[0];
-      return res.status(409).json({
-        message: `This phone number is being used by campaign "${campaign.name}" (status: ${campaign.status}). A phone number can only be used for either incoming calls OR outbound campaigns, not both.`,
-        error: "Phone number conflict",
-        suggestion: "Please either purchase a new phone number for incoming calls, or wait for the campaign to complete (or cancel it) and select a different phone number for the campaign.",
-        conflictType: "active_campaign",
-        campaignName: campaign.name,
-        campaignStatus: campaign.status
-      });
-    }
-
-    // ========================================
     // PRE-FLIGHT CHECKS (before creating connection)
     // Order: Credential check → Migration → Verification
     // ========================================

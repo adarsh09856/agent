@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 /**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
@@ -204,27 +204,6 @@ export function createCampaignRoutes(ctx: RouteContext): Router {
         
         if (!isOwned && !isSystemPool) {
           return res.status(403).json({ error: "Invalid phone number selection" });
-        }
-
-        const incomingConnectionCheck = await db
-          .select({ id: incomingConnections.id, agentId: incomingConnections.agentId })
-          .from(incomingConnections)
-          .where(eq(incomingConnections.phoneNumberId, phoneNumberId))
-          .limit(1);
-        
-        if (incomingConnectionCheck.length > 0) {
-          const [connectedAgent] = await db
-            .select({ name: agents.name })
-            .from(agents)
-            .where(eq(agents.id, incomingConnectionCheck[0].agentId))
-            .limit(1);
-          
-          return res.status(409).json({ 
-            error: "Phone number conflict",
-            message: `This phone number is attached to an incoming connection for "${connectedAgent?.name || 'an agent'}". A phone number cannot be used for both outbound campaigns and incoming calls simultaneously. Please either buy a new number for campaigns, or detach this number from the incoming connection first.`,
-            conflictType: 'incoming_connection',
-            connectedAgentName: connectedAgent?.name
-          });
         }
       }
 
@@ -878,28 +857,6 @@ export function createCampaignRoutes(ctx: RouteContext): Router {
             resolution: "purchase_phone_number"
           });
         }
-
-        const incomingConnectionCheck = await db
-          .select({ id: incomingConnections.id, agentId: incomingConnections.agentId })
-          .from(incomingConnections)
-          .where(eq(incomingConnections.phoneNumberId, campaign.phoneNumberId))
-          .limit(1);
-        
-        if (incomingConnectionCheck.length > 0) {
-          const [connectedAgent] = await db
-            .select({ name: agents.name })
-            .from(agents)
-            .where(eq(agents.id, incomingConnectionCheck[0].agentId))
-            .limit(1);
-          
-          return res.status(409).json({
-            error: "Phone number conflict",
-            message: `This phone number is attached to an incoming agent "${connectedAgent?.name || 'Unknown'}". A phone number can only be used for either incoming calls OR outbound campaigns, not both.`,
-            suggestion: "Please either purchase a new phone number for this campaign, or disconnect this number from the incoming agent first.",
-            conflictType: "incoming_connection",
-            connectedAgentName: connectedAgent?.name
-          });
-        }
       }
       
       const user = await storage.getUser(req.userId!);
@@ -1156,28 +1113,6 @@ export function createCampaignRoutes(ctx: RouteContext): Router {
       }
 
       if (campaign.phoneNumberId) {
-        const incomingConnectionCheck = await db
-          .select({ id: incomingConnections.id, agentId: incomingConnections.agentId })
-          .from(incomingConnections)
-          .where(eq(incomingConnections.phoneNumberId, campaign.phoneNumberId))
-          .limit(1);
-        
-        if (incomingConnectionCheck.length > 0) {
-          const [connectedAgent] = await db
-            .select({ name: agents.name })
-            .from(agents)
-            .where(eq(agents.id, incomingConnectionCheck[0].agentId))
-            .limit(1);
-          
-          return res.status(409).json({
-            error: "Phone number conflict",
-            message: `This phone number is attached to an incoming agent "${connectedAgent?.name || 'Unknown'}". A phone number can only be used for either incoming calls OR outbound campaigns, not both.`,
-            suggestion: "Please either purchase a new phone number for this campaign, or disconnect this number from the incoming agent first.",
-            conflictType: "incoming_connection",
-            connectedAgentName: connectedAgent?.name
-          });
-        }
-
         // Check that the assigned phone number is still active. Numbers can be
         // set to 'inactive' by the billing cron when the user has insufficient
         // credits to renew the monthly rental, at which point the number is
