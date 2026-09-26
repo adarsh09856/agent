@@ -120,13 +120,13 @@ const USER_SECTION_ROUTES: Record<string, { url: string; icon: any; label: strin
     { url: "/app/billing", icon: CreditCard, label: "Billing & Credits", group: "billing", iconColor: "text-amber-500" },
   ],
   api_keys: [
-    { url: "/app/api-keys", icon: Key, label: "API Keys", group: "settings", iconColor: "text-slate-500" },
+    { url: "/app/settings?tab=api-keys", icon: Key, label: "API Keys", group: "settings", iconColor: "text-slate-500" },
   ],
   settings: [
     { url: "/app/settings", icon: Settings, label: "Settings", group: "settings" },
   ],
   team: [
-    { url: "/app/team", icon: Users, label: "Team Management", group: "settings" },
+    { url: "/app/settings?tab=team", icon: Users, label: "Team Management", group: "settings" },
   ],
 };
 

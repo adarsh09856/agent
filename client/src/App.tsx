@@ -47,7 +47,6 @@ import Voices from "@/pages/Voices";
 import PhoneNumbers from "@/pages/PhoneNumbers";
 import AllContacts from "@/pages/AllContacts";
 import Settings from "@/pages/Settings";
-import Login from "@/pages/Login";
 import LandingPage from "@/pages/LandingPage";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminCampaignDetail from "@/pages/AdminCampaignDetail";
@@ -60,16 +59,13 @@ import FlowsPage from "@/pages/FlowsPage";
 import CRMPage from "@/pages/CRMPage";
 import WidgetsPage from "@/pages/WidgetsPage";
 import FlowBuilderPage from "@/pages/FlowBuilderPage";
-import FlowExecutionLogsPage from "@/pages/FlowExecutionLogsPage";
 import WebhookConfigPage from "@/pages/WebhookConfigPage";
 import FormsPage from "@/pages/FormsPage";
 import AppointmentsPage from "@/pages/AppointmentsPage";
-import FlowTemplatesPage from "@/pages/FlowTemplatesPage";
 import IncomingConnections from "@/pages/IncomingConnections";
 import ToolsPage from "@/pages/ToolsPage";
 import GoogleCallbackPage from "@/pages/GoogleCallbackPage";
 import PromptTemplates from "@/pages/PromptTemplates";
-import TransactionHistory from "@/pages/TransactionHistory";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Contact from "@/pages/Contact";
@@ -337,9 +333,20 @@ function UserRouter() {
                 <Route path="/app/prompt-templates" component={PromptTemplates} />
                 <Route path="/app/incoming-connections" component={IncomingConnections} />
                 <Route path="/app/voices" component={Voices} />
+                <Route path="/app/recordings" component={RecordingsPage} />
                 <Route path="/app/phone-numbers" component={PhoneNumbers} />
+                <Route path="/app/telephony-configurations/:configId" component={TelephonyConfigDetailPage} />
+                <Route path="/app/telephony-configurations" component={PhoneNumbers} />
+                <Route path="/app/model-configurations" component={ModelConfigurationPage} />
                 <Route path="/app/google-callback" component={GoogleCallbackPage} />
+                <Route path="/app/tools/:toolId" component={ToolDetailPage} />
                 <Route path="/app/tools" component={ToolsPage} />
+                <Route path="/app/api-keys">
+                  <Redirect to="/app/settings?tab=api-keys" />
+                </Route>
+                <Route path="/app/team">
+                  <Redirect to="/app/settings?tab=team" />
+                </Route>
                 <Route path="/app/flows/new" component={FlowBuilderPage} />
                 <Route path="/app/flows/execution">
                   <Redirect to="/app/flows?tab=execution" />
@@ -434,6 +441,12 @@ function TeamMemberRouter() {
                 <Route path="/app/telephony-configurations/:configId" component={TelephonyConfigDetailPage} />
                 <Route path="/app/telephony-configurations" component={PhoneNumbers} />
                 <Route path="/app/model-configurations" component={ModelConfigurationPage} />
+                <Route path="/app/api-keys">
+                  <Redirect to="/app/settings?tab=api-keys" />
+                </Route>
+                <Route path="/app/team">
+                  <Redirect to="/app/settings?tab=team" />
+                </Route>
                 <Route path="/app/flows/new" component={FlowBuilderPage} />
                 <Route path="/app/flows/execution">
                   <Redirect to="/app/flows?tab=execution" />

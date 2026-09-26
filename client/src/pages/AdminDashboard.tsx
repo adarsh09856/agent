@@ -63,9 +63,29 @@ interface ConnectionStatus {
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const [location] = useLocation();
-  const [activeTab, setActiveTab] = useState("analytics");
+  const getInitialTab = () => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam) return tabParam;
+    }
+    return "analytics";
+  };
+  const [activeTab, setActiveTab] = useState(getInitialTab);
   type AdminCategory = "all" | "platform" | "billing" | "voice_ai" | "settings";
-  const [adminCategory, setAdminCategory] = useState<AdminCategory>("all");
+  const [adminCategory, setAdminCategory] = useState<AdminCategory>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam) {
+        if (["analytics", "users", "contacts"].includes(tabParam)) return "platform";
+        if (["billing", "phones"].includes(tabParam)) return "billing";
+        if (["voice-ai", "calls", "voice-engine-settings"].includes(tabParam)) return "voice_ai";
+        if (["settings", "queue", "communications"].includes(tabParam)) return "settings";
+      }
+    }
+    return "all";
+  });
 
   const CATEGORY_MAP: Record<AdminCategory, { label: string; primaryTab: string; tabs: string[] }> = {
     all: { label: "All Modules", primaryTab: "analytics", tabs: [] },
@@ -76,6 +96,24 @@ export default function AdminDashboard() {
   };
 
   const isTabVisible = (tabId: string) => adminCategory === "all" || CATEGORY_MAP[adminCategory]?.tabs.includes(tabId);
+
+  // Sync tab with URL query changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get("tab");
+      if (tabParam && tabParam !== activeTab) {
+        setActiveTab(tabParam);
+        for (const [cat, data] of Object.entries(CATEGORY_MAP)) {
+          if (data.tabs.includes(tabParam)) {
+            setAdminCategory(cat as AdminCategory);
+            break;
+          }
+        }
+      }
+    }
+  }, [location]);
+
   const [twilioStatus, setTwilioStatus] = useState<ConnectionStatus | null>(null);
   const [freeswitchStatus, setFreeswitchStatus] = useState<ConnectionStatus | null>(null);
   const [deepgramStatus, setDeepgramStatus] = useState<ConnectionStatus | null>(null);
@@ -987,7 +1025,7 @@ function VoiceAIPanel() {
             <div><strong>Audio Routing:</strong> Real-Time WebSockets (Port 443 / SSL)</div>
             <div><strong>Native STT:</strong> Deepgram Nova-2 / Sarvam Saaras</div>
             <div><strong>Native TTS:</strong> Deepgram Aura / Sarvam Bulbul / ElevenLabs</div>
-            <div><strong>Telephony:</strong> Twilio, Plivo, CallHippo, TeleCMI, Exotel, SIP Trunks</div>
+            <div><strong>Telephony:</strong> Twilio, Plivo, SIP Trunks</div>
           </CardContent>
         </Card>
         <Card>

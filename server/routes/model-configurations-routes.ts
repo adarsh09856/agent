@@ -194,6 +194,19 @@ export function createModelConfigurationsRoutes(): Router {
           testUrl = 'https://api.deepseek.com/models';
           headers = { Authorization: `Bearer ${key}` };
           break;
+        case 'gemini':
+        case 'google':
+          testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash?key=${key}`;
+          headers = {};
+          break;
+        case 'openrouter':
+          testUrl = 'https://openrouter.ai/api/v1/models';
+          headers = { Authorization: `Bearer ${key}` };
+          break;
+        case 'sarvam':
+          testUrl = 'https://api.sarvam.ai/models';
+          headers = { 'api-subscription-key': key };
+          break;
         default:
           return res.status(400).json({ success: false, error: `Unsupported provider: ${provider}` });
       }

@@ -44,12 +44,8 @@ export default function CarrierManagement() {
   const [providerAvailability, setProviderAvailability] = useState<Record<string, boolean>>({
     twilio: true,
     plivo: true,
-    exotel: true,
     telnyx: true,
-    cloudonix: true,
-    ari: true,
     vonage: true,
-    vobiz: true,
     sip: true,
   });
 
@@ -58,7 +54,6 @@ export default function CarrierManagement() {
     twilio: { accountSid: "", authToken: "", appSid: "" },
     plivo: { authId: "", authToken: "" },
     telnyx: { apiKey: "", publicKey: "" },
-    exotel: { accountSid: "", apiKey: "", apiToken: "", subdomain: "api.exotel.com" },
   });
 
   // Load settings
@@ -190,12 +185,8 @@ export default function CarrierManagement() {
             {[
               { id: "twilio", name: "Twilio CPaaS", desc: "US/EU/Global Voice & DIDs" },
               { id: "plivo", name: "Plivo Direct", desc: "Low-latency global telephony" },
-              { id: "exotel", name: "Exotel (India)", desc: "Indian domestic DID calling" },
               { id: "telnyx", name: "Telnyx Global", desc: "Elastic SIP Trunking" },
-              { id: "cloudonix", name: "Cloudonix", desc: "Enterprise cloud PBX trunks" },
-              { id: "ari", name: "Asterisk ARI", desc: "Self-hosted Asterisk PBX Stasis" },
               { id: "vonage", name: "Vonage / Nexmo", desc: "Global Voice API" },
-              { id: "vobiz", name: "Vobiz", desc: "High-volume SIP routes" },
               { id: "sip", name: "Indian SIP (Tata/Airtel/Jio)", desc: "Direct Indian carrier trunks" },
             ].map((p) => (
               <div
@@ -231,11 +222,10 @@ export default function CarrierManagement() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="twilio" className="space-y-4">
-            <TabsList className="grid grid-cols-4 w-full max-w-lg">
+            <TabsList className="grid grid-cols-3 w-full max-w-md">
               <TabsTrigger value="twilio" className="text-xs">Twilio</TabsTrigger>
               <TabsTrigger value="plivo" className="text-xs">Plivo</TabsTrigger>
               <TabsTrigger value="telnyx" className="text-xs">Telnyx</TabsTrigger>
-              <TabsTrigger value="exotel" className="text-xs">Exotel</TabsTrigger>
             </TabsList>
 
             {/* Twilio */}
@@ -405,77 +395,6 @@ export default function CarrierManagement() {
                 >
                   {testingCarrier === "telnyx" ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Zap className="w-3 h-3 mr-1" />}
                   Test Telnyx Connection
-                </Button>
-              </div>
-            </TabsContent>
-
-            {/* Exotel */}
-            <TabsContent value="exotel" className="space-y-3 pt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Account SID</Label>
-                  <Input
-                    placeholder="your-exotel-sid"
-                    value={masterCredentials.exotel.accountSid}
-                    onChange={(e) =>
-                      setMasterCredentials({
-                        ...masterCredentials,
-                        exotel: { ...masterCredentials.exotel, accountSid: e.target.value },
-                      })
-                    }
-                    className="h-8 text-xs font-mono"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">API Key</Label>
-                  <Input
-                    placeholder="exotel-api-key"
-                    value={masterCredentials.exotel.apiKey}
-                    onChange={(e) =>
-                      setMasterCredentials({
-                        ...masterCredentials,
-                        exotel: { ...masterCredentials.exotel, apiKey: e.target.value },
-                      })
-                    }
-                    className="h-8 text-xs font-mono"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">API Token</Label>
-                  <div className="relative">
-                    <Input
-                      type={showTokens.exotel ? "text" : "password"}
-                      placeholder="exotel-api-token"
-                      value={masterCredentials.exotel.apiToken}
-                      onChange={(e) =>
-                        setMasterCredentials({
-                          ...masterCredentials,
-                          exotel: { ...masterCredentials.exotel, apiToken: e.target.value },
-                        })
-                      }
-                      className="h-8 text-xs font-mono pr-8"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => toggleShow("exotel")}
-                      className="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showTokens.exotel ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end pt-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="text-xs h-7"
-                  disabled={testingCarrier === "exotel"}
-                  onClick={() => handleTestCarrier("exotel")}
-                >
-                  {testingCarrier === "exotel" ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Zap className="w-3 h-3 mr-1" />}
-                  Test Exotel Connection
                 </Button>
               </div>
             </TabsContent>

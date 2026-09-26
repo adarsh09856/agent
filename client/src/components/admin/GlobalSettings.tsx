@@ -359,7 +359,7 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
           <CardContent className="pt-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground flex-1">
-                Direct cloud carrier streaming (CallHippo, TeleCMI, VoiceLink, Exotel, Twilio) with sub-100ms real-time audio.
+                Direct cloud carrier streaming (Twilio, Plivo, SIP Trunks) with sub-100ms real-time audio.
               </p>
               <Button
                 variant="outline"
@@ -716,75 +716,7 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
           </CardContent>
         </Card>
 
-        {/* 8. KYC Verification Requirements */}
-        <Card>
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-3">
-              <ShieldAlert className="h-5 w-5" />
-              <div>
-                <CardTitle className="text-lg">{t("admin.settings.kyc.title")}</CardTitle>
-                <CardDescription>
-                  {t("admin.settings.kyc.description")}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{t("admin.settings.kyc.twilio")}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("admin.settings.kyc.twilioDesc")}
-                </p>
-              </div>
-              {kycSettingsLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              ) : (
-                <div className="flex items-center gap-3">
-                  <Label htmlFor="twilio-kyc-toggle" className="text-sm text-muted-foreground">
-                    {isTwilioKycRequired ? t("admin.settings.kyc.required") : t("admin.settings.kyc.notRequired")}
-                  </Label>
-                  <Switch
-                    id="twilio-kyc-toggle"
-                    checked={isTwilioKycRequired}
-                    onCheckedChange={(checked) => updateKycSetting.mutate({ key: 'twilio_kyc_required', enabled: checked })}
-                    disabled={updateKycSetting.isPending}
-                    data-testid="switch-twilio-kyc-required"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{t("admin.settings.kyc.plivo")}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("admin.settings.kyc.plivoDesc")}
-                </p>
-              </div>
-              {kycSettingsLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-              ) : (
-                <div className="flex items-center gap-3">
-                  <Label htmlFor="plivo-kyc-toggle" className="text-sm text-muted-foreground">
-                    {isPlivoKycRequired ? t("admin.settings.kyc.required") : t("admin.settings.kyc.notRequired")}
-                  </Label>
-                  <Switch
-                    id="plivo-kyc-toggle"
-                    checked={isPlivoKycRequired}
-                    onCheckedChange={(checked) => updateKycSetting.mutate({ key: 'plivo_kyc_required', enabled: checked })}
-                    disabled={updateKycSetting.isPending}
-                    data-testid="switch-plivo-kyc-required"
-                  />
-                </div>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {t("admin.settings.kyc.hint")}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* 9. Regional Settings */}
+        {/* 8. Regional Settings */}
         <Card>
           <CardHeader>
             <CardTitle>Regional Settings</CardTitle>

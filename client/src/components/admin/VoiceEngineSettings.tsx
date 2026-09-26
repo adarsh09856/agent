@@ -2083,22 +2083,6 @@ export default function VoiceEngineSettings() {
     restcomm: {
       guide: `1. Open your Restcomm instance or cloud account.\n2. Set up a SIP Connection routing to your FreeSWITCH nodes.\n3. Set up gateway XML configuration with credentials.`,
       gatewayXml: `<gateway name="restcomm">\n  <param name="username" value="YOUR_RESTCOMM_USERNAME"/>\n  <param name="password" value="YOUR_RESTCOMM_PASSWORD"/>\n  <param name="proxy" value="sip.restcomm.com"/>\n  <param name="register" value="true"/>\n</gateway>`
-    },
-    callhippo: {
-      guide: `1. Log in to CallHippo Enterprise Dashboard > Settings > SIP / Integrations.\n2. Obtain your SIP Trunk Domain or API Token and configure your Outbound Trunk.\n3. Route incoming Indian Virtual Numbers / DIDs to your media streaming IP:5060.\n4. Save and configure the gateway XML profile below.`,
-      gatewayXml: `<gateway name="callhippo">\n  <param name="username" value="YOUR_CALLHIPPO_USER_OR_DID"/>\n  <param name="password" value="YOUR_CALLHIPPO_SIP_TOKEN"/>\n  <param name="proxy" value="sip.callhippo.com"/>\n  <param name="register" value="true"/>\n</gateway>`
-    },
-    telecmi: {
-      guide: `1. Log in to TeleCMI Cloud Telephony Portal.\n2. Go to Webhook & SIP Trunking settings. Create a SIP Trunk with App ID & Secret.\n3. Map your Indian 10-digit virtual phone numbers to your voice server IP.\n4. Save and configure the gateway XML profile below.`,
-      gatewayXml: `<gateway name="telecmi">\n  <param name="username" value="YOUR_TELECMI_APP_ID"/>\n  <param name="password" value="YOUR_TELECMI_SECRET"/>\n  <param name="proxy" value="sip.telecmi.com"/>\n  <param name="register" value="true"/>\n</gateway>`
-    },
-    voicelink: {
-      guide: `1. Log in to VoiceLink Universal SIP Trunking Portal.\n2. Configure your carrier SIP Trunk endpoint (e.g. sip.voicelink.co.in or your allotted gateway IP).\n3. Register your Indian DIDs / 1800 Toll-Free numbers to forward to this instance.\n4. Save and configure the gateway XML profile below.`,
-      gatewayXml: `<gateway name="voicelink">\n  <param name="username" value="YOUR_VOICELINK_ACCOUNT_ID"/>\n  <param name="password" value="YOUR_VOICELINK_SIP_KEY"/>\n  <param name="proxy" value="sip.voicelink.co.in"/>\n  <param name="register" value="true"/>\n</gateway>`
-    },
-    exotel: {
-      guide: `1. Log in to Exotel Dashboard and go to API & Webhooks > App Bazaar.\n2. Configure Custom Passthru or SIP Connect pointing to your voice server endpoint.\n3. Use your Exotel Account SID and API Token for authentication.\n4. Save and configure the gateway XML profile below.`,
-      gatewayXml: `<gateway name="exotel">\n  <param name="username" value="YOUR_EXOTEL_SID"/>\n  <param name="password" value="YOUR_EXOTEL_API_KEY"/>\n  <param name="proxy" value="sip.exotel.com"/>\n  <param name="register" value="false"/>\n</gateway>`
     }
   };
 
@@ -2909,7 +2893,7 @@ export default function VoiceEngineSettings() {
             <CardContent>
               <div className="flex flex-wrap gap-2 items-center justify-between text-sm py-2 px-3 bg-background rounded-lg border border-border/80">
                 <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-                  <Badge variant="outline">Carrier DID (CallHippo / TeleCMI / VoiceLink / Twilio)</Badge>
+                  <Badge variant="outline">Carrier DID (Twilio / Plivo / SIP Trunks)</Badge>
                   <span>→</span>
                   <Badge className="bg-emerald-600 text-white">Direct WebSocket (WSS)</Badge>
                   <span>→</span>
@@ -2932,10 +2916,6 @@ export default function VoiceEngineSettings() {
                     <Select value={selectedSipProvider} onValueChange={setSelectedSipProvider}>
                       <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="callhippo">🇮🇳 CallHippo</SelectItem>
-                        <SelectItem value="telecmi">🇮🇳 TeleCMI</SelectItem>
-                        <SelectItem value="voicelink">🇮🇳 VoiceLink (Universal SIP)</SelectItem>
-                        <SelectItem value="exotel">🇮🇳 Exotel</SelectItem>
                         <SelectItem value="twilio">Twilio</SelectItem>
                         <SelectItem value="telnyx">Telnyx</SelectItem>
                         <SelectItem value="plivo">Plivo</SelectItem>
