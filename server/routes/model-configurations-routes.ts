@@ -58,6 +58,7 @@ export function createModelConfigurationsRoutes(): Router {
           data: {
             active_mode: 'managed',
             managed_config: {
+              llmModel: 'gemini-2.0-flash',
               voiceId: 'sonic-katie',
               speed: 1.0,
               language: 'multi',

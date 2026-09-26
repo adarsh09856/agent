@@ -32,6 +32,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ManagedConfig {
+  llmModel: string;
   voiceId: string;
   speed: number;
   language: string;
@@ -64,6 +65,111 @@ interface ByokRealtimeConfig {
   silenceDurationMs: number;
 }
 
+const MANAGED_LLM_MODELS = [
+  { 
+    id: "gemini-2.0-flash", 
+    name: "Google Gemini 2.0 Flash", 
+    provider: "Google DeepMind", 
+    latency: "180ms", 
+    context: "1M tokens", 
+    tag: "Recommended • Realtime Dialog", 
+    badgeVariant: "default" as const,
+    description: "Ultra-low latency multimodal model purpose-built for natural, human-like voice telephony conversations with sub-200ms TTFT."
+  },
+  { 
+    id: "gemini-2.0-flash-lite", 
+    name: "Google Gemini 2.0 Flash-Lite", 
+    provider: "Google DeepMind", 
+    latency: "140ms", 
+    context: "1M tokens", 
+    tag: "Fastest • High Concurrency", 
+    badgeVariant: "secondary" as const,
+    description: "Optimized for maximum throughput, instant sub-150ms first-byte responses, and massive outbound campaigns."
+  },
+  { 
+    id: "gemini-1.5-pro", 
+    name: "Google Gemini 1.5 Pro", 
+    provider: "Google DeepMind", 
+    latency: "320ms", 
+    context: "2M tokens", 
+    tag: "Deep Context & Complex Workflows", 
+    badgeVariant: "outline" as const,
+    description: "Massive context window ideal for deep document understanding, complex financial negotiations, and multi-step workflows."
+  },
+  { 
+    id: "llama-3.3-70b-versatile", 
+    name: "Groq Llama 3.3 70B", 
+    provider: "Groq LPU", 
+    latency: "160ms", 
+    context: "128k tokens", 
+    tag: "Instant LPU Speed", 
+    badgeVariant: "secondary" as const,
+    description: "Blazing fast open-weights LLM running on Groq LPUs for rapid turns and predictable latency."
+  },
+  { 
+    id: "gpt-4o-mini", 
+    name: "OpenAI GPT-4o-mini", 
+    provider: "OpenAI", 
+    latency: "250ms", 
+    context: "128k tokens", 
+    tag: "Balanced Enterprise", 
+    badgeVariant: "secondary" as const,
+    description: "Dependable standard enterprise reasoning across diverse customer support inquiries."
+  },
+];
+
+const LLM_MODEL_PRESETS: Record<string, { id: string; label: string }[]> = {
+  gemini: [
+    { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash (Recommended)" },
+    { id: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash-Lite" },
+    { id: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
+    { id: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
+    { id: "gemini-2.0-pro", label: "Gemini 2.0 Pro" },
+  ],
+  groq: [
+    { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B" },
+    { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B" },
+    { id: "mixtral-8x7b-32768", label: "Mixtral 8x7B" },
+  ],
+  openai: [
+    { id: "gpt-4o-mini", label: "GPT-4o Mini" },
+    { id: "gpt-4o", label: "GPT-4o" },
+    { id: "gpt-4-turbo", label: "GPT-4 Turbo" },
+  ],
+  anthropic: [
+    { id: "claude-3-5-sonnet-latest", label: "Claude 3.5 Sonnet" },
+    { id: "claude-3-5-haiku-latest", label: "Claude 3.5 Haiku" },
+  ],
+  deepseek: [
+    { id: "deepseek-chat", label: "DeepSeek V3" },
+    { id: "deepseek-reasoner", label: "DeepSeek R1" },
+  ],
+  cerebras: [
+    { id: "llama3.1-70b", label: "Cerebras Llama 3.1 70B" },
+    { id: "llama3.1-8b", label: "Cerebras Llama 3.1 8B" },
+  ],
+};
+
+const REALTIME_VOICES: Record<string, { id: string; name: string; desc: string }[]> = {
+  gemini: [
+    { id: "Puck", name: "Puck", desc: "Engaging & Friendly Male" },
+    { id: "Charon", name: "Charon", desc: "Deep & Grounded Male" },
+    { id: "Kore", name: "Kore", desc: "Calm & Natural Female" },
+    { id: "Fenrir", name: "Fenrir", desc: "Authoritative & Confident Male" },
+    { id: "Aoede", name: "Aoede", desc: "Expressive & Melodic Female" },
+  ],
+  openai: [
+    { id: "alloy", name: "Alloy", desc: "Balanced & Clear Neutral" },
+    { id: "echo", name: "Echo", desc: "Warm & Conversational Male" },
+    { id: "shimmer", name: "Shimmer", desc: "Expressive & Bright Female" },
+    { id: "ash", name: "Ash", desc: "Professional & Smooth Male" },
+    { id: "ballad", name: "Ballad", desc: "Melodic & Warm Tone" },
+    { id: "coral", name: "Coral", desc: "Energetic & Approachable" },
+    { id: "sage", name: "Sage", desc: "Wise & Calming Tone" },
+    { id: "verse", name: "Verse", desc: "Articulate & Dynamic" },
+  ],
+};
+
 const CURATED_VOICES = [
   { id: "sonic-katie", name: "Cartesia Sonic - Katie (American Female)", latency: "90ms", lang: "English (US)", tag: "Ultra Low Latency" },
   { id: "sonic-barbershop", name: "Cartesia Sonic - British Executive (Male)", latency: "85ms", lang: "English (UK)", tag: "Sub-90ms" },
@@ -86,6 +192,7 @@ export default function ModelConfigurationPage() {
 
   // Managed Mode State
   const [managedConfig, setManagedConfig] = useState<ManagedConfig>({
+    llmModel: "gemini-2.0-flash",
     voiceId: "sonic-katie",
     speed: 1.0,
     language: "multi",
@@ -96,9 +203,9 @@ export default function ModelConfigurationPage() {
 
   // BYOK Pipeline Mode State
   const [pipelineConfig, setPipelineConfig] = useState<ByokPipelineConfig>({
-    llmProvider: "groq",
+    llmProvider: "gemini",
     llmApiKey: "",
-    llmModel: "llama-3.3-70b-versatile",
+    llmModel: "gemini-2.0-flash",
     ttsProvider: "cartesia",
     ttsApiKey: "",
     ttsVoiceId: "sonic-katie",
@@ -111,10 +218,10 @@ export default function ModelConfigurationPage() {
 
   // BYOK Realtime Mode State
   const [realtimeConfig, setRealtimeConfig] = useState<ByokRealtimeConfig>({
-    provider: "openai",
+    provider: "gemini",
     apiKey: "",
-    model: "gpt-4o-realtime-preview",
-    voice: "alloy",
+    model: "gemini-2.0-flash-exp",
+    voice: "Puck",
     temperature: 0.8,
     vadThreshold: 0.5,
     silenceDurationMs: 500,
@@ -135,7 +242,10 @@ export default function ModelConfigurationPage() {
     if (serverConfig) {
       if (serverConfig.active_mode) setActiveTab(serverConfig.active_mode);
       if (serverConfig.managed_config && Object.keys(serverConfig.managed_config).length > 0) {
-        setManagedConfig(serverConfig.managed_config);
+        setManagedConfig({
+          llmModel: "gemini-2.0-flash",
+          ...serverConfig.managed_config,
+        });
       }
       if (serverConfig.pipeline_config && Object.keys(serverConfig.pipeline_config).length > 0) {
         setPipelineConfig(serverConfig.pipeline_config);
@@ -325,7 +435,7 @@ export default function ModelConfigurationPage() {
                     <Badge variant="secondary" className="font-normal text-xs">Zero Setup</Badge>
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    KodeWaves manages LLMs (Groq Llama 3.3 70B & GPT-4o-mini), high-speed STT, and voice infrastructure. Calls are billed on per-minute wallet usage.
+                    KodeWaves manages industry-leading voice LLMs (Google Gemini 2.0 Flash, Groq Llama 3.3 70B &amp; GPT-4o-mini), high-speed STT, and voice infrastructure. Calls are billed on per-minute wallet usage with zero API key configuration needed.
                   </CardDescription>
                 </div>
                 <div className="hidden sm:block">
@@ -335,9 +445,62 @@ export default function ModelConfigurationPage() {
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {/* Curated Voice Selection */}
+              {/* 1. Managed Conversational LLM Engine Selection */}
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">Select Curated High-Speed Voice</Label>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold flex items-center gap-2">
+                    <Cpu className="w-4 h-4 text-primary" />
+                    Select Primary Conversational LLM Engine (Brain)
+                  </Label>
+                  <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+                    Platform Included
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {MANAGED_LLM_MODELS.map((model) => {
+                    const isSelected = (managedConfig.llmModel || "gemini-2.0-flash") === model.id;
+                    return (
+                      <div
+                        key={model.id}
+                        onClick={() => setManagedConfig({ ...managedConfig, llmModel: model.id })}
+                        className={`p-3.5 rounded-lg border cursor-pointer transition-all flex flex-col justify-between ${
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-sm ring-2 ring-primary/50"
+                            : "border-border hover:border-border/80 hover:bg-muted/40"
+                        }`}
+                      >
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between gap-1">
+                            <div className="flex items-center gap-1.5 font-medium text-sm">
+                              <span>{model.name}</span>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" />}
+                            </div>
+                            <Badge variant={model.badgeVariant} className="text-[10px] whitespace-nowrap">
+                              {model.tag}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {model.description}
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-2.5 mt-2 border-t border-border/50">
+                          <span>{model.provider}</span>
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                            {model.latency}
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 2. Curated Voice Selection */}
+              <div className="space-y-3 pt-2 border-t">
+                <Label className="text-sm font-semibold flex items-center gap-2">
+                  <Volume2 className="w-4 h-4 text-emerald-500" />
+                  Select Curated High-Speed Voice (TTS Voice Output)
+                </Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {CURATED_VOICES.map((v) => {
                     const isSelected = managedConfig.voiceId === v.id;
@@ -438,7 +601,7 @@ export default function ModelConfigurationPage() {
                 <div>
                   <p className="text-sm font-medium">Automatic Multi-Provider High Availability</p>
                   <p className="text-xs text-muted-foreground">
-                    Automatically failover from Groq to OpenAI if upstream experiences rate limits or latency spikes.
+                    Automatically failover between Google Gemini, Groq, and OpenAI if upstream experiences rate limits or latency spikes.
                   </p>
                 </div>
                 <Switch
@@ -481,18 +644,26 @@ export default function ModelConfigurationPage() {
                     <Label className="text-xs">Provider</Label>
                     <Select
                       value={pipelineConfig.llmProvider}
-                      onValueChange={(val) => setPipelineConfig({ ...pipelineConfig, llmProvider: val })}
+                      onValueChange={(val) => {
+                        const presets = LLM_MODEL_PRESETS[val];
+                        const defaultModel = presets && presets[0] ? presets[0].id : "";
+                        setPipelineConfig({
+                          ...pipelineConfig,
+                          llmProvider: val,
+                          llmModel: defaultModel || pipelineConfig.llmModel,
+                        });
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="gemini">Google Gemini (Recommended • Flash 2.0)</SelectItem>
                         <SelectItem value="groq">Groq (Ultra-Fast &lt;180ms)</SelectItem>
-                        <SelectItem value="openai">OpenAI</SelectItem>
-                        <SelectItem value="anthropic">Anthropic Claude</SelectItem>
-                        <SelectItem value="deepseek">DeepSeek</SelectItem>
-                        <SelectItem value="cerebras">Cerebras</SelectItem>
-                        <SelectItem value="gemini">Google Gemini</SelectItem>
+                        <SelectItem value="openai">OpenAI (GPT-4o / Mini)</SelectItem>
+                        <SelectItem value="anthropic">Anthropic Claude (Sonnet / Haiku)</SelectItem>
+                        <SelectItem value="deepseek">DeepSeek (V3 / R1)</SelectItem>
+                        <SelectItem value="cerebras">Cerebras (LPU Speed)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -502,8 +673,26 @@ export default function ModelConfigurationPage() {
                     <Input
                       value={pipelineConfig.llmModel}
                       onChange={(e) => setPipelineConfig({ ...pipelineConfig, llmModel: e.target.value })}
-                      placeholder="e.g. llama-3.3-70b-versatile, gpt-4o-mini"
+                      placeholder="e.g. gemini-2.0-flash, llama-3.3-70b-versatile"
                     />
+                    {LLM_MODEL_PRESETS[pipelineConfig.llmProvider] && (
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {LLM_MODEL_PRESETS[pipelineConfig.llmProvider].map((preset) => (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => setPipelineConfig({ ...pipelineConfig, llmModel: preset.id })}
+                            className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
+                              pipelineConfig.llmModel === preset.id
+                                ? "bg-primary text-primary-foreground border-primary font-medium"
+                                : "bg-muted/50 hover:bg-muted text-muted-foreground border-border"
+                            }`}
+                          >
+                            {preset.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-1.5">
@@ -711,14 +900,23 @@ export default function ModelConfigurationPage() {
                   <Label className="text-sm font-medium">Realtime Provider</Label>
                   <Select
                     value={realtimeConfig.provider}
-                    onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, provider: val })}
+                    onValueChange={(val) => {
+                      const defaultModel = val === "gemini" ? "gemini-2.0-flash-exp" : "gpt-4o-realtime-preview";
+                      const defaultVoice = val === "gemini" ? "Puck" : "alloy";
+                      setRealtimeConfig({
+                        ...realtimeConfig,
+                        provider: val,
+                        model: defaultModel,
+                        voice: defaultVoice,
+                      });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="gemini">Google Gemini Live Multimodal (Recommended)</SelectItem>
                       <SelectItem value="openai">OpenAI Realtime API</SelectItem>
-                      <SelectItem value="gemini">Google Gemini Live Multimodal</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -733,9 +931,25 @@ export default function ModelConfigurationPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="gpt-4o-realtime-preview">gpt-4o-realtime-preview</SelectItem>
-                      <SelectItem value="gpt-4o-mini-realtime-preview">gpt-4o-mini-realtime-preview</SelectItem>
-                      <SelectItem value="gemini-2.0-flash-exp">gemini-2.0-flash-exp</SelectItem>
+                      {realtimeConfig.provider === "gemini" ? (
+                        <>
+                          <SelectItem value="gemini-2.0-flash-exp">
+                            gemini-2.0-flash-exp (Gemini Live Audio • Recommended)
+                          </SelectItem>
+                          <SelectItem value="gemini-2.0-flash-realtime">
+                            gemini-2.0-flash-realtime (Low Latency Audio Stream)
+                          </SelectItem>
+                        </>
+                      ) : (
+                        <>
+                          <SelectItem value="gpt-4o-realtime-preview">
+                            gpt-4o-realtime-preview (OpenAI Full Realtime)
+                          </SelectItem>
+                          <SelectItem value="gpt-4o-mini-realtime-preview">
+                            gpt-4o-mini-realtime-preview (OpenAI Lightweight)
+                          </SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -755,7 +969,7 @@ export default function ModelConfigurationPage() {
                     type="password"
                     value={realtimeConfig.apiKey}
                     onChange={(e) => setRealtimeConfig({ ...realtimeConfig, apiKey: e.target.value })}
-                    placeholder="sk-••••••••••••••••••••••••"
+                    placeholder="Enter API key"
                   />
                 </div>
 
@@ -769,14 +983,12 @@ export default function ModelConfigurationPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="alloy">Alloy (Balanced & Clear)</SelectItem>
-                      <SelectItem value="echo">Echo (Warm Male)</SelectItem>
-                      <SelectItem value="shimmer">Shimmer (Expressive Female)</SelectItem>
-                      <SelectItem value="ash">Ash (Professional Male)</SelectItem>
-                      <SelectItem value="ballad">Ballad (Melodic)</SelectItem>
-                      <SelectItem value="coral">Coral (Energetic)</SelectItem>
-                      <SelectItem value="sage">Sage (Wise & Calming)</SelectItem>
-                      <SelectItem value="verse">Verse (Articulate)</SelectItem>
+                      {(REALTIME_VOICES[realtimeConfig.provider] || REALTIME_VOICES.gemini).map((v) => (
+                        <SelectItem key={v.id} value={v.id}>
+                          <span className="font-medium">{v.name}</span>
+                          <span className="text-muted-foreground ml-2 text-xs">({v.desc})</span>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
