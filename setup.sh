@@ -539,7 +539,21 @@ EOF
     fi
 }
 
-# 13. Launch & Supervise with PM2
+# 13. Enable Free SSL via Certbot (HTTPS)
+setup_ssl() {
+    if [ -n "$DOMAIN_NAME" ] && [ "$DOMAIN_NAME" != "localhost" ] && [ "$DOMAIN_NAME" != "127.0.0.1" ]; then
+        log_info "Configuring free Let's Encrypt SSL (HTTPS) for ${DOMAIN_NAME}..."
+        if command -v certbot >/dev/null 2>&1; then
+            certbot --nginx -d "${DOMAIN_NAME}" --non-interactive --agree-tos --register-unsafely-without-email --redirect 2>/dev/null && \
+                log_success "SSL (HTTPS) enabled successfully for https://${DOMAIN_NAME}" || {
+                log_warn "Automatic SSL issuance had warnings (ensure DNS points to this server IP)."
+                log_warn "You can enable SSL anytime manually by running: sudo certbot --nginx -d ${DOMAIN_NAME}"
+            }
+        fi
+    fi
+}
+
+# 14. Launch & Supervise with PM2
 start_pm2_process() {
     log_info "Configuring PM2 process manager for 24/7 background uptime..."
 
@@ -558,21 +572,26 @@ start_pm2_process() {
     log_success "PM2 supervisor active. AgentLabs will auto-start upon server reboot."
 }
 
-# 14. Final Health Verification
+# 15. Final Health Verification
 verify_installation() {
     log_info "Performing final system health checks..."
     sleep 3
 
     HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:${APP_PORT}/api/health || curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:${APP_PORT}/ || echo "000")
 
+    PROTOCOL="http"
+    if [ -f "/etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem" ]; then
+        PROTOCOL="https"
+    fi
+
     echo ""
     echo -e "${GREEN}${BOLD}==============================================================================${NC}"
     echo -e "${GREEN}${BOLD} 🎉 AgentLabs v5.4.5 Installation Complete! 🎉${NC}"
     echo -e "${GREEN}${BOLD}==============================================================================${NC}"
     echo ""
-    echo -e "   • Domain / Host        : ${BOLD}http://${DOMAIN_NAME}${NC}"
+    echo -e "   • Domain / Host        : ${BOLD}${PROTOCOL}://${DOMAIN_NAME}${NC}"
     echo -e "   • Internal App Port    : ${BOLD}http://127.0.0.1:${APP_PORT}${NC}"
-    echo -e "   • Cloud Voice Engine   : ${BOLD}ACTIVE (Pipecat Streaming • Zero PBX)${NC}"
+    echo -e "   • Cloud Voice Engine   : ${BOLD}ACTIVE (WebSocket Audio Pipeline • Sub-100ms)${NC}"
     echo -e "   • Local Service Health : HTTP $HTTP_STATUS"
     echo -e "   • PM2 Process Status   : $(pm2 jlist 2>/dev/null | jq -r '.[] | select(.name=="agentlabs") | .pm2_env.status' 2>/dev/null || echo 'running')"
     echo -e "   • Native Master AI     : ACTIVE (Sub-20ms Reflexes | \$0 Decision Cost)"
@@ -587,17 +606,14 @@ verify_installation() {
     echo -e "   ✓ Database scoped strictly to 'agentlabs_db'"
     echo ""
     echo -e "${BOLD}Next Steps:${NC}"
-    echo -e "1. ${CYAN}Attach SSL Certificate (Let's Encrypt):${NC}"
-    echo -e "   Run: ${BOLD}certbot --nginx -d ${DOMAIN_NAME}${NC}"
+    echo -e "1. ${CYAN}Attach / Renew SSL Certificate (Let's Encrypt):${NC}"
+    echo -e "   Run: ${BOLD}sudo certbot --nginx -d ${DOMAIN_NAME}${NC}"
     echo ""
     echo -e "2. ${CYAN}View Live Real-Time Logs:${NC}"
     echo -e "   Run: ${BOLD}pm2 logs agentlabs${NC}"
     echo ""
-    echo -e "3. ${CYAN}FreeSWITCH CLI & Live Audio Inspection:${NC}"
-    echo -e "   Run: ${BOLD}docker exec -it ve-freeswitch fs_cli${NC}"
-    echo ""
-    echo -e "4. ${CYAN}Open Platform In Your Browser:${NC}"
-    echo -e "   Navigate to: ${BOLD}http://${DOMAIN_NAME}${NC}"
+    echo -e "3. ${CYAN}Open Platform In Your Browser:${NC}"
+    echo -e "   Navigate to: ${BOLD}${PROTOCOL}://${DOMAIN_NAME}${NC}"
     echo ""
     echo -e "${GREEN}${BOLD}Ultra-low latency, uncapped AI Voice Calling ready on your VPS!${NC}"
     echo ""
@@ -618,6 +634,7 @@ main() {
     build_application
     start_freeswitch_cluster
     setup_nginx
+    setup_ssl
     start_pm2_process
     verify_installation
 }
