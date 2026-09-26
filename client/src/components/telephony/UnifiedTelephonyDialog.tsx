@@ -42,15 +42,15 @@ export interface UnifiedTelephonyDialogProps {
 }
 
 const PROVIDERS = [
-  { id: "ari", name: "Asterisk ARI", docsUrl: "https://docs.dograh.com/integrations/telephony/asterisk-ari" },
-  { id: "cloudonix", name: "Cloudonix", docsUrl: "https://docs.dograh.com/integrations/telephony/cloudonix" },
-  { id: "exotel", name: "Exotel", docsUrl: "https://docs.dograh.com/integrations/telephony/exotel" },
-  { id: "plivo", name: "Plivo", docsUrl: "https://docs.dograh.com/integrations/telephony/plivo" },
-  { id: "telnyx", name: "Telnyx", docsUrl: "https://docs.dograh.com/integrations/telephony/telnyx" },
-  { id: "twilio", name: "Twilio", docsUrl: "https://docs.dograh.com/integrations/telephony/twilio" },
-  { id: "vobiz", name: "Vobiz", docsUrl: "https://docs.dograh.com/integrations/telephony/vobiz" },
-  { id: "vonage", name: "Vonage", docsUrl: "https://docs.dograh.com/integrations/telephony/vonage" },
-  { id: "sip", name: "Indian Carrier / Custom SIP", docsUrl: "https://docs.dograh.com/integrations/telephony/sip" },
+  { id: "ari", name: "Asterisk ARI", docsUrl: "https://docs.agentlabs.in/telephony/asterisk-ari" },
+  { id: "cloudonix", name: "Cloudonix", docsUrl: "https://docs.agentlabs.in/telephony/cloudonix" },
+  { id: "exotel", name: "Exotel", docsUrl: "https://docs.agentlabs.in/telephony/exotel" },
+  { id: "plivo", name: "Plivo", docsUrl: "https://docs.agentlabs.in/telephony/plivo" },
+  { id: "telnyx", name: "Telnyx", docsUrl: "https://docs.agentlabs.in/telephony/telnyx" },
+  { id: "twilio", name: "Twilio", docsUrl: "https://docs.agentlabs.in/telephony/twilio" },
+  { id: "vobiz", name: "Vobiz", docsUrl: "https://docs.agentlabs.in/telephony/vobiz" },
+  { id: "vonage", name: "Vonage", docsUrl: "https://docs.agentlabs.in/telephony/vonage" },
+  { id: "sip", name: "Indian Carrier / Custom SIP", docsUrl: "https://docs.agentlabs.in/telephony/sip" },
 ];
 
 const SIP_PRESETS: Record<string, { name: string; proxy: string; port: number }> = {
@@ -577,7 +577,7 @@ export function UnifiedTelephonyDialog({
                   className="bg-background text-sm"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Your Cloudonix domain (for example, acme.cloudonix.net). Dograh fetches and stores its UUID automatically.
+                  Your Cloudonix domain (for example, acme.cloudonix.net). AgentLabs fetches and stores its UUID automatically.
                 </p>
               </div>
 

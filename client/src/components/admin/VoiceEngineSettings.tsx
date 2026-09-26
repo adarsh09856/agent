@@ -2903,7 +2903,7 @@ export default function VoiceEngineSettings() {
                 <CardTitle className="text-lg text-indigo-900 dark:text-indigo-200">Direct Cloud Telephony & Media Streaming</CardTitle>
               </div>
               <CardDescription>
-                High-performance voice AI architecture powered by Dograh/Pipecat cloud streaming. Telecom carriers connect live audio directly to your platform over secure WebSockets (WSS). No FreeSWITCH PBX, no ESL port 8021, and zero PBX server maintenance.
+                High-performance voice AI architecture powered by AgentLabs cloud streaming. Telecom carriers connect live audio directly to your platform over secure WebSockets (WSS) with zero PBX server maintenance.
               </CardDescription>
             </CardHeader>
             <CardContent>
