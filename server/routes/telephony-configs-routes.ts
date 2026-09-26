@@ -54,10 +54,8 @@ export function createTelephonyConfigsRoutes(): Router {
         else if (proxyLower.includes('plivo') || nameLower.includes('plivo')) provider = 'plivo';
         else if (proxyLower.includes('exotel') || nameLower.includes('exotel')) provider = 'exotel';
         else if (proxyLower.includes('telnyx') || nameLower.includes('telnyx')) provider = 'telnyx';
-        else if (proxyLower.includes('cloudonix') || nameLower.includes('cloudonix')) provider = 'cloudonix';
         else if (proxyLower.includes('vonage') || proxyLower.includes('nexmo') || nameLower.includes('vonage')) provider = 'vonage';
-        else if (proxyLower.includes('vobiz') || nameLower.includes('vobiz')) provider = 'vobiz';
-        else if (proxyLower.includes('ari') || proxyLower.includes('8088') || nameLower.includes('asterisk')) provider = 'ari';
+        else provider = 'sip';
 
         return {
           id: row.id,
@@ -91,9 +89,9 @@ export function createTelephonyConfigsRoutes(): Router {
       const { name, provider, credentials, is_default_outbound } = req.body;
       if (!name) return res.status(400).json({ error: 'Name is required' });
 
-      const proxy = credentials?.proxy || credentials?.ari_endpoint || credentials?.domain_name || `${provider || 'carrier'}.cloud.internal`;
+      const proxy = credentials?.proxy || `${provider || 'sip'}.carrier.internal`;
       const username = credentials?.account_sid || credentials?.auth_id || credentials?.username || credentials?.api_key || name.trim();
-      const password = credentials?.auth_token || credentials?.api_secret || credentials?.password || credentials?.app_password || 'configured';
+      const password = credentials?.auth_token || credentials?.api_secret || credentials?.password || 'configured';
 
       if (is_default_outbound) {
         // Clear existing default
