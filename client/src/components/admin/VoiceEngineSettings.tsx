@@ -2107,8 +2107,8 @@ export default function VoiceEngineSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Custom Engine</h2>
-        <p className="text-muted-foreground">Configure AI API keys, active providers, and manage the connected FreeSWITCH nodes and SIP trunks.</p>
+        <h2 className="text-2xl font-bold tracking-tight">Cloud Voice Engine</h2>
+        <p className="text-muted-foreground">Configure AI model intelligence, low-latency speech synthesis, and direct cloud telephony streaming (Zero PBX).</p>
       </div>
 
       {/* Status Overview */}

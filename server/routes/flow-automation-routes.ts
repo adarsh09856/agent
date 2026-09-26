@@ -1722,7 +1722,7 @@ async function placeFlowTestCall({
     // CUSTOM / CLOUD VOICE ENGINE PATH
     // ========================================
     if (agent.telephonyProvider === 'custom-voice-engine') {
-      console.log(`   Using Cloud Voice Engine (Pipecat / Direct SIP Streaming)`);
+      console.log(`   Using Cloud Voice Engine (Direct SIP Streaming)`);
 
       try {
         // Let's create a session ID
@@ -1864,7 +1864,7 @@ async function placeFlowTestCall({
 
           console.log(`✅ [Flow Test] Outbound call initiated via node ${node.name}`);
         } else {
-          console.log(`✅ [Flow Test] Cloud Voice Engine (Pipecat Streaming) outbound call initiated for session ${sessionUuid}`);
+          console.log(`✅ [Flow Test] Cloud Voice Engine outbound call initiated for session ${sessionUuid}`);
         }
 
         await completeQueue(sessionUuid);

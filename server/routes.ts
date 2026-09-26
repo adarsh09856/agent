@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 /**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
@@ -101,6 +101,10 @@ import { createNotificationRoutes } from "./routes/notification-routes";
 import { createUserWebhookRoutes } from "./routes/user-webhook-routes";
 import { createTemplateRoutes } from "./routes/template-routes";
 import { createUserSipGatewaysRoutes } from "./routes/user-sip-gateways.routes";
+import { createTelephonyConfigsRoutes } from "./routes/telephony-configs-routes";
+import { createModelConfigurationsRoutes } from "./routes/model-configurations-routes";
+import { createRecordingsRoutes } from "./routes/recordings-routes";
+import { createToolsRoutes } from "./routes/tools-routes";
 import { createUserProviderCredentialsRoutes } from "./routes/user-provider-credentials.routes";
 import { createSubscriptionRoutes } from "./routes/subscription-routes";
 import crmRoutes from "./routes/crm-routes";
@@ -227,6 +231,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register user SIP gateway routes (per-user SIP management from /app/phone-numbers)
   const userSipGatewaysRoutes = createUserSipGatewaysRoutes();
   app.use(userSipGatewaysRoutes);
+
+  // Register unified telephony configuration routes (Dograh parity CRUD)
+  const telephonyConfigsRoutes = createTelephonyConfigsRoutes();
+  app.use(telephonyConfigsRoutes);
+
+  // Register model configurations routes (Managed, BYOK, Realtime, upstream API key tests)
+  const modelConfigurationsRoutes = createModelConfigurationsRoutes();
+  app.use(modelConfigurationsRoutes);
+
+  // Register recordings & audio assets routes (Audio upload, playback, TTS cache)
+  const recordingsRoutes = createRecordingsRoutes();
+  app.use(recordingsRoutes);
+
+  // Register function tools routes (HTTP API, Transfer, MCP, live test sandbox)
+  const toolsRoutes = createToolsRoutes();
+  app.use(toolsRoutes);
 
   // Register user provider credentials routes (BYOK: Twilio, Deepgram, Gemini, Plivo)
   const userProviderCredentialsRoutes = createUserProviderCredentialsRoutes(routeContext);

@@ -373,6 +373,10 @@ DEFAULT_LLM_MODEL=gemini-2.0-flash
 DEFAULT_TTS_PROVIDER=deepgram
 DEFAULT_TTS_VOICE=aura-asteria-en
 
+# Optional Low-Latency Streaming & Vernacular Indic TTS Providers
+CARTESIA_API_KEY=
+NAVANA_API_KEY=
+
 # Master AI & Admin Governance Policy
 # When true: Users can provide BYOK wholesale keys for $0 platform credit deductions
 # When false: Platform keys and credit/subscription metering are strictly enforced
@@ -413,6 +417,10 @@ build_application() {
         node scripts/run-safe-migration.mjs || log_warn "run-safe-migration had non-fatal warnings."
     fi
 
+    log_info "Ensuring public media storage directories exist..."
+    mkdir -p "$APP_DIR/public/audio" "$APP_DIR/public/recordings"
+    chmod -R 755 "$APP_DIR/public" 2>/dev/null || true
+
     log_info "Building plugin backend..."
     node scripts/build-plugin-backend.js || true
 
@@ -427,7 +435,7 @@ build_application() {
 
 # 11. Voice Streaming Engine Startup
 start_freeswitch_cluster() {
-    log_info "Configuring Cloud Voice Engine (Pipecat Streaming • Zero PBX)..."
+    log_info "Configuring Cloud Voice Engine (WebSocket Audio Streaming • Sub-100ms)..."
     DOCKER_DIR="$APP_DIR/plugins/custom-voice-engine/docker"
 
     if [ "$ENABLE_FREESWITCH" = "true" ] && [ -d "$DOCKER_DIR" ]; then
@@ -442,7 +450,7 @@ start_freeswitch_cluster() {
         cd "$APP_DIR"
         log_success "FreeSWITCH voice cluster container launched."
     else
-        log_success "Cloud Voice Engine active (Pipecat WebRTC & WebSocket Streaming • Zero PBX)."
+        log_success "Cloud Voice Engine active (Real-Time WebSocket Audio Pipeline • Zero PBX)."
     fi
 }
 

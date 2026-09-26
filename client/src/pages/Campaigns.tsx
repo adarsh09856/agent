@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -69,61 +69,6 @@ interface User {
   email: string;
   planType: string;
 }
-
-const mockCampaigns = [
-  {
-    id: "1",
-    name: "Q4 Lead Qualification Drive",
-    type: "Lead Qualification",
-    status: "in_progress" as const,
-    totalContacts: 500,
-    completedCalls: 325,
-    successRate: 87.3,
-  },
-  {
-    id: "2",
-    name: "Customer Feedback Survey",
-    type: "Feedback Collection",
-    status: "pending" as const,
-    totalContacts: 1000,
-    completedCalls: 0,
-  },
-  {
-    id: "3",
-    name: "Holiday Promotion 2024",
-    type: "Promotional",
-    status: "scheduled" as const,
-    totalContacts: 2500,
-    completedCalls: 0,
-    schedule: "Dec 15, 2024 at 9:00 AM",
-  },
-  {
-    id: "4",
-    name: "Payment Reminder Q3",
-    type: "Payment Reminder",
-    status: "completed" as const,
-    totalContacts: 750,
-    completedCalls: 750,
-    successRate: 92.1,
-  },
-  {
-    id: "5",
-    name: "Product Launch Announcement",
-    type: "Promotional",
-    status: "in_progress" as const,
-    totalContacts: 1200,
-    completedCalls: 480,
-    successRate: 84.5,
-  },
-  {
-    id: "6",
-    name: "Event Registration Follow-up",
-    type: "Event Promotion",
-    status: "pending" as const,
-    totalContacts: 300,
-    completedCalls: 0,
-  },
-];
 
 export default function Campaigns() {
   const [, setLocation] = useLocation();

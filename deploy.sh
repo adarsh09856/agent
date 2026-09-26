@@ -2,7 +2,7 @@
 # ==============================================================================
 # AgentLabs v5.4.5 — Production Deployment & Update Script
 # Target: Ubuntu 20.04/22.04/24.04 LTS / Debian Cloud VPS
-# Architecture: Cloud Voice Engine (Pipecat Streaming • Zero PBX)
+# Architecture: Cloud Voice Engine (WebSocket Audio Streaming • Sub-100ms)
 # ==============================================================================
 
 set -eo pipefail
@@ -34,8 +34,10 @@ fi
 echo -e "${BLUE}[2/6] Installing Node.js dependencies...${NC}"
 npm install --prefer-offline --no-audit
 
-# 3. Safe database migrations
-echo -e "${BLUE}[3/6] Running safe database schema migrations...${NC}"
+# 3. Safe database migrations & storage directory initialization
+echo -e "${BLUE}[3/6] Running safe database schema migrations & storage dirs...${NC}"
+mkdir -p "$APP_DIR/public/audio" "$APP_DIR/public/recordings"
+chmod -R 755 "$APP_DIR/public" 2>/dev/null || true
 npm run db:push || true
 node scripts/run-safe-migration.mjs || true
 
@@ -62,7 +64,7 @@ echo ""
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"
 echo -e "${GREEN}${BOLD} 🎉 AgentLabs v5.4.5 Deployment Complete & Live! 🎉${NC}"
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"
-echo -e "   • Cloud Voice Engine   : Active (Pipecat Streaming • Zero PBX)"
+echo -e "   • Cloud Voice Engine   : Active (WebSocket Audio Pipeline • Sub-100ms)"
 echo -e "   • PM2 Status           : $(pm2 jlist 2>/dev/null | jq -r '.[] | select(.name=="agentlabs") | .pm2_env.status' 2>/dev/null || echo 'running')"
 echo -e "   • Monitor Logs         : ${BOLD}pm2 logs agentlabs${NC}"
 echo -e "${GREEN}${BOLD}==============================================================================${NC}"

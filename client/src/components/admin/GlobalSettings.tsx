@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -183,8 +183,8 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
     queryKey: ["/api/settings/voice-engine"],
   });
 
-  const isTwilioKycRequired = voiceEngineSettings?.twilio_kyc_required ?? true;
-  const isPlivoKycRequired = voiceEngineSettings?.plivo_kyc_required ?? true;
+  const isTwilioKycRequired = voiceEngineSettings?.twilio_kyc_required ?? false;
+  const isPlivoKycRequired = voiceEngineSettings?.plivo_kyc_required ?? false;
 
   const updateKycSetting = useMutation({
     mutationFn: async ({ key, enabled }: { key: 'twilio_kyc_required' | 'plivo_kyc_required', enabled: boolean }) => {
@@ -336,7 +336,7 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
 
       {/* Connection Status Tiles */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* FreeSWITCH SIP Telephony Core */}
+        {/* Cloud Engine SIP Telephony Core */}
         <Card className="relative overflow-hidden border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent">
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full blur-3xl bg-emerald-500/20" />
           <CardHeader className="pb-2">
@@ -346,8 +346,8 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
                   <Phone className="h-6 w-6 text-emerald-500" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">FreeSWITCH SIP Core</CardTitle>
-                  <CardDescription className="text-sm">Carrier SIP Telephony</CardDescription>
+                  <CardTitle className="text-lg">Cloud Engine Telephony & SIP</CardTitle>
+                  <CardDescription className="text-sm">High-Concurrency SIP & WebSockets</CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30">
@@ -357,17 +357,17 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
             </div>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
-                High-concurrency SIP trunking, gateway routing, and real-time voice processing.
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground flex-1">
+                Direct cloud carrier streaming (CallHippo, TeleCMI, VoiceLink, Exotel, Twilio) with sub-100ms real-time audio.
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onSwitchTab?.("voice-engine-settings")}
-                className="shrink-0"
+                className="shrink-0 whitespace-nowrap"
               >
-                <Phone className="h-4 w-4 mr-2" />
+                <Phone className="h-4 w-4 mr-1.5" />
                 Manage
               </Button>
             </div>
@@ -395,17 +395,17 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
             </div>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground flex-1">
                 Deepgram Nova-2 streaming STT and Sarvam AI Indian languages neural synthesis.
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onSwitchTab?.("voice-engine-settings")}
-                className="shrink-0"
+                className="shrink-0 whitespace-nowrap"
               >
-                <Mic className="h-4 w-4 mr-2" />
+                <Mic className="h-4 w-4 mr-1.5" />
                 Configure
               </Button>
             </div>
@@ -433,18 +433,18 @@ export default function GlobalSettings({ onSwitchTab }: GlobalSettingsProps) {
             </div>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="flex items-center justify-between gap-4">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground flex-1">
                 Ultra-low latency conversational intelligence matrix with tenant BYOK governance.
               </p>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onSwitchTab?.("voice-engine-settings")}
-                className="shrink-0"
+                className="shrink-0 whitespace-nowrap"
               >
-                <Brain className="h-4 w-4 mr-2" />
-                Configure
+                <Brain className="h-4 w-4 mr-1.5" />
+                Manage
               </Button>
             </div>
           </CardContent>

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -14,7 +14,7 @@
  * Respect the author's rights and Envato licensing terms.
  * ============================================================
  */
-import { Users, BookOpen, Mic, Link as LinkIcon, Phone, Settings, ChevronsUpDown, Plus, BarChart3, Home, Target, LogOut, Coins, Shield, CreditCard, TrendingUp, UserCheck, Workflow, Webhook, ClipboardList, Calendar, Layout, FileText, Wrench, Globe, Bot, ContactRound, MessageSquare } from "lucide-react";
+import { Users, BookOpen, Mic, Link as LinkIcon, Phone, Settings, ChevronsUpDown, Plus, BarChart3, Home, Target, LogOut, Coins, Shield, CreditCard, TrendingUp, UserCheck, Workflow, Webhook, ClipboardList, Calendar, Layout, FileText, Wrench, Globe, Bot, ContactRound, MessageSquare, Cpu, FileAudio } from "lucide-react";
 import { usePluginStatus } from "@/hooks/use-plugin-status";
 import {
   Sidebar,
@@ -74,6 +74,7 @@ export function AppSidebar() {
   const buildItems = [
     { title: t('nav.campaigns'), url: "/app/campaigns", icon: Target, hasPlus: true, iconColor: "text-orange-500" },
     { title: t('nav.agents'), url: "/app/agents", icon: Bot, hasPlus: true, iconColor: "text-blue-500" },
+    { title: t('nav.modelConfigurations', 'AI Models & Engines'), url: "/app/model-configurations", icon: Cpu, iconColor: "text-pink-500" },
     { title: t('nav.knowledgeBase'), url: "/app/knowledge-base", icon: BookOpen, iconColor: "text-violet-500" },
     { title: t('nav.flowBuilder'), url: "/app/flows", icon: Workflow, iconColor: "text-indigo-500" },
     { title: t('nav.tools', 'Tools'), url: "/app/tools", icon: Wrench, iconColor: "text-slate-500" },
@@ -81,7 +82,9 @@ export function AppSidebar() {
 
   const telephonyItems = [
     { title: t('nav.allContacts'), url: "/app/contacts", icon: UserCheck, iconColor: "text-brand" },
-    { title: t('nav.phoneNumbers'), url: "/app/phone-numbers", icon: Phone, iconColor: "text-emerald-500" },
+    { title: t('nav.phoneNumbers', 'Telephony & Numbers'), url: "/app/phone-numbers", icon: Phone, iconColor: "text-emerald-500" },
+    { title: t('nav.voices', 'Voice Library'), url: "/app/voices", icon: Mic, iconColor: "text-cyan-500" },
+    { title: t('nav.recordings', 'Recordings & Audio'), url: "/app/recordings", icon: FileAudio, iconColor: "text-amber-500" },
   ];
 
   const { isEnabled: isMessagingEnabled } = usePluginStatus('messaging') as { isEnabled: boolean };

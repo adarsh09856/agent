@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -803,16 +803,93 @@ export default function AppointmentsPage() {
           )}
 
           {calendarView === "week" && (
-            <div className="text-center py-12 text-muted-foreground">
-              {t("appointments.calendar.weekViewSoon")}
+            <div className="space-y-3 pt-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                {eachDayOfInterval({
+                  start: startOfWeek(currentDate),
+                  end: endOfWeek(currentDate)
+                }).map((day, idx) => {
+                  const dayApts = allAppointments.filter((a: Appointment) => isSameDay(new Date(a.scheduledFor), day));
+                  const isTodayDay = isToday(day);
+                  const isSelected = selectedDate && isSameDay(day, selectedDate);
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-2.5 border rounded-lg text-left cursor-pointer transition-colors ${
+                        isTodayDay ? "border-rose-400 bg-rose-50/50 dark:bg-rose-950/20" : "border-border hover:bg-muted/30"
+                      } ${isSelected ? "ring-2 ring-primary" : ""}`}
+                      onClick={() => handleDayClick(day)}
+                    >
+                      <div className="text-xs font-medium text-muted-foreground">
+                        {format(day, "EEE")}
+                      </div>
+                      <div className={`text-base font-bold ${isTodayDay ? "text-rose-600 dark:text-rose-400" : ""}`}>
+                        {format(day, "d")}
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        {dayApts.length === 0 ? (
+                          <div className="text-[10px] text-muted-foreground/60 py-1">No appointments</div>
+                        ) : (
+                          dayApts.slice(0, 3).map((apt: Appointment) => (
+                            <div
+                              key={apt.id}
+                              className={`text-[10px] px-1 py-0.5 rounded truncate ${getStatusConfig(apt.status).color}`}
+                              title={`${apt.contactName} (${format(new Date(apt.scheduledFor), "h:mm a")})`}
+                            >
+                              {format(new Date(apt.scheduledFor), "h:mm a")} {apt.contactName}
+                            </div>
+                          ))
+                        )}
+                        {dayApts.length > 3 && (
+                          <div className="text-[10px] text-primary font-medium">+{dayApts.length - 3} more</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
-          {calendarView === "day" && (
-            <div className="text-center py-12 text-muted-foreground">
-              {t("appointments.calendar.dayViewSoon")}
-            </div>
-          )}
+          {calendarView === "day" && (() => {
+            const targetDay = selectedDate || currentDate;
+            const dayApts = allAppointments.filter((a: Appointment) => isSameDay(new Date(a.scheduledFor), targetDay));
+            return (
+              <div className="space-y-3 py-2">
+                <div className="flex items-center justify-between pb-2 border-b">
+                  <h3 className="text-sm font-semibold">
+                    Schedule for {format(targetDay, "EEEE, MMMM d, yyyy")}
+                  </h3>
+                  <Badge variant="outline">{dayApts.length} appointment{dayApts.length !== 1 ? 's' : ''}</Badge>
+                </div>
+                {dayApts.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    No appointments scheduled for this date.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {dayApts.map((apt: Appointment) => {
+                      const cfg = getStatusConfig(apt.status);
+                      return (
+                        <div key={apt.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/40 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-mono font-medium text-primary">
+                              {format(new Date(apt.scheduledFor), "h:mm a")}
+                            </div>
+                            <div>
+                              <div className="font-semibold text-sm">{apt.contactName}</div>
+                              <div className="text-xs text-muted-foreground">{apt.contactPhone}</div>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className={cfg.color}>{cfg.label}</Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
 

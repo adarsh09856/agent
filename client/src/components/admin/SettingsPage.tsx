@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -17,7 +17,7 @@
 import { useState, useRef, useEffect, Suspense } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Settings, Search, Server, Sliders, Activity, BarChart3, Key, Phone, Loader2, Globe, Package, ArrowUpCircle, ChevronLeft, ChevronRight, Mail, MessageSquare, Shield } from "lucide-react";
+import { Settings, Search, Server, Sliders, Activity, BarChart3, Key, Phone, Loader2, Globe, Package, ArrowUpCircle, ChevronLeft, ChevronRight, Mail, MessageSquare, Shield, Radio } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { usePluginStatus } from "@/hooks/use-plugin-status";
 import { usePluginRegistry } from "@/contexts/plugin-registry";
@@ -30,6 +30,7 @@ import AdminApiKeysModule from "./AdminApiKeysModule";
 import LanguageManagement from "./LanguageManagement";
 import PluginInstaller from "./PluginInstaller";
 import SystemUpdate from "./SystemUpdate";
+import CarrierManagement from "./CarrierManagement";
 
 interface SettingsPageProps {
   onSwitchTab?: (tab: string) => void;
@@ -117,6 +118,11 @@ export default function SettingsPage({ onSwitchTab, initialSubTab }: SettingsPag
             <span className="hidden sm:inline">{t("adminDashboard.settings.tabs.master")}</span>
             <span className="sm:hidden">{t("common.fallback")}</span>
           </TabsTrigger>
+          <TabsTrigger value="carriers" data-testid="settings-tab-carriers" className="flex items-center gap-2">
+            <Radio className="h-4 w-4" />
+            <span className="hidden sm:inline">Carrier Governance</span>
+            <span className="sm:hidden">Carriers</span>
+          </TabsTrigger>
           <TabsTrigger value="seo" data-testid="settings-tab-seo" className="flex items-center gap-2">
             <Search className="h-4 w-4" />
             <span className="hidden sm:inline">{t("adminDashboard.settings.tabs.seo")}</span>
@@ -182,6 +188,10 @@ export default function SettingsPage({ onSwitchTab, initialSubTab }: SettingsPag
 
         <TabsContent value="master" className="space-y-4">
           <GlobalSettings onSwitchTab={onSwitchTab} />
+        </TabsContent>
+
+        <TabsContent value="carriers" className="space-y-4">
+          <CarrierManagement />
         </TabsContent>
 
         <TabsContent value="seo" className="space-y-4">

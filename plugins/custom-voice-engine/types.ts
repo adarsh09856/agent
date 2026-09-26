@@ -16,7 +16,7 @@
 
 export type SttProvider = 'deepgram' | 'sarvam';
 export type LlmProvider = 'openrouter' | 'gemini' | 'openai' | 'groq' | 'deepseek';
-export type TtsProvider = 'deepgram' | 'sarvam' | 'elevenlabs';
+export type TtsProvider = 'deepgram' | 'sarvam' | 'elevenlabs' | 'cartesia' | 'navana';
 export type RecordingStorage = 'local' | 's3' | 'r2';
 
 // ─── Audio Types ─────────────────────────────────────────────
@@ -166,6 +166,10 @@ export interface TtsConfig {
   /** Sarvam-specific */
   sarvamModel?: string;
   sarvamSpeaker?: string;
+  /** Cartesia-specific */
+  cartesiaModel?: string;
+  /** Navana-specific */
+  navanaModel?: string;
   speed?: number;
   pitch?: number;
   outputFormat?: AudioFormat;

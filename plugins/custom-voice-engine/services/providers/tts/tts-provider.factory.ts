@@ -8,11 +8,15 @@ import type { TtsProvider, TtsProviderInterface } from '../../../types';
 import { DeepgramTtsProvider } from './deepgram-tts.provider';
 import { SarvamTtsProvider } from './sarvam-tts.provider';
 import { ElevenLabsTtsProvider } from './elevenlabs-tts.provider';
+import { CartesiaTtsProvider } from './cartesia-tts.provider';
+import { NavanaTtsProvider } from './navana-tts.provider';
 
 const providerRegistry: Record<TtsProvider, new () => TtsProviderInterface> = {
   deepgram: DeepgramTtsProvider,
   sarvam: SarvamTtsProvider,
   elevenlabs: ElevenLabsTtsProvider,
+  cartesia: CartesiaTtsProvider,
+  navana: NavanaTtsProvider,
 };
 
 export class TtsProviderFactory {

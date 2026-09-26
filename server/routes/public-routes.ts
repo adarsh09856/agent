@@ -1,4 +1,4 @@
-﻿'use strict';
+'use strict';
 /**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
@@ -439,8 +439,8 @@ export function createPublicRoutes(ctx: RouteContext): Router {
       res.json({
         plivo_openai_engine_enabled: toBool(plivoEngineEnabled?.value, false),
         twilio_openai_engine_enabled: toBool(twilioOpenaiEngineEnabled?.value, false),
-        twilio_kyc_required: toBool(twilioKycRequired?.value, true),
-        plivo_kyc_required: toBool(plivoKycRequired?.value, true),
+        twilio_kyc_required: toBool(twilioKycRequired?.value, false),
+        plivo_kyc_required: toBool(plivoKycRequired?.value, false),
         default_tts_model: (defaultTtsModel?.value as string) || 'aura-asteria-en',
         allow_user_byok: toBool(allowUserByok?.value, true),
         credits_required: toBool(creditsRequired?.value, true),
@@ -450,8 +450,8 @@ export function createPublicRoutes(ctx: RouteContext): Router {
       res.json({
         plivo_openai_engine_enabled: false,
         twilio_openai_engine_enabled: false,
-        twilio_kyc_required: true,
-        plivo_kyc_required: true,
+        twilio_kyc_required: false,
+        plivo_kyc_required: false,
         default_tts_model: 'eleven_v3_conversational',
         allow_user_byok: true,
         credits_required: true,

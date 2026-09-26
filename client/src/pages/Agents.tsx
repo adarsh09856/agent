@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -27,7 +27,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DataPagination, usePagination } from "@/components/ui/data-pagination";
-import { Plus, Search, Trash2, Edit, Bot, Upload, Sparkles, GitBranch, CheckCircle2, XCircle, Mic, Brain, Settings2, Wrench, Check, FileText, History, Info, Loader2, Video, Play, KeyRound, Zap, ShieldAlert } from "lucide-react";
+import { Plus, Search, Trash2, Edit, Bot, Upload, Sparkles, GitBranch, CheckCircle2, XCircle, Mic, Brain, Settings2, Wrench, Check, FileText, History, Info, Loader2, Video, Play, KeyRound, Zap, ShieldAlert, Volume2, VolumeX, Pause, Globe, Radio } from "lucide-react";
+import { EmbedCodeDialog } from "@/components/agents/EmbedCodeDialog";
 import { AuthStorage } from "@/lib/auth-storage";
 import PromptTemplatesLibrary from "@/components/PromptTemplatesLibrary";
 import Voices from "@/pages/Voices";
@@ -691,6 +692,306 @@ function MasterAiAgentSection({
   );
 }
 
+function AgentAdvancedVoiceSection({
+  config,
+  setConfig,
+}: {
+  config: any;
+  setConfig: (cfg: any) => void;
+}) {
+  const turnStartStrategy = config?.turnStartStrategy || "immediate";
+  const smartTurnStopSecs = config?.smartTurnStopSecs ?? 0.5;
+  const maxDurationSeconds = config?.maxDurationSeconds ?? 600;
+  const maxUserIdleTimeout = config?.maxUserIdleTimeout ?? 15;
+  
+  // Ambient noise state
+  const ambientNoiseEnabled = config?.ambientNoiseEnabled ?? false;
+  const ambientNoiseVolume = config?.ambientNoiseVolume ?? 0.2;
+  const ambientNoiseSource = config?.ambientNoiseSource || "office";
+
+  // Optimization state
+  const contextCompactionEnabled = config?.contextCompactionEnabled ?? false;
+  const ttsCacheEnabled = config?.ttsCacheEnabled ?? true;
+
+  // Voicemail state
+  const voicemailDetectionEnabled = config?.voicemailDetectionEnabled ?? false;
+  const voicemailAction = config?.voicemailAction || "leave_message";
+  const voicemailMessage = config?.voicemailMessage ?? "Hello! We tried reaching you. Please call us back at your earliest convenience.";
+  const voicemailTransferNumber = config?.voicemailTransferNumber || "";
+
+  // Call dispositions
+  const callDispositionTags = config?.callDispositionTags || ["Interested", "Not Interested", "Callback", "Converted", "Wrong Number"];
+
+  const [newTag, setNewTag] = useState("");
+  const [isPlayingAmbience, setIsPlayingAmbience] = useState(false);
+  const audioPreviewRef = useState<HTMLAudioElement | null>(null);
+
+  const handleAddTag = () => {
+    if (!newTag.trim()) return;
+    if (callDispositionTags.includes(newTag.trim())) return;
+    setConfig({ ...config, callDispositionTags: [...callDispositionTags, newTag.trim()] });
+    setNewTag("");
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setConfig({
+      ...config,
+      callDispositionTags: callDispositionTags.filter((t: string) => t !== tagToRemove),
+    });
+  };
+
+  return (
+    <div className="mt-4 p-4 rounded-xl border border-border/80 bg-muted/20 space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Settings2 className="h-4 w-4 text-primary" />
+          <span className="font-semibold text-sm">Advanced Conversational Guardrails & Voice Settings</span>
+        </div>
+        <Badge variant="outline" className="text-[11px] bg-primary/5 text-primary border-primary/20">
+          Sub-50ms Barge-In • Ambient Audio
+        </Badge>
+      </div>
+
+      {/* Turn Start Strategy & Silence */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold">Turn Start Detection</Label>
+          <Select
+            value={turnStartStrategy}
+            onValueChange={(val) => setConfig({ ...config, turnStartStrategy: val })}
+          >
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="immediate" className="text-xs">Immediate (Barge-in on first phoneme)</SelectItem>
+              <SelectItem value="min_words" className="text-xs">Min Words (2+ words to interrupt)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-[10px] text-muted-foreground">Controls how eagerly the AI pauses when user speaks</p>
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex justify-between items-center">
+            <Label className="text-xs font-semibold">Smart Silence Stop Delay</Label>
+            <span className="text-xs font-mono text-muted-foreground">{smartTurnStopSecs}s</span>
+          </div>
+          <Slider
+            min={0.3}
+            max={1.5}
+            step={0.1}
+            value={[smartTurnStopSecs]}
+            onValueChange={(val) => setConfig({ ...config, smartTurnStopSecs: val[0] })}
+            className="py-1"
+          />
+          <p className="text-[10px] text-muted-foreground">Silence required before agent responds (0.4s-0.6s natural)</p>
+        </div>
+      </div>
+
+      {/* Max Duration & Idle Timeout */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/50">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold">Max Call Duration (Seconds)</Label>
+          <Input
+            type="number"
+            min={60}
+            max={3600}
+            step={30}
+            value={maxDurationSeconds}
+            onChange={(e) => setConfig({ ...config, maxDurationSeconds: Number(e.target.value) || 600 })}
+            className="h-8 text-xs font-mono"
+          />
+          <p className="text-[10px] text-muted-foreground">E.g., 600 = 10 minutes max call safety limit</p>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold">User Idle Silence Hangup (Seconds)</Label>
+          <Input
+            type="number"
+            min={5}
+            max={60}
+            step={5}
+            value={maxUserIdleTimeout}
+            onChange={(e) => setConfig({ ...config, maxUserIdleTimeout: Number(e.target.value) || 15 })}
+            className="h-8 text-xs font-mono"
+          />
+          <p className="text-[10px] text-muted-foreground">Terminates call if caller is silent for this duration</p>
+        </div>
+      </div>
+
+      {/* Ambient Background Noise */}
+      <div className="space-y-3 pt-2 border-t border-border/50">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-xs font-semibold flex items-center gap-1.5">
+              <Volume2 className="w-3.5 h-3.5 text-primary" />
+              Ambient Background Audio
+            </Label>
+            <p className="text-[11px] text-muted-foreground">
+              Plays subtle background sound to make the synthesized voice sound like a real contact center
+            </p>
+          </div>
+          <Checkbox
+            checked={ambientNoiseEnabled}
+            onCheckedChange={(checked) => setConfig({ ...config, ambientNoiseEnabled: !!checked })}
+          />
+        </div>
+
+        {ambientNoiseEnabled && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-muted/40 p-3 rounded-lg">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Ambience Sound Profile</Label>
+              <Select
+                value={ambientNoiseSource}
+                onValueChange={(val) => setConfig({ ...config, ambientNoiseSource: val })}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="office">Quiet Office Call Center</SelectItem>
+                  <SelectItem value="cafe">Coffee Shop / Cafe Ambience</SelectItem>
+                  <SelectItem value="room">Subtle Room Tone</SelectItem>
+                  <SelectItem value="none">Zero Background Sound</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <Label className="text-xs font-semibold">Background Volume</Label>
+                <span className="text-xs font-mono text-muted-foreground">{Math.round(ambientNoiseVolume * 100)}%</span>
+              </div>
+              <Slider
+                min={0.05}
+                max={0.6}
+                step={0.05}
+                value={[ambientNoiseVolume]}
+                onValueChange={(val) => setConfig({ ...config, ambientNoiseVolume: val[0] })}
+                className="py-1"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Long Call Optimization & TTS Caching */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/50">
+        <div className="flex items-center justify-between border p-2.5 rounded-lg bg-background/50">
+          <div className="space-y-0.5">
+            <Label className="text-xs font-semibold">Context Compaction</Label>
+            <p className="text-[10px] text-muted-foreground">Rolling summary on calls &gt; 5 min</p>
+          </div>
+          <Checkbox
+            checked={contextCompactionEnabled}
+            onCheckedChange={(checked) => setConfig({ ...config, contextCompactionEnabled: !!checked })}
+          />
+        </div>
+
+        <div className="flex items-center justify-between border p-2.5 rounded-lg bg-background/50">
+          <div className="space-y-0.5">
+            <Label className="text-xs font-semibold">TTS Phrase Cache</Label>
+            <p className="text-[10px] text-muted-foreground">Instant &lt;10ms repeated phrase playback</p>
+          </div>
+          <Checkbox
+            checked={ttsCacheEnabled}
+            onCheckedChange={(checked) => setConfig({ ...config, ttsCacheEnabled: !!checked })}
+          />
+        </div>
+      </div>
+
+      {/* Voicemail / Answering Machine Actions */}
+      <div className="space-y-3 pt-2 border-t border-border/50">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label className="text-xs font-semibold">Answering Machine Detection (AMD)</Label>
+            <p className="text-[11px] text-muted-foreground">Automatically detect voicemail beeps on outbound campaign calls</p>
+          </div>
+          <Checkbox
+            checked={voicemailDetectionEnabled}
+            onCheckedChange={(checked) => setConfig({ ...config, voicemailDetectionEnabled: !!checked })}
+          />
+        </div>
+
+        {voicemailDetectionEnabled && (
+          <div className="space-y-2.5 bg-muted/40 p-3 rounded-lg">
+            <div className="space-y-1">
+              <Label className="text-xs font-semibold">Action on Machine Detection</Label>
+              <Select
+                value={voicemailAction}
+                onValueChange={(val) => setConfig({ ...config, voicemailAction: val })}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="leave_message">Leave Custom Voicemail Message</SelectItem>
+                  <SelectItem value="hangup">Hang Up Immediately (Save Call Credits)</SelectItem>
+                  <SelectItem value="transfer">Transfer Call to Human Number</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {voicemailAction === "leave_message" && (
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Voicemail Spoken Message</Label>
+                <Input
+                  placeholder="Designated voicemail message to speak after the beep..."
+                  value={voicemailMessage}
+                  onChange={(e) => setConfig({ ...config, voicemailMessage: e.target.value })}
+                  className="h-8 text-xs"
+                />
+              </div>
+            )}
+
+            {voicemailAction === "transfer" && (
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Transfer Destination Phone</Label>
+                <Input
+                  placeholder="+918047192000 or +14155550199"
+                  value={voicemailTransferNumber}
+                  onChange={(e) => setConfig({ ...config, voicemailTransferNumber: e.target.value })}
+                  className="h-8 text-xs font-mono"
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Call Disposition Tags */}
+      <div className="space-y-2 pt-2 border-t border-border/50">
+        <Label className="text-xs font-semibold">Post-Call Outcome Tags (Dispositions)</Label>
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {callDispositionTags.map((tag: string, idx: number) => (
+            <Badge key={idx} variant="secondary" className="gap-1 text-[11px] pr-1">
+              <span>{tag}</span>
+              <button
+                type="button"
+                onClick={() => handleRemoveTag(tag)}
+                className="hover:text-destructive ml-0.5"
+              >
+                ×
+              </button>
+            </Badge>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <Input
+            placeholder="Add disposition tag (e.g., Quotation Sent)..."
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            className="h-7 text-xs flex-1"
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddTag(); } }}
+          />
+          <Button type="button" size="sm" variant="outline" className="h-7 text-xs px-2" onClick={handleAddTag}>
+            Add Tag
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Agents() {
   const [, setLocation] = useLocation();
@@ -705,6 +1006,8 @@ export default function Agents() {
   const [knowledgeUploadOpen, setKnowledgeUploadOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null);
   const [deletingAgent, setDeletingAgent] = useState<Agent | null>(null);
+  const [embedAgent, setEmbedAgent] = useState<Agent | null>(null);
+  const [embedDialogOpen, setEmbedDialogOpen] = useState(false);
   const [formData, setFormData] = useState({
     type: "incoming" as 'incoming' | 'flow' | 'custom_engine',
     name: "",
@@ -1817,6 +2120,18 @@ export default function Agents() {
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-primary"
+                              onClick={() => {
+                                setEmbedAgent(agent);
+                                setEmbedDialogOpen(true);
+                              }}
+                              title="Embed on Website"
+                            >
+                              <Globe className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               className="h-8 w-8"
                               onClick={() => handleEdit(agent)}
                               data-testid="button-edit-agent"
@@ -2009,13 +2324,13 @@ export default function Agents() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
-                                <h4 className={`font-semibold ${formData.type === 'custom_engine' ? 'text-indigo-700 dark:text-indigo-300' : ''}`}>Custom Engine Agent</h4>
+                                <h4 className={`font-semibold ${formData.type === 'custom_engine' ? 'text-indigo-700 dark:text-indigo-300' : ''}`}>Cloud Voice Engine Agent</h4>
                                 {formData.type === 'custom_engine' && (
                                   <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
                                 )}
                               </div>
                               <p className="text-xs text-muted-foreground leading-relaxed">
-                                Self-hosted FreeSWITCH pipeline supporting both incoming calls on SIP trunks and outgoing automated campaigns.
+                                Real-time cloud voice streaming supporting Indian & Global SIP trunks (CallHippo, TeleCMI, Exotel, Twilio) with ultra-low latency voice AI.
                               </p>
                             </div>
                           </div>
@@ -2319,11 +2634,11 @@ export default function Agents() {
                               <div className="flex items-center justify-between">
                                 <div>
                                   <div className="flex items-center gap-1.5">
-                                    <span className="font-medium text-indigo-700 dark:text-indigo-300">Master AI (FreeSWITCH)</span>
-                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-indigo-300 text-indigo-600 dark:border-indigo-600 dark:text-indigo-400">Primary</Badge>
+                                    <span className="font-medium text-indigo-700 dark:text-indigo-300">Cloud Voice Engine</span>
+                                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-indigo-300 text-indigo-600 dark:border-indigo-600 dark:text-indigo-400">Streaming</Badge>
                                   </div>
                                   <p className="text-xs text-muted-foreground mt-0.5">
-                                    Self-hosted Deepgram & Sarvam pipeline
+                                    Direct Cloud Streaming • Indic & Global Telephony
                                   </p>
                                 </div>
                                 {formData.telephonyProvider === "custom-voice-engine" && (
@@ -2947,6 +3262,10 @@ export default function Agents() {
                               masterAiConfig={formData.masterAiConfig}
                               setMasterAiConfig={(cfg) => setFormData({ ...formData, masterAiConfig: cfg })}
                             />
+                            <AgentAdvancedVoiceSection
+                              config={formData}
+                              setConfig={(cfg) => setFormData({ ...formData, ...cfg })}
+                            />
                           </>
                         )}
 
@@ -3093,11 +3412,11 @@ export default function Agents() {
                           <div className="flex items-center justify-between">
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-indigo-700 dark:text-indigo-300">Master AI (FreeSWITCH)</span>
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-indigo-300 text-indigo-600 dark:border-indigo-600 dark:text-indigo-400">Primary</Badge>
+                                <span className="font-medium text-indigo-700 dark:text-indigo-300">Cloud Voice Engine</span>
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-indigo-300 text-indigo-600 dark:border-indigo-600 dark:text-indigo-400">Streaming</Badge>
                               </div>
                               <p className="text-xs text-muted-foreground mt-0.5">
-                                Self-hosted Deepgram & Sarvam pipeline
+                                Direct Cloud Streaming • Indic & Global Telephony
                               </p>
                             </div>
                             {formData.telephonyProvider === "custom-voice-engine" && (
@@ -3798,6 +4117,10 @@ export default function Agents() {
                             masterAiConfig={formData.masterAiConfig}
                             setMasterAiConfig={(cfg) => setFormData({ ...formData, masterAiConfig: cfg })}
                           />
+                          <AgentAdvancedVoiceSection
+                            config={formData}
+                            setConfig={(cfg) => setFormData({ ...formData, ...cfg })}
+                          />
                         </>
                       )}
 
@@ -4471,6 +4794,13 @@ export default function Agents() {
             onSuccess={() => {
               queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
             }}
+          />
+
+          {/* Website Embed Code Dialog */}
+          <EmbedCodeDialog
+            open={embedDialogOpen}
+            onOpenChange={setEmbedDialogOpen}
+            agent={embedAgent}
           />
         </TabsContent>
       </Tabs>

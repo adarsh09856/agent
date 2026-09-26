@@ -39,19 +39,26 @@ This guide provides comprehensive step-by-step instructions for installing and u
 
 Get accounts with these services before installation:
 
-**AI Engine (Choose at least one):**
+**AI Engine & Voice Providers (Choose at least one):**
 
 | Service | Purpose | Sign Up |
 |---------|---------|---------|
-| **ElevenLabs** | AI voice (100+ voices) | [elevenlabs.io](https://elevenlabs.io) |
-| **OpenAI** | AI voice (alternative) | [platform.openai.com](https://platform.openai.com) |
+| **Deepgram** | Ultra-fast Nova-2 STT & Aura TTS | [deepgram.com](https://deepgram.com) |
+| **Cartesia** | Ultra-low latency Sonic streaming TTS (<90ms) | [cartesia.ai](https://cartesia.ai) |
+| **Navana AI** | Premier Indian Indic Bodhi TTS (10 Indian languages) | [navana.ai](https://navana.ai) |
+| **Sarvam AI** | Indic Bulbul & Saaras models | [sarvam.ai](https://sarvam.ai) |
+| **ElevenLabs** | AI Voice (100+ voices) | [elevenlabs.io](https://elevenlabs.io) |
+| **OpenAI / Gemini / Groq** | Conversational Intelligence | Upstream providers |
 
-**Phone Calls (Choose at least one):**
+**Telephony & SIP Carriers (Choose at least one):**
 
 | Service | Purpose | Sign Up |
 |---------|---------|---------|
-| **Twilio** | Global phone calls | [twilio.com](https://twilio.com) |
-| **Plivo** | Alternative (good for India) | [plivo.com](https://plivo.com) |
+| **Twilio** | Global phone calls & elastic SIP trunks | [twilio.com](https://twilio.com) |
+| **Plivo** | High-volume calling & SMS | [plivo.com](https://plivo.com) |
+| **Exotel** | Premier Indian cloud telephony & DLT compliant | [exotel.com](https://exotel.com) |
+| **Telnyx** | Global private SIP trunking | [telnyx.com](https://telnyx.com) |
+| **Indian SIP (CallHippo, TeleCMI, VoiceLink)** | Direct Indian localized carrier gateways | Respective carriers |
 
 **Payments (Optional - choose the ones you need):**
 

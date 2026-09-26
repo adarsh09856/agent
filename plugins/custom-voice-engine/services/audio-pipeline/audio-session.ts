@@ -943,12 +943,12 @@ export class AudioSession extends EventEmitter {
     }
 
     // ─── Master AI: Semantic Instant FAQ & Cache Matcher ─────────────
-    const instantAnswer = await this.masterAiService.matchInstantFaq(
+    const matchedFaq = this.masterAiService.matchInstantFaq(
       text,
-      this.agentConfig.id,
       masterAiConfig.instantFaqs
     );
-    if (instantAnswer) {
+    if (matchedFaq && matchedFaq.answer) {
+      const instantAnswer = matchedFaq.answer;
       console.log(`[AudioSession:${this.id}] [MasterAI] Instant FAQ Cache HIT: "${instantAnswer}"`);
       this.isProcessingLlm = false;
       this.conversationMessages.push({ role: 'user', content: text });

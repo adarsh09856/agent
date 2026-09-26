@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -589,7 +589,7 @@ export default function IncomingConnectionsPage() {
           >
             <div className="flex items-center gap-2 mb-2">
               <Mic className="h-4 w-4 text-indigo-600" />
-              <span className="font-semibold text-sm">Master AI (FreeSWITCH)</span>
+              <span className="font-semibold text-sm">Cloud Voice Engine</span>
             </div>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span><strong className="text-indigo-600">{cveConnections.length}</strong> active</span>
@@ -683,7 +683,7 @@ export default function IncomingConnectionsPage() {
         }`}>
           <TabsTrigger value="custom-voice" className="flex items-center gap-2" data-testid="tab-custom-voice">
             <Mic className="h-3.5 w-3.5 text-indigo-600" />
-            <span className="hidden sm:inline">Master AI (FreeSWITCH)</span>
+            <span className="hidden sm:inline">Cloud Voice Engine</span>
           </TabsTrigger>
           <TabsTrigger value="twilio-elevenlabs" className="flex items-center gap-2" data-testid="tab-twilio-elevenlabs">
             <SiTwilio className="h-3.5 w-3.5 text-red-500" />

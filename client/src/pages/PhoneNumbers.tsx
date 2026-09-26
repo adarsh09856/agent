@@ -220,8 +220,8 @@ export default function PhoneNumbers() {
     queryKey: ["/api/settings/voice-engine"],
   });
   const plivoEnabled = voiceEngineSettings?.plivo_openai_engine_enabled || false;
-  const twilioKycRequired = voiceEngineSettings?.twilio_kyc_required ?? true;
-  const plivoKycRequired = voiceEngineSettings?.plivo_kyc_required ?? true;
+  const twilioKycRequired = voiceEngineSettings?.twilio_kyc_required ?? false;
+  const plivoKycRequired = voiceEngineSettings?.plivo_kyc_required ?? false;
   
   // SIP access - requires plugin enabled AND user's plan has SIP access
   const { isSipPluginEnabled, isCustomVoiceEngineEnabled } = usePluginStatus();
@@ -600,10 +600,10 @@ export default function PhoneNumbers() {
               }}
               variant="outline"
               className="bg-white/80 dark:bg-white/10 border-emerald-200 dark:border-emerald-800 text-foreground"
-              data-testid="button-import-twilio"
+              data-testid="button-import-carrier"
             >
               <KeyRound className="h-4 w-4 mr-2 text-indigo-600" />
-              Import from Twilio
+              Connect Carrier / Twilio / SIP
             </Button>
             <Button 
               onClick={() => {
@@ -669,7 +669,7 @@ export default function PhoneNumbers() {
         <TabsList>
           <TabsTrigger value="my-sip-gateways" data-testid="tab-my-sip-gateways">
             <Server className="h-4 w-4 mr-1 text-primary" />
-            Wholesale SIP Numbers & Trunks
+            Carrier SIP & Indian Phone Numbers
           </TabsTrigger>
           {ownedNumbers.length > 0 && (
             <TabsTrigger value="owned" data-testid="tab-owned-numbers">
@@ -727,7 +727,7 @@ export default function PhoneNumbers() {
                   >
                     <div className="flex items-start justify-between gap-2 mb-4">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-base sm:text-lg font-semibold font-mono mb-1 break-all" data-testid="text-phone-number">
+                        <h3 className="text-base font-semibold font-mono mb-1 whitespace-nowrap truncate" data-testid="text-phone-number">
                           {formatPhoneNumber(number.phoneNumber)}
                         </h3>
                         {number.friendlyName && (
@@ -882,7 +882,7 @@ export default function PhoneNumbers() {
                       >
                         <div className="flex items-start justify-between gap-2 mb-4">
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-base sm:text-lg font-semibold font-mono mb-1 break-all">
+                            <h3 className="text-base font-semibold font-mono mb-1 whitespace-nowrap truncate">
                               {formatPhoneNumber(number.phoneNumber)}
                             </h3>
                             <p className="text-sm text-muted-foreground">

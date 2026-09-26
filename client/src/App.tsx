@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -80,6 +80,10 @@ import FeaturesPage from "@/pages/FeaturesPage";
 import PricingPage from "@/pages/PricingPage";
 import UseCasesPage from "@/pages/UseCasesPage";
 import IntegrationsPage from "@/pages/IntegrationsPage";
+import ModelConfigurationPage from "@/pages/ModelConfigurationPage";
+import TelephonyConfigDetailPage from "@/pages/TelephonyConfigDetailPage";
+import RecordingsPage from "@/pages/RecordingsPage";
+import ToolDetailPage from "@/pages/ToolDetailPage";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { NotificationBell } from "@/components/NotificationBell";
 import { HeaderBannerNotifications } from "@/components/HeaderBannerNotifications";
@@ -410,6 +414,7 @@ function TeamMemberRouter() {
                 <Route path="/app/analytics" component={Analytics} />
                 <Route path="/app/crm" component={CRMPage} />
                 <Route path="/app/tools/widgets" component={WidgetsPage} />
+                <Route path="/app/tools/:toolId" component={ToolDetailPage} />
                 <Route path="/app/tools" component={ToolsPage} />
                 <Route path="/app/billing" component={Billing} />
                 <Route path="/app/transaction-history">
@@ -424,7 +429,11 @@ function TeamMemberRouter() {
                 <Route path="/app/prompt-templates" component={PromptTemplates} />
                 <Route path="/app/incoming-connections" component={IncomingConnections} />
                 <Route path="/app/voices" component={Voices} />
+                <Route path="/app/recordings" component={RecordingsPage} />
                 <Route path="/app/phone-numbers" component={PhoneNumbers} />
+                <Route path="/app/telephony-configurations/:configId" component={TelephonyConfigDetailPage} />
+                <Route path="/app/telephony-configurations" component={PhoneNumbers} />
+                <Route path="/app/model-configurations" component={ModelConfigurationPage} />
                 <Route path="/app/flows/new" component={FlowBuilderPage} />
                 <Route path="/app/flows/execution">
                   <Redirect to="/app/flows?tab=execution" />

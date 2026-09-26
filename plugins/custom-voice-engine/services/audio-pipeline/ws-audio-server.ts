@@ -16,6 +16,8 @@
 
 import { WebSocketServer, WebSocket } from 'ws';
 import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import type { Server as HttpServer, IncomingMessage } from 'http';
 import { AudioSession } from './audio-session';
 import { db } from '../../../../server/db';
@@ -425,7 +427,7 @@ export class AudioWebSocketServer {
           wavHeader.writeUInt32LE(dataSize, 40);
 
           const wavBuffer = Buffer.concat([wavHeader, audio]);
-          const filePath = `/tmp/${sessionId}_tts_${Date.now()}_${audioPlayCount}.wav`;
+          const filePath = path.join(os.tmpdir(), `${sessionId}_tts_${Date.now()}_${audioPlayCount}.wav`);
 
           // Async write — a synchronous writeFileSync here blocks the Node event
           // loop for the duration of the disk I/O, stalling every other active

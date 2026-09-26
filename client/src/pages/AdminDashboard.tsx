@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, CreditCard, Settings, BarChart, Phone, Package, Bell, ListOrdered, Loader2, CheckCircle2, XCircle, ContactRound, DollarSign, RefreshCw, Server, Receipt, Mail, MessageSquare, Headphones, ShieldAlert, Brain, Power, Mic, Sparkles, Building2, ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
+import { Users, CreditCard, Settings, BarChart, Phone, Package, Bell, ListOrdered, Loader2, CheckCircle2, XCircle, ContactRound, DollarSign, RefreshCw, Server, Receipt, Mail, MessageSquare, Headphones, ShieldAlert, Brain, Power, Mic, Sparkles, Building2, ChevronLeft, ChevronRight, Volume2, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -64,6 +64,18 @@ export default function AdminDashboard() {
   const { t } = useTranslation();
   const [location] = useLocation();
   const [activeTab, setActiveTab] = useState("analytics");
+  type AdminCategory = "all" | "platform" | "billing" | "voice_ai" | "settings";
+  const [adminCategory, setAdminCategory] = useState<AdminCategory>("all");
+
+  const CATEGORY_MAP: Record<AdminCategory, { label: string; primaryTab: string; tabs: string[] }> = {
+    all: { label: "All Modules", primaryTab: "analytics", tabs: [] },
+    platform: { label: "Platform & Users", primaryTab: "analytics", tabs: ["analytics", "users", "contacts"] },
+    billing: { label: "Billing & Finance", primaryTab: "billing", tabs: ["billing", "phones"] },
+    voice_ai: { label: "Voice AI Engine", primaryTab: "voice-ai", tabs: ["voice-ai", "calls", "voice-engine-settings"] },
+    settings: { label: "System & Settings", primaryTab: "settings", tabs: ["settings", "queue", "communications"] },
+  };
+
+  const isTabVisible = (tabId: string) => adminCategory === "all" || CATEGORY_MAP[adminCategory]?.tabs.includes(tabId);
   const [twilioStatus, setTwilioStatus] = useState<ConnectionStatus | null>(null);
   const [freeswitchStatus, setFreeswitchStatus] = useState<ConnectionStatus | null>(null);
   const [deepgramStatus, setDeepgramStatus] = useState<ConnectionStatus | null>(null);
@@ -161,13 +173,13 @@ export default function AdminDashboard() {
         setTwilioStatus({ connected: false, error: "Twilio not configured" });
       }
 
-      // Test Cloud Voice Engine (Pipecat)
+      // Test Cloud Voice Engine
       try {
         const fsResponse = await apiRequest("POST", "/api/admin/test-connection/cloud-engine");
         const fsResult = await fsResponse.json();
         setFreeswitchStatus(fsResult as ConnectionStatus);
       } catch (err) {
-        setFreeswitchStatus({ connected: true, details: "Pipecat Active • Zero PBX" });
+        setFreeswitchStatus({ connected: true, details: "Cloud Engine Active" });
       }
 
       // Test Deepgram STT / TTS
@@ -294,7 +306,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               
-              {/* Cloud Voice Engine (Pipecat) Status Indicator */}
+              {/* Cloud Voice Engine Status Indicator */}
               <div 
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
                   freeswitchStatus?.connected 
@@ -302,7 +314,7 @@ export default function AdminDashboard() {
                     : 'bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700'
                 }`}
                 data-testid={freeswitchStatus?.connected ? "status-cloud-engine-connected" : "status-cloud-engine-disconnected"}
-                title={freeswitchStatus?.error || freeswitchStatus?.details || "Pipecat Streaming Engine Active"}
+                title={freeswitchStatus?.error || freeswitchStatus?.details || "Cloud Voice Engine Active"}
               >
                 <div className={`p-1 rounded-full ${
                   freeswitchStatus?.connected 
@@ -324,7 +336,7 @@ export default function AdminDashboard() {
                       ? 'text-emerald-600/70 dark:text-emerald-500/70' 
                       : 'text-slate-500 dark:text-slate-500'
                   }`}>
-                    {freeswitchStatus?.connected ? (freeswitchStatus.details || "Pipecat Active") : "Offline"}
+                    {freeswitchStatus?.connected ? (freeswitchStatus.details || "Active") : "Offline"}
                   </span>
                 </div>
               </div>
@@ -431,6 +443,72 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* 4-Category Governance Bar */}
+      <div className="flex items-center gap-1.5 p-1 bg-muted/40 rounded-xl border border-border/60 overflow-x-auto">
+        <Button
+          type="button"
+          size="sm"
+          variant={adminCategory === "all" ? "default" : "ghost"}
+          className="text-xs h-7 gap-1.5 px-3 rounded-lg"
+          onClick={() => setAdminCategory("all")}
+        >
+          <LayoutGrid className="h-3.5 w-3.5" />
+          All Modules
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={adminCategory === "platform" ? "default" : "ghost"}
+          className="text-xs h-7 gap-1.5 px-3 rounded-lg"
+          onClick={() => {
+            setAdminCategory("platform");
+            if (!CATEGORY_MAP.platform.tabs.includes(activeTab)) setActiveTab("analytics");
+          }}
+        >
+          <Users className="h-3.5 w-3.5" />
+          Platform & Users
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={adminCategory === "billing" ? "default" : "ghost"}
+          className="text-xs h-7 gap-1.5 px-3 rounded-lg"
+          onClick={() => {
+            setAdminCategory("billing");
+            if (!CATEGORY_MAP.billing.tabs.includes(activeTab)) setActiveTab("billing");
+          }}
+        >
+          <CreditCard className="h-3.5 w-3.5" />
+          Billing & Finance
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={adminCategory === "voice_ai" ? "default" : "ghost"}
+          className="text-xs h-7 gap-1.5 px-3 rounded-lg"
+          onClick={() => {
+            setAdminCategory("voice_ai");
+            if (!CATEGORY_MAP.voice_ai.tabs.includes(activeTab)) setActiveTab("voice-ai");
+          }}
+        >
+          <Brain className="h-3.5 w-3.5" />
+          Voice AI Engine
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant={adminCategory === "settings" ? "default" : "ghost"}
+          className="text-xs h-7 gap-1.5 px-3 rounded-lg"
+          onClick={() => {
+            setAdminCategory("settings");
+            if (!CATEGORY_MAP.settings.tabs.includes(activeTab)) setActiveTab("settings");
+          }}
+        >
+          <Settings className="h-3.5 w-3.5" />
+          System & Settings
+        </Button>
+      </div>
+
       {/* Main Admin Tabs - Menu first */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <div className="relative flex items-center -mx-4 md:-mx-8">
@@ -453,65 +531,85 @@ export default function AdminDashboard() {
             onScroll={checkScrollState}
           >
             <TabsList className="flex gap-1 h-auto w-max min-w-full">
-            <TabsTrigger value="analytics" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-analytics">
-              <BarChart className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">{t("adminDashboard.tabs.analytics")}</span>
-              <span className="sm:hidden">{t("adminDashboard.tabs.stats")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-users">
-              <Users className="h-4 w-4 mr-1 md:mr-2" />
-              {t("adminDashboard.tabs.users")}
-            </TabsTrigger>
-            <TabsTrigger value="contacts" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-contacts">
-              <ContactRound className="h-4 w-4 mr-1 md:mr-2" />
-              {t("adminDashboard.tabs.contacts")}
-            </TabsTrigger>
-            <TabsTrigger value="billing" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-billing">
-              <CreditCard className="h-4 w-4 mr-1 md:mr-2" />
-              {t("adminDashboard.tabs.billing")}
-            </TabsTrigger>
-            <TabsTrigger value="phones" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-phones">
-              <Phone className="h-4 w-4 mr-1 md:mr-2" />
-              {t("adminDashboard.tabs.phones")}
-            </TabsTrigger>
-            <TabsTrigger value="queue" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-batch-jobs">
-              <ListOrdered className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">{t("adminDashboard.tabs.batchJobs")}</span>
-              <span className="sm:hidden">{t("adminDashboard.tabs.jobs")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="calls" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-calls">
-              <Headphones className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">{t("adminDashboard.tabs.callMonitoring")}</span>
-              <span className="sm:hidden">{t("adminDashboard.tabs.calls")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="communications" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-communications">
-              <MessageSquare className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">{t("adminDashboard.tabs.communications")}</span>
-              <span className="sm:hidden">{t("adminDashboard.tabs.comms")}</span>
-            </TabsTrigger>
-            <TabsTrigger value="voice-ai" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-voice-ai">
-              <Brain className="h-4 w-4 mr-1 md:mr-2" />
-              <span className="hidden sm:inline">{t("adminDashboard.tabs.voiceAI")}</span>
-              <span className="sm:hidden">{t("adminDashboard.tabs.voice")}</span>
-            </TabsTrigger>
-            {isCustomVoiceEngineEnabled && (
+            {isTabVisible("analytics") && (
+              <TabsTrigger value="analytics" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-analytics">
+                <BarChart className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">{t("adminDashboard.tabs.analytics")}</span>
+                <span className="sm:hidden">{t("adminDashboard.tabs.stats")}</span>
+              </TabsTrigger>
+            )}
+            {isTabVisible("users") && (
+              <TabsTrigger value="users" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-users">
+                <Users className="h-4 w-4 mr-1 md:mr-2" />
+                {t("adminDashboard.tabs.users")}
+              </TabsTrigger>
+            )}
+            {isTabVisible("contacts") && (
+              <TabsTrigger value="contacts" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-contacts">
+                <ContactRound className="h-4 w-4 mr-1 md:mr-2" />
+                {t("adminDashboard.tabs.contacts")}
+              </TabsTrigger>
+            )}
+            {isTabVisible("billing") && (
+              <TabsTrigger value="billing" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-billing">
+                <CreditCard className="h-4 w-4 mr-1 md:mr-2" />
+                {t("adminDashboard.tabs.billing")}
+              </TabsTrigger>
+            )}
+            {isTabVisible("phones") && (
+              <TabsTrigger value="phones" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-phones">
+                <Phone className="h-4 w-4 mr-1 md:mr-2" />
+                {t("adminDashboard.tabs.phones")}
+              </TabsTrigger>
+            )}
+            {isTabVisible("queue") && (
+              <TabsTrigger value="queue" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-batch-jobs">
+                <ListOrdered className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">{t("adminDashboard.tabs.batchJobs")}</span>
+                <span className="sm:hidden">{t("adminDashboard.tabs.jobs")}</span>
+              </TabsTrigger>
+            )}
+            {isTabVisible("calls") && (
+              <TabsTrigger value="calls" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-calls">
+                <Headphones className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">{t("adminDashboard.tabs.callMonitoring")}</span>
+                <span className="sm:hidden">{t("adminDashboard.tabs.calls")}</span>
+              </TabsTrigger>
+            )}
+            {isTabVisible("communications") && (
+              <TabsTrigger value="communications" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-communications">
+                <MessageSquare className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">{t("adminDashboard.tabs.communications")}</span>
+                <span className="sm:hidden">{t("adminDashboard.tabs.comms")}</span>
+              </TabsTrigger>
+            )}
+            {isTabVisible("voice-ai") && (
+              <TabsTrigger value="voice-ai" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-voice-ai">
+                <Brain className="h-4 w-4 mr-1 md:mr-2" />
+                <span className="hidden sm:inline">{t("adminDashboard.tabs.voiceAI")}</span>
+                <span className="sm:hidden">{t("adminDashboard.tabs.voice")}</span>
+              </TabsTrigger>
+            )}
+            {isCustomVoiceEngineEnabled && isTabVisible("voice-engine-settings") && (
               <TabsTrigger value="voice-engine-settings" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-voice-engine-settings">
                 <Volume2 className="h-4 w-4 mr-1 md:mr-2" />
                 <span className="hidden sm:inline">{t("adminDashboard.tabs.voiceEngine")}</span>
                 <span className="sm:hidden">{t("adminDashboard.tabs.ve")}</span>
               </TabsTrigger>
             )}
-            {(Array.isArray(adminMenuItems) ? adminMenuItems : []).map((item) => (
+            {(adminCategory === "all" || adminCategory === "settings") && (Array.isArray(adminMenuItems) ? adminMenuItems : []).map((item) => (
               <TabsTrigger key={item.id} value={item.id} className="text-xs md:text-sm whitespace-nowrap" data-testid={`tab-${item.id}`}>
                 {item.icon === 'Users' && <Building2 className="h-4 w-4 mr-1 md:mr-2" />}
                 {item.icon === 'Server' && <Server className="h-4 w-4 mr-1 md:mr-2" />}
                 {item.label}
               </TabsTrigger>
             ))}
-            <TabsTrigger value="settings" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-settings">
-              <Settings className="h-4 w-4 mr-1 md:mr-2" />
-              {t("adminDashboard.tabs.settings")}
-            </TabsTrigger>
+            {isTabVisible("settings") && (
+              <TabsTrigger value="settings" className="text-xs md:text-sm whitespace-nowrap" data-testid="tab-settings">
+                <Settings className="h-4 w-4 mr-1 md:mr-2" />
+                {t("adminDashboard.tabs.settings")}
+              </TabsTrigger>
+            )}
           </TabsList>
           </div>
           
@@ -873,9 +971,9 @@ function VoiceAIPanel() {
                   <Server className="h-5 w-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">Master AI Engine (FreeSWITCH Core)</CardTitle>
+                  <CardTitle className="text-lg">Master AI Cloud Engine</CardTitle>
                   <CardDescription>
-                    Self-hosted SIP PBX with Deepgram Aura, Sarvam AI, and Gemini Flash LLM. Zero third-party telephony markups.
+                    Direct WebRTC & WebSocket streaming with Sarvam AI, Deepgram Nova-2, ElevenLabs, and Gemini 2.0 Flash. High-performance voice pipeline.
                   </CardDescription>
                 </div>
               </div>
@@ -886,10 +984,10 @@ function VoiceAIPanel() {
             </div>
           </CardHeader>
           <CardContent className="pt-0 text-sm text-muted-foreground flex flex-wrap gap-4">
-            <div><strong>Audio Routing:</strong> FreeSWITCH ESL Port 8021</div>
+            <div><strong>Audio Routing:</strong> Real-Time WebSockets (Port 443 / SSL)</div>
             <div><strong>Native STT:</strong> Deepgram Nova-2 / Sarvam Saaras</div>
-            <div><strong>Native TTS:</strong> Deepgram Aura / Sarvam Bulbul</div>
-            <div><strong>BYOT Trunks:</strong> Telnyx, Airtel, Tata, Twilio BYOC</div>
+            <div><strong>Native TTS:</strong> Deepgram Aura / Sarvam Bulbul / ElevenLabs</div>
+            <div><strong>Telephony:</strong> Twilio, Plivo, CallHippo, TeleCMI, Exotel, SIP Trunks</div>
           </CardContent>
         </Card>
         <Card>

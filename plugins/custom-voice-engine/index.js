@@ -8621,11 +8621,112 @@ var ElevenLabsTtsProvider = class extends BaseTtsProvider {
   }
 };
 
+// plugins/custom-voice-engine/services/providers/tts/cartesia-tts.provider.ts
+import axios4 from "axios";
+var CARTESIA_TTS_URL = "https://api.cartesia.ai/tts/bytes";
+var CartesiaTtsProvider = class extends BaseTtsProvider {
+  name = "cartesia";
+  async synthesize(text2, config) {
+    const model = config.cartesiaModel || "sonic-english";
+    const voiceId = config.voice || "79a125e8-cd45-4c13-8a67-188112f4dd22";
+    const sampleRate = config.outputFormat?.sampleRate || 8e3;
+    console.log(`[TTS:Cartesia] Synthesizing audio: voiceId="${voiceId}" model="${model}" sampleRate=${sampleRate}`);
+    try {
+      const response = await axios4.post(
+        CARTESIA_TTS_URL,
+        {
+          model_id: model,
+          transcript: text2,
+          voice: {
+            mode: "id",
+            id: voiceId
+          },
+          output_format: {
+            container: "raw",
+            encoding: "pcm_s16le",
+            sample_rate: sampleRate
+          }
+        },
+        {
+          ...keepAliveAxiosConfig,
+          headers: {
+            "X-API-Key": config.apiKey,
+            "Cartesia-Version": "2024-06-10",
+            "Content-Type": "application/json"
+          },
+          responseType: "arraybuffer",
+          timeout: 15e3
+        }
+      );
+      return Buffer.from(response.data);
+    } catch (err) {
+      const errText = err.response?.data ? Buffer.isBuffer(err.response.data) ? err.response.data.toString() : JSON.stringify(err.response.data) : err.message;
+      console.error(`[TTS:Cartesia] Synthesis failed:`, errText);
+      throw new Error(`Cartesia TTS synthesis failed: ${err.message}`);
+    }
+  }
+  async *synthesizeStream(text2, config) {
+    const audio = await this.synthesize(text2, config);
+    const chunkSize = 640;
+    for (let i = 0; i < audio.length; i += chunkSize) {
+      yield audio.subarray(i, Math.min(i + chunkSize, audio.length));
+    }
+  }
+};
+
+// plugins/custom-voice-engine/services/providers/tts/navana-tts.provider.ts
+import axios5 from "axios";
+var NAVANA_TTS_URL = "https://api.navana.ai/v1/tts";
+var NavanaTtsProvider = class extends BaseTtsProvider {
+  name = "navana";
+  async synthesize(text2, config) {
+    const voice = config.voice || config.navanaModel || "bodhi-indic-tts-v1";
+    const language = config.language || "hi-IN";
+    const sampleRate = config.outputFormat?.sampleRate || 8e3;
+    console.log(`[TTS:Navana] Synthesizing audio: voice="${voice}" language="${language}" sampleRate=${sampleRate}`);
+    try {
+      const response = await axios5.post(
+        NAVANA_TTS_URL,
+        {
+          text: text2,
+          voice,
+          language,
+          sample_rate: sampleRate,
+          encoding: "linear16"
+        },
+        {
+          ...keepAliveAxiosConfig,
+          headers: {
+            Authorization: `Bearer ${config.apiKey}`,
+            "Content-Type": "application/json"
+          },
+          responseType: "arraybuffer",
+          timeout: 15e3
+        }
+      );
+      return Buffer.from(response.data);
+    } catch (err) {
+      const errText = err.response?.data ? Buffer.isBuffer(err.response.data) ? err.response.data.toString() : JSON.stringify(err.response.data) : err.message;
+      console.error(`[TTS:Navana] Synthesis failed:`, errText);
+      throw new Error(`Navana AI TTS synthesis failed: ${err.message}`);
+    }
+  }
+  async *synthesizeStream(text2, config) {
+    const audio = await this.synthesize(text2, config);
+    const chunkSize = 640;
+    for (let i = 0; i < audio.length; i += chunkSize) {
+      yield audio.subarray(i, Math.min(i + chunkSize, audio.length));
+    }
+  }
+};
+
 // plugins/custom-voice-engine/services/providers/tts/tts-provider.factory.ts
 var providerRegistry = {
   deepgram: DeepgramTtsProvider,
   sarvam: SarvamTtsProvider,
-  elevenlabs: ElevenLabsTtsProvider
+  elevenlabs: ElevenLabsTtsProvider,
+  cartesia: CartesiaTtsProvider,
+  navana: NavanaTtsProvider
 };
 var TtsProviderFactory = class {
   static create(provider) {
@@ -8978,7 +9079,7 @@ execute-app-name: ${app}`;
 };
 
 // plugins/custom-voice-engine/index.ts
-import * as os2 from "os";
+import * as os3 from "os";
 
 // plugins/custom-voice-engine/routes/admin-settings.routes.ts
 init_db();
@@ -10811,6 +10912,8 @@ function createAgentsRouter() {
 // plugins/custom-voice-engine/services/audio-pipeline/ws-audio-server.ts
 import { WebSocketServer, WebSocket as WebSocket4 } from "ws";
 import fs3 from "fs";
+import os2 from "os";
+import path3 from "path";
 
 // plugins/custom-voice-engine/services/audio-pipeline/audio-session.ts
 init_db();
@@ -11223,32 +11326,32 @@ function chunkText(text2, maxChars = MAX_CHUNK_CHARS, overlapChars = 200) {
 }
 function parseJsonToChunks(data) {
   const chunks = [];
-  function traverse(node, path3 = "") {
+  function traverse(node, path4 = "") {
     if (node === null || node === void 0) return;
     if (Array.isArray(node)) {
       if (node.length > 0 && typeof node[0] === "object" && node[0] !== null) {
         for (const item of node) {
-          const itemText = objectToReadableText(item, path3);
+          const itemText = objectToReadableText(item, path4);
           if (itemText) chunks.push(itemText);
         }
       } else {
-        chunks.push(`${path3}: ${node.join(", ")}`);
+        chunks.push(`${path4}: ${node.join(", ")}`);
       }
     } else if (typeof node === "object") {
       const keys = Object.keys(node);
       const hasNested = keys.some((k) => typeof node[k] === "object" && node[k] !== null);
       if (!hasNested && keys.length > 0) {
-        const itemText = objectToReadableText(node, path3);
+        const itemText = objectToReadableText(node, path4);
         if (itemText) chunks.push(itemText);
       } else {
         for (const key of keys) {
           const cleanKey = key.replace(/_/g, " ");
-          const subPath = path3 ? `${path3} > ${cleanKey}` : cleanKey;
+          const subPath = path4 ? `${path4} > ${cleanKey}` : cleanKey;
           traverse(node[key], subPath);
         }
       }
     } else {
-      chunks.push(`${path3}: ${node}`);
+      chunks.push(`${path4}: ${node}`);
     }
   }
   function objectToReadableText(obj, prefix) {
@@ -11723,12 +11826,12 @@ var ToolExecutor = class _ToolExecutor {
         };
       }
       const fs4 = await import("fs");
-      const path3 = await import("path");
+      const path4 = await import("path");
       const { pathToFileURL } = await import("url");
       const canImportTs = process.execArgv.join(" ").includes("tsx") || process.execArgv.join(" ").includes("ts-node") || !!process.env.TS_NODE_PROJECT;
-      let emailServicePath = path3.resolve(process.cwd(), "plugins/messaging/services/email-template.service.ts");
+      let emailServicePath = path4.resolve(process.cwd(), "plugins/messaging/services/email-template.service.ts");
       if (!canImportTs || !fs4.existsSync(emailServicePath)) {
-        emailServicePath = path3.resolve(process.cwd(), "plugins/messaging/services/email-template.service.js");
+        emailServicePath = path4.resolve(process.cwd(), "plugins/messaging/services/email-template.service.js");
       }
       const { EmailTemplateService } = await import(pathToFileURL(emailServicePath).href);
       const emailService = new EmailTemplateService();
@@ -12456,7 +12559,7 @@ var SttProviderFactory = class {
 };
 
 // plugins/custom-voice-engine/services/providers/llm/openrouter-llm.provider.ts
-import axios4 from "axios";
+import axios6 from "axios";
 
 // plugins/custom-voice-engine/services/providers/llm/llm-provider.interface.ts
 var BaseLlmProvider = class {
@@ -12539,7 +12642,7 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
     }
     try {
       console.log(`[LLM:OpenRouter/Direct] Sending tools payload to ${endpoint.url} (model=${endpoint.model}):`, JSON.stringify(payload.tools, null, 2));
-      const response = await axios4.post(endpoint.url, payload, {
+      const response = await axios6.post(endpoint.url, payload, {
         ...keepAliveAxiosConfig,
         headers: {
           Authorization: `Bearer ${config.apiKey}`,
@@ -12614,7 +12717,7 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
     resetInactivityTimer();
     try {
       console.log(`[LLM:OpenRouter/Direct] Sending tools payload (stream) to ${endpoint.url} (model=${endpoint.model}):`, JSON.stringify(payload.tools, null, 2));
-      const response = await axios4.post(endpoint.url, payload, {
+      const response = await axios6.post(endpoint.url, payload, {
         ...keepAliveAxiosConfig,
         headers: {
           Authorization: `Bearer ${config.apiKey}`,
@@ -12702,7 +12805,7 @@ var OpenRouterLlmProvider = class extends BaseLlmProvider {
 };
 
 // plugins/custom-voice-engine/services/providers/llm/gemini-llm.provider.ts
-import axios5 from "axios";
+import axios7 from "axios";
 function mapToolsToGemini(tools2) {
   if (!tools2 || tools2.length === 0) return void 0;
   return [
@@ -12842,7 +12945,7 @@ var GeminiLlmProvider = class extends BaseLlmProvider {
     }
     try {
       console.log(`[Gemini] Direct complete request to model: ${model}`);
-      const response = await axios5.post(
+      const response = await axios7.post(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.apiKey}`,
         payload,
         {
@@ -12917,7 +13020,7 @@ var GeminiLlmProvider = class extends BaseLlmProvider {
       payload.tools = geminiTools;
     }
     console.log(`[Gemini] Direct stream request to model: ${model}`);
-    const response = await axios5.post(
+    const response = await axios7.post(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${config.apiKey}`,
       payload,
       {
@@ -14075,12 +14178,12 @@ var AudioSession = class extends EventEmitter2 {
       this.emit("transfer", targetNumber);
       return;
     }
-    const instantAnswer = await this.masterAiService.matchInstantFaq(
+    const matchedFaq = this.masterAiService.matchInstantFaq(
       text2,
-      this.agentConfig.id,
       masterAiConfig.instantFaqs
     );
-    if (instantAnswer) {
+    if (matchedFaq && matchedFaq.answer) {
+      const instantAnswer = matchedFaq.answer;
       console.log(`[AudioSession:${this.id}] [MasterAI] Instant FAQ Cache HIT: "${instantAnswer}"`);
       this.isProcessingLlm = false;
       this.conversationMessages.push({ role: "user", content: text2 });
@@ -15018,7 +15121,7 @@ var AudioWebSocketServer = class {
           wavHeader.write("data", 36);
           wavHeader.writeUInt32LE(dataSize, 40);
           const wavBuffer = Buffer.concat([wavHeader, audio]);
-          const filePath = `/tmp/${sessionId}_tts_${Date.now()}_${audioPlayCount}.wav`;
+          const filePath = path3.join(os2.tmpdir(), `${sessionId}_tts_${Date.now()}_${audioPlayCount}.wav`);
           await fs3.promises.writeFile(filePath, wavBuffer);
           console.log(`[AudioWS] Wrote TTS audio to ${filePath} (${wavBuffer.length} bytes), playing via ESL uuid_broadcast...`);
           for (const esl of this.eslConnections) {
@@ -16177,7 +16280,7 @@ function getContainerIp2() {
   if (process.env.PUBLIC_IP) {
     return process.env.PUBLIC_IP;
   }
-  const interfaces = os2.networkInterfaces();
+  const interfaces = os3.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
     for (const net2 of interfaces[name] || []) {
       if (net2.family === "IPv4" && !net2.internal) {
@@ -16393,9 +16496,9 @@ function registerAiVoiceEngineRoutes(app, options) {
   }
   (async () => {
     try {
-      const os3 = await import("os");
+      const os4 = await import("os");
       const getContainerIp3 = () => {
-        const interfaces = os3.networkInterfaces();
+        const interfaces = os4.networkInterfaces();
         for (const name of Object.keys(interfaces)) {
           for (const net2 of interfaces[name] || []) {
             if (net2.family === "IPv4" && !net2.internal) {
