@@ -298,7 +298,7 @@ export const phoneNumbers = pgTable("phone_numbers", {
 export const incomingConnections = pgTable("incoming_connections", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  agentId: varchar("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }), // Must be type='incoming'
+  agentId: varchar("agent_id").notNull(), // Supports standard agents (agents.id) or Custom Voice Engine agents (ve_voice_agents.id)
   phoneNumberId: varchar("phone_number_id").notNull().references(() => phoneNumbers.id, { onDelete: "cascade" }).unique(), // One connection per phone number
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

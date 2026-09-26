@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -244,6 +244,28 @@ app.use((req, res, next) => {
     await db.execute(sql`UPDATE phone_numbers SET status = 'active' WHERE status = 'assigned'`);
   } catch (error) {
     console.error('⚠️ [Startup] Phone status normalization failed (non-fatal):', error);
+  }
+
+  // Telephony: Relax incoming_connections.agent_id foreign key to allow Custom Voice Engine agents
+  try {
+    await db.execute(sql`
+      DO $$
+      DECLARE r RECORD;
+      BEGIN
+        FOR r IN (
+          SELECT conname 
+          FROM pg_constraint 
+          WHERE conrelid = 'incoming_connections'::regclass 
+            AND contype = 'f' 
+            AND pg_get_constraintdef(oid) LIKE '%(agent_id) REFERENCES agents%'
+        ) LOOP
+          EXECUTE 'ALTER TABLE incoming_connections DROP CONSTRAINT ' || quote_ident(r.conname);
+        END LOOP;
+      END $$;
+    `);
+    console.log('✅ [Startup] Relaxed incoming_connections agent_id FK for Custom Voice Engine compatibility');
+  } catch (error: any) {
+    console.warn('⚠️ [Startup] incoming_connections FK check (non-fatal):', error.message);
   }
 
   // One-time migration: auto-enable gateways that have credentials but no explicit *_enabled flag

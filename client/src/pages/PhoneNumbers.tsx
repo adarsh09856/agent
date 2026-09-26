@@ -605,7 +605,7 @@ export default function PhoneNumbers() {
             data-testid="button-connect-phone-number"
           >
             <Phone className="h-4 w-4" />
-            + Connect Phone Number
+            Connect Phone Number
           </Button>
           <Button
             onClick={() => {
@@ -787,7 +787,7 @@ export default function PhoneNumbers() {
             className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm gap-1.5 self-start sm:self-auto"
           >
             <Plus className="h-4 w-4" />
-            + Connect Phone Number
+            Connect Phone Number
           </Button>
         </div>
 

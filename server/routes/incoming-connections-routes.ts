@@ -282,6 +282,25 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
       return res.status(404).json({ message: "Phone number not found or not owned by user" });
     }
 
+    // Relax any legacy foreign key constraint on incoming_connections.agent_id
+    try {
+      await db.execute(sql`
+        DO $$
+        DECLARE r RECORD;
+        BEGIN
+          FOR r IN (
+            SELECT conname 
+            FROM pg_constraint 
+            WHERE conrelid = 'incoming_connections'::regclass 
+              AND contype = 'f' 
+              AND pg_get_constraintdef(oid) LIKE '%(agent_id) REFERENCES agents%'
+          ) LOOP
+            EXECUTE 'ALTER TABLE incoming_connections DROP CONSTRAINT ' || quote_ident(r.conname);
+          END LOOP;
+        END $$;
+      `);
+    } catch (e: any) {}
+
     // If phone number is already connected, reassign / update the connection
     const existingConnection = await db
       .select()
@@ -295,11 +314,13 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
         .set({ agentId, updatedAt: new Date() })
         .where(eq(incomingConnections.id, existingConnection[0].id));
 
-      if (isCveAgent) {
+      if (isCveAgent || !agent[0]?.elevenLabsAgentId) {
         try {
           const domain = process.env.BASE_URL || getDomain();
           const incomingWebhookUrl = `${domain}/api/webhooks/twilio/incoming`;
-          await twilioService.updatePhoneNumber(phoneNumber[0].twilioSid, { voiceUrl: incomingWebhookUrl });
+          if (phoneNumber[0].twilioSid) {
+            await twilioService.updatePhoneNumber(phoneNumber[0].twilioSid, { voiceUrl: incomingWebhookUrl });
+          }
         } catch (webhookErr) {}
       }
 
@@ -322,8 +343,8 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
       });
     }
 
-    // If it's a Custom Voice Engine agent, create connection directly
-    if (isCveAgent) {
+    // If it's a Custom Voice Engine agent OR an agent without ElevenLabs sync, create connection directly
+    if (isCveAgent || !agent[0]?.elevenLabsAgentId) {
       const [newConn] = await db
         .insert(incomingConnections)
         .values({
@@ -336,10 +357,12 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
       try {
         const domain = process.env.BASE_URL || getDomain();
         const incomingWebhookUrl = `${domain}/api/webhooks/twilio/incoming`;
-        await twilioService.updatePhoneNumber(phoneNumber[0].twilioSid, { voiceUrl: incomingWebhookUrl });
-        console.log(`✅ [CVE Incoming] Configured Twilio webhook for ${phoneNumber[0].phoneNumber}`);
+        if (phoneNumber[0].twilioSid) {
+          await twilioService.updatePhoneNumber(phoneNumber[0].twilioSid, { voiceUrl: incomingWebhookUrl });
+          console.log(`✅ [Incoming Connection] Configured Twilio webhook for ${phoneNumber[0].phoneNumber}`);
+        }
       } catch (webhookErr: any) {
-        console.warn(`⚠️ [CVE Incoming] Webhook update warning: ${webhookErr.message}`);
+        console.warn(`⚠️ [Incoming Connection] Webhook update warning: ${webhookErr.message}`);
       }
 
       return res.status(201).json({
@@ -350,7 +373,7 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
         agent: {
           id: agentId,
           name: agentName,
-          telephonyProvider: 'custom-voice-engine',
+          telephonyProvider: isCveAgent ? 'custom-voice-engine' : (agent[0]?.telephonyProvider || 'twilio'),
         },
         phoneNumber: {
           id: phoneNumber[0].id,
@@ -696,7 +719,7 @@ router.post("/", authenticateHybrid, async (req: AuthRequest, res) => {
     res.status(201).json(fullConnection[0]);
   } catch (error: any) {
     console.error("Error creating incoming connection:", error);
-    res.status(500).json({ message: "Failed to create incoming connection" });
+    res.status(500).json({ message: error.message || "Failed to create incoming connection" });
   }
 });
 
