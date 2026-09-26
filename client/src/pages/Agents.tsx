@@ -3816,7 +3816,27 @@ export default function Agents() {
                       </div>
                       <Select
                         value={formData.language}
-                        onValueChange={(value) => setFormData({ ...formData, language: value })}
+                        onValueChange={(value) => {
+                          const sarvamLangs = ["hi", "bn", "kn", "ml", "mr", "or", "pa", "ta", "te", "gu"];
+                          const updates: any = { language: value };
+                          if (formData.telephonyProvider === "custom-voice-engine") {
+                            const isIndian = sarvamLangs.includes(value);
+                            if (isIndian) {
+                              updates.sttProvider = "sarvam";
+                              updates.ttsProvider = "sarvam";
+                              updates.sttModel = cveSettings?.data?.stt?.sarvamAllowedModels?.[0] || 'saaras:v3';
+                              updates.ttsModel = cveSettings?.data?.tts?.sarvamAllowedModels?.[0] || 'bulbul:v3';
+                              // Select matching Sarvam voice for this language if available
+                              const matchingVoice = customVoiceEngineVoices.find(
+                                (v: any) => v.provider === "sarvam" && v.languages?.includes(value)
+                              ) || customVoiceEngineVoices.find((v: any) => v.provider === "sarvam");
+                              if (matchingVoice) {
+                                updates.voice = matchingVoice.value;
+                              }
+                            }
+                          }
+                          setFormData({ ...formData, ...updates });
+                        }}
                       >
                         <SelectTrigger id="language" data-testid="select-language">
                           <SelectValue />
@@ -3826,35 +3846,39 @@ export default function Agents() {
                             .filter((lang) => {
                               if (formData.telephonyProvider === "custom-voice-engine") {
                                 const sarvamLangs = ["en", "hi", "bn", "kn", "ml", "mr", "or", "pa", "ta", "te", "gu"];
-                                // Deepgram STT supports many, Deepgram TTS supports only English
-                                const deepgramSttLangs = ["en", "fr", "de", "hi", "pt", "es", "it", "ja", "ko", "nl", "pl", "ru", "sv", "tr", "uk", "zh", "ta", "te", "th"];
-                                const deepgramTtsLangs = ["en", "es", "de", "fr", "nl", "it", "ja"];
-
-                                // Determine STT languages
-                                const sttLangs = formData.sttProvider === "sarvam" ? sarvamLangs : deepgramSttLangs;
-                                // Determine TTS languages
-                                const ttsLangs = formData.ttsProvider === "sarvam" ? sarvamLangs : deepgramTtsLangs;
-
-                                // The language must be supported by BOTH STT and TTS
-                                return sttLangs.includes(lang.value) && ttsLangs.includes(lang.value);
+                                const deepgramLangs = ["en", "es", "de", "fr", "nl", "it", "ja", "pt", "ru", "ko", "zh", "pl", "tr", "sv"];
+                                return sarvamLangs.includes(lang.value) || deepgramLangs.includes(lang.value);
                               }
 
                               const isElevenLabs = formData.telephonyProvider === "twilio" || formData.telephonyProvider === "elevenlabs-sip";
                               const providerType = isElevenLabs ? "elevenlabs" : "openai";
                               return isProviderSupported(lang.value, providerType);
                             })
-                            .map((lang) => (
-                              <SelectItem
-                                key={lang.value}
-                                value={lang.value}
-                              >
-                                <LanguageOptionLabel
-                                  label={t(`agents.languages.${lang.value}`, { defaultValue: lang.label })}
-                                  providers={formData.telephonyProvider === "custom-voice-engine" ? [] : lang.providers}
-                                  compact
-                                />
-                              </SelectItem>
-                            ))}
+                            .map((lang) => {
+                              const sarvamLangs = ["hi", "bn", "kn", "ml", "mr", "or", "pa", "ta", "te", "gu"];
+                              let displayProviders = lang.providers;
+                              if (formData.telephonyProvider === "custom-voice-engine") {
+                                if (sarvamLangs.includes(lang.value)) {
+                                  displayProviders = ["sarvam"];
+                                } else if (lang.value === "en") {
+                                  displayProviders = ["deepgram", "sarvam"];
+                                } else {
+                                  displayProviders = ["deepgram"];
+                                }
+                              }
+                              return (
+                                <SelectItem
+                                  key={lang.value}
+                                  value={lang.value}
+                                >
+                                  <LanguageOptionLabel
+                                    label={t(`agents.languages.${lang.value}`, { defaultValue: lang.label })}
+                                    providers={displayProviders}
+                                    compact
+                                  />
+                                </SelectItem>
+                              );
+                            })}
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-muted-foreground mt-1.5 flex items-start gap-1">
@@ -4234,20 +4258,18 @@ export default function Agents() {
                         </div>
                       )}
 
-                      {formData.telephonyProvider !== "custom-voice-engine" && (
-                        <PromptTemplatesLibrary
-                          mode="select"
-                          onSelectTemplate={(template) => {
-                            setFormData({
-                              ...formData,
-                              systemPrompt: template.systemPrompt,
-                              firstMessage: template.firstMessage || formData.firstMessage,
-                              voiceTone: template.suggestedVoiceTone || formData.voiceTone,
-                              personality: template.suggestedPersonality || formData.personality,
-                            });
-                          }}
-                        />
-                      )}
+                      <PromptTemplatesLibrary
+                        mode="select"
+                        onSelectTemplate={(template) => {
+                          setFormData({
+                            ...formData,
+                            systemPrompt: template.systemPrompt,
+                            firstMessage: template.firstMessage || formData.firstMessage,
+                            voiceTone: template.suggestedVoiceTone || formData.voiceTone,
+                            personality: template.suggestedPersonality || formData.personality,
+                          });
+                        }}
+                      />
 
                       <div className="space-y-2">
                         <div className="flex items-center">

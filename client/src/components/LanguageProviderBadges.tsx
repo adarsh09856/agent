@@ -10,6 +10,7 @@ export function LanguageProviderBadges({ providers, compact = false }: LanguageP
   const showElevenLabs = providers.includes("elevenlabs");
   const showOpenAI = providers.includes("openai");
   const showDeepgram = providers.includes("deepgram");
+  const showSarvam = providers.includes("sarvam");
   
   return (
     <span className="inline-flex gap-1 ml-2">
@@ -38,6 +39,15 @@ export function LanguageProviderBadges({ providers, compact = false }: LanguageP
           data-testid="badge-provider-deepgram"
         >
           {compact ? "DG" : "Deepgram"}
+        </Badge>
+      )}
+      {showSarvam && (
+        <Badge 
+          variant="outline" 
+          className="bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700"
+          data-testid="badge-provider-sarvam"
+        >
+          {compact ? "SV" : "Sarvam AI"}
         </Badge>
       )}
     </span>

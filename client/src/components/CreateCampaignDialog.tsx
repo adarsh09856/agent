@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -554,22 +554,77 @@ export function CreateCampaignDialog({ open, onOpenChange }: CreateCampaignDialo
                     ) : selectedAgent?.telephonyProvider === 'custom-voice-engine' ? (
                       <>
                         <Select 
-                          value={formData.sipPhoneNumberId} 
-                          onValueChange={(value) => setFormData({ ...formData, sipPhoneNumberId: value, phoneNumberId: '', plivoPhoneNumberId: '' })}
+                          value={
+                            formData.phoneNumberId 
+                              ? `twilio:${formData.phoneNumberId}` 
+                              : formData.sipPhoneNumberId 
+                                ? `sip:${formData.sipPhoneNumberId}` 
+                                : formData.plivoPhoneNumberId 
+                                  ? `plivo:${formData.plivoPhoneNumberId}` 
+                                  : ""
+                          } 
+                          onValueChange={(value) => {
+                            if (value.startsWith('twilio:')) {
+                              setFormData({ ...formData, phoneNumberId: value.replace('twilio:', ''), sipPhoneNumberId: '', plivoPhoneNumberId: '' });
+                            } else if (value.startsWith('sip:')) {
+                              setFormData({ ...formData, sipPhoneNumberId: value.replace('sip:', ''), phoneNumberId: '', plivoPhoneNumberId: '' });
+                            } else if (value.startsWith('plivo:')) {
+                              setFormData({ ...formData, plivoPhoneNumberId: value.replace('plivo:', ''), phoneNumberId: '', sipPhoneNumberId: '' });
+                            }
+                          }}
                         >
                           <SelectTrigger data-testid="select-phone">
-                            <SelectValue placeholder={userSipPhoneNumbers.length === 0 ? "No Custom SIP phone numbers available" : "Select a Custom SIP phone number"} />
+                            <SelectValue placeholder={
+                              (phoneNumbers.length === 0 && userSipPhoneNumbers.length === 0 && sipPhoneNumbers.length === 0 && plivoPhoneNumbers.length === 0)
+                                ? "No phone numbers available" 
+                                : "Select a phone number (Twilio, SIP, or Plivo)"
+                            } />
                           </SelectTrigger>
                           <SelectContent>
-                            {userSipPhoneNumbers.map((phone) => (
-                              <SelectItem key={phone.id} value={phone.id}>
-                                {phone.phone_number} {phone.label ? `(${phone.label})` : ''} {phone.gateway_name ? `via ${phone.gateway_name}` : ''}
-                              </SelectItem>
-                            ))}
+                            {phoneNumbers.length > 0 && (
+                              <SelectGroup>
+                                <SelectLabel className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Twilio / Cloud Numbers</SelectLabel>
+                                {phoneNumbers.map((phone) => (
+                                  <SelectItem key={`twilio-${phone.id}`} value={`twilio:${phone.id}`}>
+                                    {phone.friendlyName || phone.phoneNumber} {phone.friendlyName ? `(${phone.phoneNumber})` : ''} — Twilio
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            )}
+                            {userSipPhoneNumbers.length > 0 && (
+                              <SelectGroup>
+                                <SelectLabel className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Custom SIP Numbers</SelectLabel>
+                                {userSipPhoneNumbers.map((phone) => (
+                                  <SelectItem key={`user-sip-${phone.id}`} value={`sip:${phone.id}`}>
+                                    {phone.phone_number} {phone.label ? `(${phone.label})` : ''} {phone.gateway_name ? `via ${phone.gateway_name}` : ''} — SIP
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            )}
+                            {sipPhoneNumbers.length > 0 && (
+                              <SelectGroup>
+                                <SelectLabel className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">SIP Trunks</SelectLabel>
+                                {sipPhoneNumbers.map((phone) => (
+                                  <SelectItem key={`std-sip-${phone.id}`} value={`sip:${phone.id}`}>
+                                    {phone.phoneNumber} {phone.label ? `(${phone.label})` : ''} — SIP Trunk
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            )}
+                            {plivoPhoneNumbers.length > 0 && (
+                              <SelectGroup>
+                                <SelectLabel className="font-semibold text-xs text-muted-foreground uppercase tracking-wider">Plivo Numbers</SelectLabel>
+                                {plivoPhoneNumbers.map((phone) => (
+                                  <SelectItem key={`plivo-${phone.id}`} value={`plivo:${phone.id}`}>
+                                    {phone.friendlyName || phone.phoneNumber} — Plivo
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            )}
                           </SelectContent>
                         </Select>
-                        {userSipPhoneNumbers.length === 0 && (
-                          <p className="text-sm text-muted-foreground">No Custom SIP phone numbers available. Import one in the Phone Numbers section first.</p>
+                        {phoneNumbers.length === 0 && userSipPhoneNumbers.length === 0 && sipPhoneNumbers.length === 0 && plivoPhoneNumbers.length === 0 && (
+                          <p className="text-sm text-muted-foreground">No phone numbers available. Purchase or import a phone number in the Phone Numbers section first.</p>
                         )}
                       </>
                     ) : (

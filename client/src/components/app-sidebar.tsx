@@ -83,7 +83,6 @@ export function AppSidebar() {
   const telephonyItems = [
     { title: t('nav.allContacts'), url: "/app/contacts", icon: UserCheck, iconColor: "text-brand" },
     { title: t('nav.phoneNumbers', 'Telephony & Numbers'), url: "/app/phone-numbers", icon: Phone, iconColor: "text-emerald-500" },
-    { title: t('nav.voices', 'Voice Library'), url: "/app/voices", icon: Mic, iconColor: "text-cyan-500" },
     { title: t('nav.recordings', 'Recordings & Audio'), url: "/app/recordings", icon: FileAudio, iconColor: "text-amber-500" },
   ];
 

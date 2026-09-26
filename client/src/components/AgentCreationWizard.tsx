@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -949,22 +949,40 @@ export function AgentCreationWizard({ open, onOpenChange, onSuccess }: AgentCrea
                     <SelectContent>
                       {SUPPORTED_LANGUAGES
                       .filter((lang) => {
+                        if (formData.telephonyProvider === "custom-voice-engine") {
+                          const sarvamLangs = ["en", "hi", "bn", "kn", "ml", "mr", "or", "pa", "ta", "te", "gu"];
+                          const deepgramLangs = ["en", "es", "de", "fr", "nl", "it", "ja", "pt", "ru", "ko", "zh", "pl", "tr", "sv"];
+                          return sarvamLangs.includes(lang.value) || deepgramLangs.includes(lang.value);
+                        }
                         const isElevenLabs = formData.telephonyProvider === "twilio" || formData.telephonyProvider === "elevenlabs-sip";
                         const providerType = isElevenLabs ? "elevenlabs" : "openai";
                         return isProviderSupported(lang.value, providerType);
                       })
-                      .map((lang) => (
+                      .map((lang) => {
+                        const sarvamLangs = ["hi", "bn", "kn", "ml", "mr", "or", "pa", "ta", "te", "gu"];
+                        let displayProviders = lang.providers;
+                        if (formData.telephonyProvider === "custom-voice-engine") {
+                          if (sarvamLangs.includes(lang.value)) {
+                            displayProviders = ["sarvam"];
+                          } else if (lang.value === "en") {
+                            displayProviders = ["deepgram", "sarvam"];
+                          } else {
+                            displayProviders = ["deepgram"];
+                          }
+                        }
+                        return (
                           <SelectItem 
                             key={lang.value} 
                             value={lang.value}
                           >
                             <LanguageOptionLabel 
                               label={t(`agents.languages.${lang.value}`, { defaultValue: lang.label })} 
-                              providers={lang.providers} 
+                              providers={displayProviders} 
                               compact 
                             />
                           </SelectItem>
-                      ))}
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
