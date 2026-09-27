@@ -14,6 +14,8 @@ const providerRegistry: Record<LlmProvider, new () => LlmProviderInterface> = {
   openai: OpenRouterLlmProvider,
   groq: OpenRouterLlmProvider,
   deepseek: OpenRouterLlmProvider,
+  cerebras: OpenRouterLlmProvider,
+  anthropic: OpenRouterLlmProvider,
 };
 
 export class LlmProviderFactory {

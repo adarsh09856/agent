@@ -197,7 +197,7 @@ export function createModelConfigurationsRoutes(): Router {
           break;
         case 'gemini':
         case 'google':
-          testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash?key=${key}`;
+          testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash?key=${key}`;
           headers = {};
           break;
         case 'openrouter':

@@ -219,6 +219,17 @@ export const customVoiceEngineVoices = [
   { value: "abhilash", label: "Abhilash (Sarvam)", description: "Male — authoritative", provider: "sarvam" as const, model: "bulbul:v2" as const },
   { value: "karun", label: "Karun (Sarvam)", description: "Male — conversational", provider: "sarvam" as const, model: "bulbul:v2" as const },
   { value: "hitesh", label: "Hitesh (Sarvam)", description: "Male — professional", provider: "sarvam" as const, model: "bulbul:v2" as const },
+
+  // Cartesia Sonic Voices
+  { value: "sonic-katie", label: "Katie (Cartesia Sonic)", description: "English (US) - Female (Ultra-Low Latency 90ms)", provider: "cartesia" as const },
+  { value: "sonic-barbershop", label: "British Executive (Cartesia Sonic)", description: "English (UK) - Male (Sub-90ms)", provider: "cartesia" as const },
+  { value: "sonic-calm", label: "Sarah Calm (Cartesia Sonic)", description: "English (US) - Female", provider: "cartesia" as const },
+
+  // Navana Bodhi Voices
+  { value: "navana-aarav", label: "Aarav (Navana Bodhi)", description: "Hindi / Hinglish - Male", provider: "navana" as const },
+  { value: "navana-diya", label: "Diya (Navana Bodhi)", description: "Hindi / English - Female", provider: "navana" as const },
+  { value: "navana-karthik", label: "Karthik (Navana Bodhi)", description: "Tamil - Male", provider: "navana" as const },
+  { value: "navana-sravani", label: "Sravani (Navana Bodhi)", description: "Telugu - Female", provider: "navana" as const },
 ];
 
 interface Voice {
@@ -329,6 +340,8 @@ export const UNCAPPED_CVE_MODELS = [
   // Google Gemini Models
   { id: "gemini-2.0-flash", name: "Google Gemini 2.0 Flash (Recommended)", provider: "Google", desc: "Ultra-low latency, lowest cost ($0.10/1M tokens)", group: "Google Gemini" },
   { id: "gemini-2.0-flash-lite", name: "Google Gemini 2.0 Flash-Lite", provider: "Google", desc: "Fastest response for high-volume calls", group: "Google Gemini" },
+  { id: "gemini-2.5-flash", name: "Google Gemini 2.5 Flash", provider: "Google", desc: "Next-gen flagship Flash with enhanced agentic reasoning", group: "Google Gemini" },
+  { id: "gemini-2.5-flash-lite", name: "Google Gemini 2.5 Flash-Lite", provider: "Google", desc: "Ultra-fast next-gen lightweight voice model", group: "Google Gemini" },
   { id: "gemini-1.5-flash", name: "Google Gemini 1.5 Flash", provider: "Google", desc: "Proven high reliability and speed", group: "Google Gemini" },
   { id: "gemini-1.5-pro", name: "Google Gemini 1.5 Pro", provider: "Google", desc: "Deep reasoning & document context", group: "Google Gemini" },
   { id: "gemini-2.0-pro", name: "Google Gemini 2.0 Pro", provider: "Google", desc: "Frontier multimodal intelligence", group: "Google Gemini" },
@@ -352,6 +365,10 @@ export const UNCAPPED_CVE_MODELS = [
   { id: "groq/llama-3.3-70b-versatile", name: "Groq Llama 3.3 70B Versatile", provider: "Groq", desc: "280 tokens/sec, near-instant answers", group: "Groq / Meta Llama" },
   { id: "groq/llama-3.1-8b-instant", name: "Groq Llama 3.1 8B Instant", provider: "Groq", desc: "Sub-100ms micro-tasks & high concurrency", group: "Groq / Meta Llama" },
 
+  // Cerebras LPU Models (Extreme Speed)
+  { id: "cerebras/llama3.1-70b", name: "Cerebras Llama 3.1 70B", provider: "Cerebras", desc: "Extreme inference speed on Cerebras CS-3", group: "Cerebras" },
+  { id: "cerebras/llama3.1-8b", name: "Cerebras Llama 3.1 8B", provider: "Cerebras", desc: "Instant token streaming for high-speed voice turns", group: "Cerebras" },
+
   // Sarvam AI (Indian Languages)
   { id: "sarvam-2b-v0.5", name: "Sarvam 2B (Indic LLM)", provider: "Sarvam AI", desc: "Native Hindi, Tamil, Telugu, Kannada reasoning", group: "Sarvam AI" },
 ];
@@ -359,6 +376,8 @@ export const UNCAPPED_CVE_MODELS = [
 export const CVE_LLM_COSTS: Record<string, number> = {
   "gemini-2.0-flash": 0.002,
   "gemini-2.0-flash-lite": 0.0015,
+  "gemini-2.5-flash": 0.0025,
+  "gemini-2.5-flash-lite": 0.001,
   "gemini-1.5-flash": 0.002,
   "gemini-1.5-pro": 0.015,
   "gemini-2.0-pro": 0.02,
@@ -373,6 +392,8 @@ export const CVE_LLM_COSTS: Record<string, number> = {
   "deepseek/deepseek-r1": 0.008,
   "groq/llama-3.3-70b-versatile": 0.003,
   "groq/llama-3.1-8b-instant": 0.001,
+  "cerebras/llama3.1-70b": 0.003,
+  "cerebras/llama3.1-8b": 0.001,
   "sarvam-2b-v0.5": 0.002,
 };
 
@@ -2834,7 +2855,7 @@ export default function Agents() {
                                     <SelectContent>
                                       {allowedTtsProviders.map((p) => (
                                         <SelectItem key={p} value={p}>
-                                          {p === 'deepgram' ? 'Deepgram' : 'Sarvam AI'}
+                                          {p === 'deepgram' ? 'Deepgram' : p === 'sarvam' ? 'Sarvam AI' : p === 'cartesia' ? 'Cartesia Sonic' : p === 'navana' ? 'Navana Bodhi' : p === 'elevenlabs' ? 'ElevenLabs' : p}
                                         </SelectItem>
                                       ))}
                                     </SelectContent>
@@ -3610,11 +3631,11 @@ export default function Agents() {
                                     <SelectValue placeholder="Select TTS Provider" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {allowedTtsProviders.map((p) => (
-                                      <SelectItem key={p} value={p}>
-                                        {p === 'deepgram' ? 'Deepgram' : p === 'sarvam' ? 'Sarvam AI' : 'ElevenLabs'}
-                                      </SelectItem>
-                                    ))}
+                                      {allowedTtsProviders.map((p) => (
+                                        <SelectItem key={p} value={p}>
+                                          {p === 'deepgram' ? 'Deepgram' : p === 'sarvam' ? 'Sarvam AI' : p === 'cartesia' ? 'Cartesia Sonic' : p === 'navana' ? 'Navana Bodhi' : p === 'elevenlabs' ? 'ElevenLabs' : p}
+                                        </SelectItem>
+                                      ))}
                                   </SelectContent>
                                 </Select>
                               </div>

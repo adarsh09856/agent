@@ -223,6 +223,18 @@ export function createUserProviderCredentialsRoutes(ctx: RouteContext): Router {
           throw new Error(`OpenAI API returned ${oaiRes.status}: ${oaiRes.statusText}`);
         }
         verified = true;
+      } else if (provider === 'plivo') {
+        if (!accountId || !apiKey) {
+          return res.status(400).json({ success: false, error: "Plivo Auth ID and Auth Token required" });
+        }
+        const authHeader = Buffer.from(`${accountId}:${apiKey}`).toString('base64');
+        const plivoRes = await fetch(`https://api.plivo.com/v1/Account/${accountId}/`, {
+          headers: { Authorization: `Basic ${authHeader}` },
+        });
+        if (!plivoRes.ok) {
+          throw new Error(`Plivo API returned ${plivoRes.status}: ${plivoRes.statusText}`);
+        }
+        verified = true;
       } else {
         // Generic acknowledgment
         verified = true;

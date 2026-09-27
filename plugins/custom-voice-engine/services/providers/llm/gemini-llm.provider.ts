@@ -136,7 +136,7 @@ function convertMessagesToGemini(messages: LlmMessage[]) {
 }
 
 function sanitizeGeminiModel(model: string | undefined): string {
-  return model || 'gemini-1.5-flash';
+  return model || 'gemini-2.0-flash';
 }
 
 export class GeminiLlmProvider extends BaseLlmProvider {

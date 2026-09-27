@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -176,6 +176,15 @@ export default function Settings() {
   const { data: user, isLoading } = useQuery<User>({
     queryKey: ["/api/auth/me"],
   });
+
+  const { data: publicSettings } = useQuery<{
+    twilio_kyc_required?: boolean;
+    plivo_kyc_required?: boolean;
+  }>({
+    queryKey: ["/api/settings/public"],
+  });
+
+  const isKycEnabled = !!(publicSettings?.twilio_kyc_required || publicSettings?.plivo_kyc_required);
 
   // Initialize form values when user data loads
   useEffect(() => {
@@ -400,10 +409,12 @@ export default function Settings() {
             My Keys (BYOK)
           </TabsTrigger>
           <TabsTrigger value="profile" data-testid="tab-profile">{t('settings.profile')}</TabsTrigger>
-          <TabsTrigger value="kyc" data-testid="tab-kyc">
-            <ShieldCheck className="h-4 w-4 mr-2" />
-            {t('settings.kycDocuments')}
-          </TabsTrigger>
+          {isKycEnabled && (
+            <TabsTrigger value="kyc" data-testid="tab-kyc">
+              <ShieldCheck className="h-4 w-4 mr-2" />
+              {t('settings.kycDocuments')}
+            </TabsTrigger>
+          )}
           <TabsTrigger value="addresses" data-testid="tab-addresses">
             <MapPin className="h-4 w-4 mr-2" />
             {t('settings.addresses')}
@@ -586,9 +597,11 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="kyc" className="space-y-6">
-          <KycDocumentsSection user={user} />
-        </TabsContent>
+        {isKycEnabled && (
+          <TabsContent value="kyc" className="space-y-6">
+            <KycDocumentsSection user={user} />
+          </TabsContent>
+        )}
 
         <TabsContent value="addresses" className="space-y-6">
           <AddressesSection />

@@ -33,6 +33,12 @@ export function getEndpointAndModel(model: string | undefined, apiKey?: string):
     return { url: 'https://api.deepseek.com/chat/completions', model: rawModel };
   }
 
+  // Direct Cerebras
+  if (cleanModel.startsWith('cerebras/') || (key.startsWith('csk-') && !key.startsWith('sk-or-'))) {
+    const rawModel = cleanModel.replace(/^cerebras\//, '');
+    return { url: 'https://api.cerebras.ai/v1/chat/completions', model: rawModel };
+  }
+
   // Direct OpenAI
   if ((key.startsWith('sk-proj-') || (key.startsWith('sk-') && !key.startsWith('sk-or-'))) && (cleanModel.startsWith('openai/') || cleanModel.startsWith('gpt-') || cleanModel.startsWith('o1') || cleanModel.startsWith('o3'))) {
     const rawModel = cleanModel.replace(/^openai\//, '');

@@ -12578,6 +12578,10 @@ function getEndpointAndModel(model, apiKey) {
     const rawModel = cleanModel.replace(/^deepseek\//, "");
     return { url: "https://api.deepseek.com/chat/completions", model: rawModel };
   }
+  if (cleanModel.startsWith("cerebras/") || key.startsWith("csk-") && !key.startsWith("sk-or-")) {
+    const rawModel = cleanModel.replace(/^cerebras\//, "");
+    return { url: "https://api.cerebras.ai/v1/chat/completions", model: rawModel };
+  }
   if ((key.startsWith("sk-proj-") || key.startsWith("sk-") && !key.startsWith("sk-or-")) && (cleanModel.startsWith("openai/") || cleanModel.startsWith("gpt-") || cleanModel.startsWith("o1") || cleanModel.startsWith("o3"))) {
     const rawModel = cleanModel.replace(/^openai\//, "");
     return { url: "https://api.openai.com/v1/chat/completions", model: rawModel };
@@ -12921,7 +12925,7 @@ function convertMessagesToGemini(messages) {
   return { contents: normalizedContents, systemInstruction };
 }
 function sanitizeGeminiModel(model) {
-  return model || "gemini-1.5-flash";
+  return model || "gemini-2.0-flash";
 }
 var GeminiLlmProvider = class extends BaseLlmProvider {
   name = "gemini";
@@ -13080,7 +13084,9 @@ var providerRegistry3 = {
   gemini: GeminiLlmProvider,
   openai: OpenRouterLlmProvider,
   groq: OpenRouterLlmProvider,
-  deepseek: OpenRouterLlmProvider
+  deepseek: OpenRouterLlmProvider,
+  cerebras: OpenRouterLlmProvider,
+  anthropic: OpenRouterLlmProvider
 };
 var LlmProviderFactory = class {
   static create(provider) {

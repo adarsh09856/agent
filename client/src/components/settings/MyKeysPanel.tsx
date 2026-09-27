@@ -61,6 +61,8 @@ export function MyKeysPanel() {
   const [geminiKey, setGeminiKey] = useState("");
   const [openaiKey, setOpenaiKey] = useState("");
   const [openrouterKey, setOpenrouterKey] = useState("");
+  const [plivoAuthId, setPlivoAuthId] = useState("");
+  const [plivoAuthToken, setPlivoAuthToken] = useState("");
 
   // Mutations
   const saveMutation = useMutation({
@@ -77,6 +79,9 @@ export function MyKeysPanel() {
       if (variables.provider === "twilio") {
         setTwilioSid("");
         setTwilioToken("");
+      } else if (variables.provider === "plivo") {
+        setPlivoAuthId("");
+        setPlivoAuthToken("");
       } else if (variables.provider === "deepgram") {
         setDeepgramKey("");
       } else if (variables.provider === "gemini") {
@@ -151,6 +156,7 @@ export function MyKeysPanel() {
   const geminiCred = credentials["gemini"];
   const openaiCred = credentials["openai"];
   const openrouterCred = credentials["openrouter"];
+  const plivoCred = credentials["plivo"];
 
   return (
     <div className="space-y-6">
@@ -505,6 +511,77 @@ export function MyKeysPanel() {
             >
               {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Save Twilio Credentials
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Plivo Telephony Card */}
+        <Card className="border-border md:col-span-2">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Phone className="h-5 w-5 text-blue-500" />
+                <CardTitle className="text-base">Plivo Telephony (Alternative Global Carrier)</CardTitle>
+              </div>
+              {plivoCred?.isVerified ? (
+                <Badge variant="outline" className="text-emerald-600 border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30">
+                  <CheckCircle2 className="h-3 w-3 mr-1" /> Connected
+                </Badge>
+              ) : plivoCred?.hasKey ? (
+                <Badge variant="secondary">Saved (Unverified)</Badge>
+              ) : (
+                <Badge variant="outline">Not Set</Badge>
+              )}
+            </div>
+            <CardDescription className="text-xs">
+              Link your Plivo account credentials to dispatch high-volume campaigns directly through Plivo's global voice network.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {plivoCred?.hasKey && (
+              <div className="text-xs font-mono bg-muted p-2 rounded flex items-center justify-between flex-wrap gap-2">
+                <span>Auth ID: {plivoCred.accountId}</span>
+                <span>Auth Token: {plivoCred.apiKey}</span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs"
+                  onClick={() => verifyMutation.mutate("plivo")}
+                  disabled={verifyMutation.isPending || !isByokAllowed}
+                >
+                  {verifyMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                  Verify Plivo
+                </Button>
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Plivo Auth ID</Label>
+                <Input
+                  placeholder={isByokAllowed ? "MAM..." : "Disabled by administrator"}
+                  value={plivoAuthId}
+                  onChange={(e) => setPlivoAuthId(e.target.value)}
+                  disabled={!isByokAllowed}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Plivo Auth Token</Label>
+                <Input
+                  type="password"
+                  placeholder={isByokAllowed ? "Auth Token" : "Disabled by administrator"}
+                  value={plivoAuthToken}
+                  onChange={(e) => setPlivoAuthToken(e.target.value)}
+                  disabled={!isByokAllowed}
+                />
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => saveMutation.mutate({ provider: "plivo", accountId: plivoAuthId, apiKey: plivoAuthToken })}
+              disabled={!isByokAllowed || (!plivoAuthId.trim() && !plivoAuthToken.trim()) || saveMutation.isPending}
+            >
+              {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save Plivo Credentials
             </Button>
           </CardContent>
         </Card>

@@ -15,7 +15,7 @@
 // ─── Provider Enums ──────────────────────────────────────────
 
 export type SttProvider = 'deepgram' | 'sarvam';
-export type LlmProvider = 'openrouter' | 'gemini' | 'openai' | 'groq' | 'deepseek';
+export type LlmProvider = 'openrouter' | 'gemini' | 'openai' | 'groq' | 'deepseek' | 'cerebras' | 'anthropic';
 export type TtsProvider = 'deepgram' | 'sarvam' | 'elevenlabs' | 'cartesia' | 'navana';
 export type RecordingStorage = 'local' | 's3' | 'r2';
 

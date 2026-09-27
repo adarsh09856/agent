@@ -25,7 +25,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Activity,
-  Globe
+  Globe,
+  RotateCcw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -87,6 +88,26 @@ const MANAGED_LLM_MODELS = [
     description: "Optimized for maximum throughput, instant sub-150ms first-byte responses, and massive outbound campaigns."
   },
   { 
+    id: "gemini-2.5-flash", 
+    name: "Google Gemini 2.5 Flash", 
+    provider: "Google DeepMind", 
+    latency: "190ms", 
+    context: "1M tokens", 
+    tag: "Next-Gen Reasoning & Speed", 
+    badgeVariant: "secondary" as const,
+    description: "Next-generation flagship Flash model with enhanced reasoning and multi-step tool-calling capabilities."
+  },
+  { 
+    id: "gemini-2.5-flash-lite", 
+    name: "Google Gemini 2.5 Flash-Lite", 
+    provider: "Google DeepMind", 
+    latency: "130ms", 
+    context: "1M tokens", 
+    tag: "Ultra-Lightweight • Cost Efficient", 
+    badgeVariant: "secondary" as const,
+    description: "Ultra-fast, lowest-cost next-gen model built for high-throughput concurrency and high-volume outbound campaigns."
+  },
+  { 
     id: "gemini-1.5-pro", 
     name: "Google Gemini 1.5 Pro", 
     provider: "Google DeepMind", 
@@ -122,6 +143,8 @@ const LLM_MODEL_PRESETS: Record<string, { id: string; label: string }[]> = {
   gemini: [
     { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash (Recommended)" },
     { id: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash-Lite" },
+    { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+    { id: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash-Lite" },
     { id: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
     { id: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
     { id: "gemini-2.0-pro", label: "Gemini 2.0 Pro" },
@@ -358,7 +381,51 @@ export default function ModelConfigurationPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setManagedConfig({
+                llmModel: "gemini-2.0-flash",
+                voiceId: "sonic-katie",
+                speed: 1.0,
+                language: "multi",
+                temperature: 0.7,
+                maxTokens: 300,
+                fallbackEnabled: true,
+              });
+              setPipelineConfig({
+                llmProvider: "gemini",
+                llmApiKey: "",
+                llmModel: "gemini-2.0-flash",
+                ttsProvider: "cartesia",
+                ttsApiKey: "",
+                ttsVoiceId: "sonic-katie",
+                sttProvider: "deepgram",
+                sttApiKey: "",
+                sttModel: "nova-2-phonecall",
+                embeddingProvider: "openai",
+                embeddingApiKey: "",
+              });
+              setRealtimeConfig({
+                provider: "gemini",
+                apiKey: "",
+                model: "gemini-2.0-flash-exp",
+                voice: "Puck",
+                temperature: 0.8,
+                vadThreshold: 0.5,
+                silenceDurationMs: 500,
+              });
+              toast({
+                title: "Reset to Gemini Recommended Defaults",
+                description: "All tabs reset to Google Gemini 2.0 Flash defaults. Click 'Save Configuration' to persist to your account.",
+              });
+            }}
+            className="gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset to Recommended Defaults
+          </Button>
           <Button onClick={handleSaveAll} className="gap-2">
             <Save className="w-4 h-4" />
             Save Configuration
@@ -742,7 +809,7 @@ export default function ModelConfigurationPage() {
                         <SelectItem value="elevenlabs">ElevenLabs Turbo v2.5</SelectItem>
                         <SelectItem value="sarvam">Sarvam Bulbul</SelectItem>
                         <SelectItem value="deepgram">Deepgram Aura</SelectItem>
-                        <SelectItem value="openai">OpenAI TTS</SelectItem>
+
                       </SelectContent>
                     </Select>
                   </div>
@@ -798,10 +865,8 @@ export default function ModelConfigurationPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="deepgram">Deepgram Nova-2 (Telephony)</SelectItem>
-                        <SelectItem value="cartesia">Cartesia Ink</SelectItem>
-                        <SelectItem value="navana">Navana Indic Speech</SelectItem>
-                        <SelectItem value="openai">OpenAI Whisper</SelectItem>
+                        <SelectItem value="deepgram">Deepgram Nova-2 / Nova-3 (Telephony)</SelectItem>
+                        <SelectItem value="sarvam">Sarvam AI Saaras (Indic Real-Time)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
