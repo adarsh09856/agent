@@ -18,15 +18,14 @@ import {
   Layers, 
   CheckCircle2, 
   AlertCircle, 
-  Play, 
-  Square, 
   Save, 
   Radio, 
-  ExternalLink,
   ShieldCheck,
   Activity,
   Globe,
-  RotateCcw
+  RotateCcw,
+  Search,
+  Check
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -66,12 +65,14 @@ interface ByokRealtimeConfig {
   silenceDurationMs: number;
 }
 
+// Complete 17-model catalog across all 7 providers
 const MANAGED_LLM_MODELS = [
+  // Google DeepMind
   { 
     id: "gemini-2.0-flash", 
     name: "Google Gemini 2.0 Flash", 
     provider: "Google DeepMind", 
-    latency: "180ms", 
+    latency: "150ms", 
     context: "1M tokens", 
     tag: "Recommended • Realtime Dialog", 
     badgeVariant: "default" as const,
@@ -81,7 +82,7 @@ const MANAGED_LLM_MODELS = [
     id: "gemini-2.0-flash-lite", 
     name: "Google Gemini 2.0 Flash-Lite", 
     provider: "Google DeepMind", 
-    latency: "140ms", 
+    latency: "130ms", 
     context: "1M tokens", 
     tag: "Fastest • High Concurrency", 
     badgeVariant: "secondary" as const,
@@ -91,7 +92,7 @@ const MANAGED_LLM_MODELS = [
     id: "gemini-2.5-flash", 
     name: "Google Gemini 2.5 Flash", 
     provider: "Google DeepMind", 
-    latency: "190ms", 
+    latency: "180ms", 
     context: "1M tokens", 
     tag: "Next-Gen Reasoning & Speed", 
     badgeVariant: "secondary" as const,
@@ -101,11 +102,21 @@ const MANAGED_LLM_MODELS = [
     id: "gemini-2.5-flash-lite", 
     name: "Google Gemini 2.5 Flash-Lite", 
     provider: "Google DeepMind", 
-    latency: "130ms", 
+    latency: "120ms", 
     context: "1M tokens", 
     tag: "Ultra-Lightweight • Cost Efficient", 
     badgeVariant: "secondary" as const,
     description: "Ultra-fast, lowest-cost next-gen model built for high-throughput concurrency and high-volume outbound campaigns."
+  },
+  { 
+    id: "gemini-1.5-flash", 
+    name: "Google Gemini 1.5 Flash", 
+    provider: "Google DeepMind", 
+    latency: "190ms", 
+    context: "1M tokens", 
+    tag: "Battle-Tested Workhorse", 
+    badgeVariant: "outline" as const,
+    description: "Production proven Flash model with reliable conversational behavior and broad language comprehension."
   },
   { 
     id: "gemini-1.5-pro", 
@@ -117,6 +128,8 @@ const MANAGED_LLM_MODELS = [
     badgeVariant: "outline" as const,
     description: "Massive context window ideal for deep document understanding, complex financial negotiations, and multi-step workflows."
   },
+
+  // Groq LPU
   { 
     id: "llama-3.3-70b-versatile", 
     name: "Groq Llama 3.3 70B", 
@@ -128,14 +141,114 @@ const MANAGED_LLM_MODELS = [
     description: "Blazing fast open-weights LLM running on Groq LPUs for rapid turns and predictable latency."
   },
   { 
+    id: "llama-3.1-8b-instant", 
+    name: "Groq Llama 3.1 8B Instant", 
+    provider: "Groq LPU", 
+    latency: "110ms", 
+    context: "128k tokens", 
+    tag: "Sub-110ms Turnaround", 
+    badgeVariant: "secondary" as const,
+    description: "Sub-110ms latency optimized for high concurrency, quick verbal confirmations, and basic IVR flows."
+  },
+  { 
+    id: "mixtral-8x7b-32768", 
+    name: "Groq Mixtral 8x7B", 
+    provider: "Groq LPU", 
+    latency: "170ms", 
+    context: "32k tokens", 
+    tag: "MoE Architecture", 
+    badgeVariant: "outline" as const,
+    description: "Mixture-of-Experts architecture delivering balanced nuance with high Groq inference throughput."
+  },
+
+  // DeepSeek
+  { 
+    id: "deepseek-chat", 
+    name: "DeepSeek V3", 
+    provider: "DeepSeek", 
+    latency: "200ms", 
+    context: "64k tokens", 
+    tag: "State-of-the-Art Value", 
+    badgeVariant: "secondary" as const,
+    description: "High-reasoning general conversational model with exceptional multi-turn dialog stability and instruction following."
+  },
+  { 
+    id: "deepseek-reasoner", 
+    name: "DeepSeek R1", 
+    provider: "DeepSeek", 
+    latency: "450ms", 
+    context: "64k tokens", 
+    tag: "Deep Chain-of-Thought", 
+    badgeVariant: "outline" as const,
+    description: "Reasoning engine with deep step-by-step thinking for analytical advisory and policy resolution."
+  },
+
+  // Anthropic
+  { 
+    id: "claude-3-5-sonnet-20241022", 
+    name: "Anthropic Claude 3.5 Sonnet v2", 
+    provider: "Anthropic", 
+    latency: "280ms", 
+    context: "200k tokens", 
+    tag: "Nuanced & Empathetic", 
+    badgeVariant: "secondary" as const,
+    description: "Premier conversational empathy, superior nuance detection, and flawless tool execution for customer care."
+  },
+  { 
+    id: "claude-3-5-haiku-20241022", 
+    name: "Anthropic Claude 3.5 Haiku", 
+    provider: "Anthropic", 
+    latency: "170ms", 
+    context: "200k tokens", 
+    tag: "Fast & Articulate", 
+    badgeVariant: "secondary" as const,
+    description: "Lightning-fast Claude intelligence designed for crisp customer support and real-time responsiveness."
+  },
+
+  // OpenAI
+  { 
     id: "gpt-4o-mini", 
     name: "OpenAI GPT-4o-mini", 
     provider: "OpenAI", 
-    latency: "250ms", 
+    latency: "220ms", 
     context: "128k tokens", 
     tag: "Balanced Enterprise", 
     badgeVariant: "secondary" as const,
     description: "Dependable standard enterprise reasoning across diverse customer support inquiries."
+  },
+  { 
+    id: "gpt-4o", 
+    name: "OpenAI GPT-4o", 
+    provider: "OpenAI", 
+    latency: "300ms", 
+    context: "128k tokens", 
+    tag: "Omni Intelligence", 
+    badgeVariant: "outline" as const,
+    description: "Flagship omni model with advanced multi-step logic and structured function execution."
+  },
+
+  // Cerebras
+  { 
+    id: "llama3.1-70b", 
+    name: "Cerebras Llama 3.1 70B", 
+    provider: "Cerebras", 
+    latency: "140ms", 
+    context: "128k tokens", 
+    tag: "Wafer-Scale Engine", 
+    badgeVariant: "secondary" as const,
+    description: "Ultra-fast open-weights inference running on wafer-scale chips for instantaneous speech turns."
+  },
+
+  // Sarvam AI
+  { 
+    id: "sarvam-2b-v0.5", 
+    name: "Sarvam 2B Indic", 
+    provider: "Sarvam AI", 
+    latency: "160ms", 
+    context: "32k tokens", 
+    tag: "Native Indic Conversational", 
+    badgeVariant: "secondary" as const,
+    description: "Purpose-built for Hindi, Tamil, Telugu, Kannada, Bengali and Indian vernacular voice interactions."
   },
 ];
 
@@ -147,29 +260,31 @@ const LLM_MODEL_PRESETS: Record<string, { id: string; label: string }[]> = {
     { id: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash-Lite" },
     { id: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
     { id: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
-    { id: "gemini-2.0-pro", label: "Gemini 2.0 Pro" },
   ],
   groq: [
-    { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B" },
-    { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B" },
+    { id: "llama-3.3-70b-versatile", label: "Llama 3.3 70B Versatile" },
+    { id: "llama-3.1-8b-instant", label: "Llama 3.1 8B Instant" },
     { id: "mixtral-8x7b-32768", label: "Mixtral 8x7B" },
+  ],
+  deepseek: [
+    { id: "deepseek-chat", label: "DeepSeek V3" },
+    { id: "deepseek-reasoner", label: "DeepSeek R1" },
+  ],
+  anthropic: [
+    { id: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet v2" },
+    { id: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
   ],
   openai: [
     { id: "gpt-4o-mini", label: "GPT-4o Mini" },
     { id: "gpt-4o", label: "GPT-4o" },
     { id: "gpt-4-turbo", label: "GPT-4 Turbo" },
   ],
-  anthropic: [
-    { id: "claude-3-5-sonnet-latest", label: "Claude 3.5 Sonnet" },
-    { id: "claude-3-5-haiku-latest", label: "Claude 3.5 Haiku" },
-  ],
-  deepseek: [
-    { id: "deepseek-chat", label: "DeepSeek V3" },
-    { id: "deepseek-reasoner", label: "DeepSeek R1" },
-  ],
   cerebras: [
     { id: "llama3.1-70b", label: "Cerebras Llama 3.1 70B" },
     { id: "llama3.1-8b", label: "Cerebras Llama 3.1 8B" },
+  ],
+  sarvam: [
+    { id: "sarvam-2b-v0.5", label: "Sarvam 2B Indic" },
   ],
 };
 
@@ -200,18 +315,36 @@ const CURATED_VOICES = [
   { id: "bodhi-diya", name: "Navana Bodhi - Diya (Professional Hindi)", latency: "115ms", lang: "Hindi / English", tag: "Native Indic" },
   { id: "bodhi-karthik", name: "Navana Bodhi - Karthik (Fluent Tamil)", latency: "120ms", lang: "Tamil", tag: "Native Indic" },
   { id: "bodhi-sravani", name: "Navana Bodhi - Sravani (Clear Telugu)", latency: "120ms", lang: "Telugu", tag: "Native Indic" },
-  { id: "bulbul:v1", name: "Sarvam Bulbul - Natural Hindi", latency: "130ms", lang: "Hindi / Hinglish", tag: "Indic Conversational" },
+  { id: "bulbul:v1", name: "Sarvam Bulbul - Neha (Natural Hindi)", latency: "130ms", lang: "Hindi / Hinglish", tag: "Indic Conversational" },
+  { id: "shubh", name: "Sarvam Bulbul - Shubh (Conversational Hindi)", latency: "130ms", lang: "Hindi / Hinglish", tag: "Indic Male" },
   { id: "aura-asteria-en", name: "Deepgram Aura - Asteria (American Female)", latency: "180ms", lang: "English (US)", tag: "Telephony Optimized" },
   { id: "aura-orion-en", name: "Deepgram Aura - Orion (American Male)", latency: "180ms", lang: "English (US)", tag: "Telephony Optimized" },
   { id: "21m00Tcm4TlvDq8ikWAM", name: "ElevenLabs - Rachel (Turbo v2.5)", latency: "195ms", lang: "English (US)", tag: "Studio Quality" },
 ];
 
+const PROVIDER_PILLS = [
+  { id: "all", label: "All Models" },
+  { id: "Google DeepMind", label: "Google DeepMind" },
+  { id: "Groq LPU", label: "Groq LPU" },
+  { id: "DeepSeek", label: "DeepSeek" },
+  { id: "Anthropic", label: "Anthropic" },
+  { id: "OpenAI", label: "OpenAI" },
+  { id: "Cerebras", label: "Cerebras" },
+  { id: "Sarvam AI", label: "Sarvam AI" },
+];
+
 export default function ModelConfigurationPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"managed" | "byok-pipeline" | "byok-realtime">("managed");
-  const [isPlayingSample, setIsPlayingSample] = useState<string | null>(null);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  // Root Navigation: 'managed' vs 'byok'
+  const [activeTab, setActiveTab] = useState<"managed" | "byok">("managed");
+  // Sub-architecture for BYOK: 'pipeline' (Modular) vs 'realtime' (Speech-to-Speech)
+  const [byokArchitecture, setByokArchitecture] = useState<"pipeline" | "realtime">("pipeline");
+
+  // Filter & Search state for Managed Models
+  const [providerFilter, setProviderFilter] = useState<string>("all");
+  const [modelSearch, setModelSearch] = useState<string>("");
 
   // Managed Mode State
   const [managedConfig, setManagedConfig] = useState<ManagedConfig>({
@@ -263,7 +396,17 @@ export default function ModelConfigurationPage() {
   // Sync state from server on load
   useEffect(() => {
     if (serverConfig) {
-      if (serverConfig.active_mode) setActiveTab(serverConfig.active_mode);
+      if (serverConfig.active_mode) {
+        if (serverConfig.active_mode === "byok-realtime") {
+          setActiveTab("byok");
+          setByokArchitecture("realtime");
+        } else if (serverConfig.active_mode === "byok-pipeline") {
+          setActiveTab("byok");
+          setByokArchitecture("pipeline");
+        } else {
+          setActiveTab("managed");
+        }
+      }
       if (serverConfig.managed_config && Object.keys(serverConfig.managed_config).length > 0) {
         setManagedConfig({
           llmModel: "gemini-2.0-flash",
@@ -282,8 +425,12 @@ export default function ModelConfigurationPage() {
   // Mutation to persist configuration to PostgreSQL
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const effectiveMode = activeTab === "managed"
+        ? "managed"
+        : (byokArchitecture === "pipeline" ? "byok-pipeline" : "byok-realtime");
+
       const res = await apiRequest("PUT", "/api/model-configurations", {
-        active_mode: activeTab,
+        active_mode: effectiveMode,
         managed_config: managedConfig,
         pipeline_config: pipelineConfig,
         realtime_config: realtimeConfig,
@@ -292,20 +439,23 @@ export default function ModelConfigurationPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/model-configurations"] });
-      // Keep localStorage as local fast cache
+      const effectiveMode = activeTab === "managed"
+        ? "managed"
+        : (byokArchitecture === "pipeline" ? "byok-pipeline" : "byok-realtime");
+
       localStorage.setItem("agentlabs_model_config_managed", JSON.stringify(managedConfig));
       localStorage.setItem("agentlabs_model_config_pipeline", JSON.stringify(pipelineConfig));
       localStorage.setItem("agentlabs_model_config_realtime", JSON.stringify(realtimeConfig));
-      localStorage.setItem("agentlabs_model_active_mode", activeTab);
+      localStorage.setItem("agentlabs_model_active_mode", effectiveMode);
 
       toast({
         title: "Configuration Saved Successfully",
         description: `Active AI Engine set to ${
-          activeTab === "managed" 
-            ? "Managed Platform Mode" 
-            : activeTab === "byok-pipeline" 
-            ? "BYOK Modular Pipeline" 
-            : "Realtime Speech-to-Speech"
+          effectiveMode === "managed" 
+            ? "Managed Platform AI" 
+            : effectiveMode === "byok-pipeline" 
+            ? "BYOK Modular Pipeline (STT + LLM + TTS)" 
+            : "BYOK Realtime Speech-to-Speech (STS)"
         } and synced to database.`,
       });
     },
@@ -365,6 +515,21 @@ export default function ModelConfigurationPage() {
     }
   };
 
+  // Filtered models for Managed Mode
+  const filteredManagedModels = MANAGED_LLM_MODELS.filter((model) => {
+    const matchesProvider = providerFilter === "all" || model.provider === providerFilter;
+    const matchesSearch = modelSearch === "" ||
+      model.name.toLowerCase().includes(modelSearch.toLowerCase()) ||
+      model.id.toLowerCase().includes(modelSearch.toLowerCase()) ||
+      model.description.toLowerCase().includes(modelSearch.toLowerCase()) ||
+      model.tag.toLowerCase().includes(modelSearch.toLowerCase());
+    return matchesProvider && matchesSearch;
+  });
+
+  const effectiveActiveMode = activeTab === "managed" 
+    ? "managed" 
+    : (byokArchitecture === "pipeline" ? "byok-pipeline" : "byok-realtime");
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-16">
       {/* Header */}
@@ -373,11 +538,11 @@ export default function ModelConfigurationPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold tracking-tight">AI Models & Voice Engines</h1>
             <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-              v2.0 Dual-Mode
+              Dual-Engine Architecture
             </Badge>
           </div>
           <p className="text-muted-foreground mt-1">
-            Configure real-time conversational LLMs, ultra-low latency TTS synthesizers, STT transcribers, or bring your own API keys.
+            Choose between <strong>Managed Platform AI</strong> (zero-configuration, platform-managed models) or <strong>Bring Your Own Key (BYOK)</strong> with Modular Pipeline or Realtime Speech-to-Speech.
           </p>
         </div>
 
@@ -418,7 +583,7 @@ export default function ModelConfigurationPage() {
               });
               toast({
                 title: "Reset to Gemini Recommended Defaults",
-                description: "All tabs reset to Google Gemini 2.0 Flash defaults. Click 'Save Configuration' to persist to your account.",
+                description: "All configurations reset to Google Gemini 2.0 Flash defaults. Click 'Save Configuration' to persist.",
               });
             }}
             className="gap-2"
@@ -426,14 +591,14 @@ export default function ModelConfigurationPage() {
             <RotateCcw className="w-4 h-4" />
             Reset to Recommended Defaults
           </Button>
-          <Button onClick={handleSaveAll} className="gap-2">
+          <Button onClick={handleSaveAll} className="gap-2" disabled={saveMutation.isPending}>
             <Save className="w-4 h-4" />
-            Save Configuration
+            {saveMutation.isPending ? "Saving..." : "Save Configuration"}
           </Button>
         </div>
       </div>
 
-      {/* Highlights Bar */}
+      {/* Highlights & Active Mode Status Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4 bg-muted/30 border-muted">
           <div className="flex items-center gap-3">
@@ -441,8 +606,14 @@ export default function ModelConfigurationPage() {
               <Zap className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Pipeline Latency</p>
-              <p className="text-sm font-semibold">Sub-500ms End-to-End</p>
+              <p className="text-xs text-muted-foreground font-medium">Active AI Engine</p>
+              <p className="text-sm font-semibold capitalize">
+                {effectiveActiveMode === "managed" 
+                  ? "Managed Platform AI" 
+                  : effectiveActiveMode === "byok-pipeline"
+                  ? "BYOK Modular Pipeline"
+                  : "BYOK Speech-to-Speech"}
+              </p>
             </div>
           </div>
         </Card>
@@ -453,8 +624,8 @@ export default function ModelConfigurationPage() {
               <Radio className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Telephony Audio</p>
-              <p className="text-sm font-semibold">Direct WebSocket (Zero FreeSWITCH)</p>
+              <p className="text-xs text-muted-foreground font-medium">Telephony Streaming</p>
+              <p className="text-sm font-semibold">Direct WebSocket Audio</p>
             </div>
           </div>
         </Card>
@@ -465,27 +636,23 @@ export default function ModelConfigurationPage() {
               <Globe className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs text-muted-foreground font-medium">Indic & Global</p>
-              <p className="text-sm font-semibold">Hindi, Tamil, Telugu + 30 Languages</p>
+              <p className="text-xs text-muted-foreground font-medium">Indic &amp; Global Models</p>
+              <p className="text-sm font-semibold">17 Models Across 7 Providers</p>
             </div>
           </div>
         </Card>
       </div>
 
-      {/* Main Tabs */}
+      {/* Consolidated Top-Level Tabs: Managed vs BYOK */}
       <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} className="space-y-6">
-        <TabsList className="grid grid-cols-3 w-full max-w-xl h-12">
-          <TabsTrigger value="managed" className="gap-2 text-sm">
+        <TabsList className="grid grid-cols-2 w-full max-w-md h-12">
+          <TabsTrigger value="managed" className="gap-2 text-sm font-medium">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            Managed Mode
+            Managed Mode (Platform AI)
           </TabsTrigger>
-          <TabsTrigger value="byok-pipeline" className="gap-2 text-sm">
-            <Layers className="w-4 h-4 text-blue-500" />
-            BYOK Pipeline
-          </TabsTrigger>
-          <TabsTrigger value="byok-realtime" className="gap-2 text-sm">
-            <Activity className="w-4 h-4 text-purple-500" />
-            Speech-to-Speech
+          <TabsTrigger value="byok" className="gap-2 text-sm font-medium">
+            <KeyRound className="w-4 h-4 text-blue-500" />
+            Bring Your Own Key (BYOK)
           </TabsTrigger>
         </TabsList>
 
@@ -502,29 +669,68 @@ export default function ModelConfigurationPage() {
                     <Badge variant="secondary" className="font-normal text-xs">Zero Setup</Badge>
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    KodeWaves manages industry-leading voice LLMs (Google Gemini 2.0 Flash, Groq Llama 3.3 70B &amp; GPT-4o-mini), high-speed STT, and voice infrastructure. Calls are billed on per-minute wallet usage with zero API key configuration needed.
+                    AgentLabs manages industry-leading voice models (Google Gemini 2.0 Flash, Groq LPU, DeepSeek, Anthropic Claude, OpenAI &amp; Sarvam Indic), ultra-low latency STT, and voice infrastructure. Calls are billed on per-minute wallet usage with zero API key configuration needed.
                   </CardDescription>
                 </div>
-                <div className="hidden sm:block">
-                  <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">Active Default</Badge>
-                </div>
+                {activeTab === "managed" && (
+                  <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white hidden sm:block">
+                    Active Mode
+                  </Badge>
+                )}
               </div>
             </CardHeader>
 
             <CardContent className="space-y-6">
               {/* 1. Managed Conversational LLM Engine Selection */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <Label className="text-sm font-semibold flex items-center gap-2">
                     <Cpu className="w-4 h-4 text-primary" />
                     Select Primary Conversational LLM Engine (Brain)
                   </Label>
-                  <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
-                    Platform Included
+                  <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 w-fit">
+                    Platform Included • {MANAGED_LLM_MODELS.length} Models Available
                   </Badge>
                 </div>
+
+                {/* Provider Filter Pills */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  {PROVIDER_PILLS.map((pill) => {
+                    const count = pill.id === "all" 
+                      ? MANAGED_LLM_MODELS.length 
+                      : MANAGED_LLM_MODELS.filter(m => m.provider === pill.id).length;
+                    const isSelected = providerFilter === pill.id;
+                    return (
+                      <button
+                        key={pill.id}
+                        type="button"
+                        onClick={() => setProviderFilter(pill.id)}
+                        className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground border-primary font-medium shadow-xs"
+                            : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/80"
+                        }`}
+                      >
+                        {pill.label} ({count})
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Model Search */}
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Search models by name, latency, or capability (e.g. flash, groq, deepseek, sonnet)..."
+                    value={modelSearch}
+                    onChange={(e) => setModelSearch(e.target.value)}
+                    className="pl-9 h-9 text-sm"
+                  />
+                </div>
+
+                {/* Model Cards Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {MANAGED_LLM_MODELS.map((model) => {
+                  {filteredManagedModels.map((model) => {
                     const isSelected = (managedConfig.llmModel || "gemini-2.0-flash") === model.id;
                     return (
                       <div
@@ -551,19 +757,30 @@ export default function ModelConfigurationPage() {
                           </p>
                         </div>
                         <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-2.5 mt-2 border-t border-border/50">
-                          <span>{model.provider}</span>
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
-                            {model.latency}
-                          </Badge>
+                          <span className="font-medium text-foreground/80">{model.provider}</span>
+                          <div className="flex items-center gap-1.5">
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                              {model.context}
+                            </Badge>
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono text-emerald-600 dark:text-emerald-400 border-emerald-500/30">
+                              {model.latency}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                     );
                   })}
                 </div>
+
+                {filteredManagedModels.length === 0 && (
+                  <div className="text-center py-8 text-sm text-muted-foreground border border-dashed rounded-lg">
+                    No models match your search. Try resetting the provider filter.
+                  </div>
+                )}
               </div>
 
               {/* 2. Curated Voice Selection */}
-              <div className="space-y-3 pt-2 border-t">
+              <div className="space-y-3 pt-4 border-t">
                 <Label className="text-sm font-semibold flex items-center gap-2">
                   <Volume2 className="w-4 h-4 text-emerald-500" />
                   Select Curated High-Speed Voice (TTS Voice Output)
@@ -645,7 +862,7 @@ export default function ModelConfigurationPage() {
                       <SelectValue placeholder="Select language" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="multi">Multilingual (Auto-Detect English & Indic)</SelectItem>
+                      <SelectItem value="multi">Multilingual (Auto-Detect English &amp; Indic)</SelectItem>
                       <SelectItem value="en-US">English (United States)</SelectItem>
                       <SelectItem value="en-IN">English (India)</SelectItem>
                       <SelectItem value="en-GB">English (United Kingdom)</SelectItem>
@@ -668,7 +885,7 @@ export default function ModelConfigurationPage() {
                 <div>
                   <p className="text-sm font-medium">Automatic Multi-Provider High Availability</p>
                   <p className="text-xs text-muted-foreground">
-                    Automatically failover between Google Gemini, Groq, and OpenAI if upstream experiences rate limits or latency spikes.
+                    Automatically failover between Google Gemini, Groq, DeepSeek, and OpenAI if upstream experiences rate limits or latency spikes.
                   </p>
                 </div>
                 <Switch
@@ -681,43 +898,382 @@ export default function ModelConfigurationPage() {
         </TabsContent>
 
         {/* ========================================================================= */}
-        {/* TAB 2: BYOK MODULAR PIPELINE MODE */}
+        {/* TAB 2: BYOK (BRING YOUR OWN KEY) WITH ARCHITECTURE TOGGLE */}
         {/* ========================================================================= */}
-        <TabsContent value="byok-pipeline" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <KeyRound className="w-5 h-5 text-blue-500" />
-                BYOK Modular Pipeline (STT + LLM + TTS)
-              </CardTitle>
+        <TabsContent value="byok" className="space-y-6">
+          {/* Architecture Switcher Card */}
+          <Card className="border border-blue-100 dark:border-blue-950/60 bg-blue-50/20 dark:bg-blue-950/10">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <CardTitle className="text-lg">Bring Your Own Key (BYOK) Architecture</CardTitle>
+                </div>
+                {activeTab === "byok" && (
+                  <Badge className="bg-blue-600 text-white">Active Mode</Badge>
+                )}
+              </div>
               <CardDescription>
-                Plug in your own API keys. Platform executes the pipeline without token markup. You are billed only for telephony minutes.
+                Supply your own API credentials to bypass platform LLM/voice token charges. Choose whether your agents execute over a <strong>Modular Pipeline</strong> or direct <strong>Realtime Speech-to-Speech</strong>.
               </CardDescription>
             </CardHeader>
 
-            <CardContent className="space-y-6">
-              {/* 1. Large Language Model */}
-              <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4 text-primary" />
-                    <span className="font-semibold text-sm">1. Large Language Model (LLM)</span>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Option A: Modular Pipeline */}
+                <div 
+                  onClick={() => setByokArchitecture("pipeline")}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    byokArchitecture === "pipeline"
+                      ? "border-blue-600 bg-background shadow-sm ring-1 ring-blue-500"
+                      : "border-border hover:border-blue-300 dark:hover:border-blue-800 bg-background/50"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-semibold text-sm">
+                        <Layers className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <span>Architecture A: Modular Pipeline</span>
+                      </div>
+                      {byokArchitecture === "pipeline" && (
+                        <Badge className="bg-blue-600 text-white text-[10px]">Active BYOK</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Standard decoupled pipeline: <strong>STT (Transcriber) → LLM (Brain) → TTS (Synthesizer)</strong>. Use any provider for each step (Groq, DeepSeek, Claude, Gemini, Cartesia, Navana, Sarvam).
+                    </p>
                   </div>
-                  <Badge variant="outline">Brain</Badge>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-3 mt-2 border-t text-[10px] text-muted-foreground">
+                    <Badge variant="outline">Deepgram / Sarvam</Badge>
+                    <span>+</span>
+                    <Badge variant="outline">Groq / DeepSeek / Claude / Gemini</Badge>
+                    <span>+</span>
+                    <Badge variant="outline">Cartesia / Navana</Badge>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Provider</Label>
+                {/* Option B: Realtime Speech-to-Speech */}
+                <div 
+                  onClick={() => setByokArchitecture("realtime")}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                    byokArchitecture === "realtime"
+                      ? "border-purple-600 bg-background shadow-sm ring-1 ring-purple-500"
+                      : "border-border hover:border-purple-300 dark:hover:border-purple-800 bg-background/50"
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 font-semibold text-sm">
+                        <Activity className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <span>Architecture B: Realtime Speech-to-Speech (STS)</span>
+                      </div>
+                      {byokArchitecture === "realtime" && (
+                        <Badge className="bg-purple-600 text-white text-[10px]">Active BYOK</Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Direct full-duplex WebSocket audio streaming: <strong>Live Caller Audio ↔ OpenAI Realtime / Gemini Multimodal Live</strong>. No cascaded STT step for sub-300ms natural conversational dialog.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 pt-3 mt-2 border-t text-[10px] text-muted-foreground">
+                    <Badge variant="outline">Full-Duplex WebSocket</Badge>
+                    <span>+</span>
+                    <Badge variant="outline">Gemini Live / OpenAI Realtime</Badge>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Render Active BYOK Sub-Form */}
+          {byokArchitecture === "pipeline" ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Layers className="w-5 h-5 text-blue-500" />
+                  BYOK Modular Pipeline Settings
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Configure custom credentials for each stage of your modular conversational voice pipeline.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                {/* 1. Large Language Model */}
+                <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Cpu className="w-4 h-4 text-primary" />
+                      <span className="font-semibold text-sm">1. Large Language Model (Brain)</span>
+                    </div>
+                    <Badge variant="outline">LLM Brain</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Provider</Label>
+                      <Select
+                        value={pipelineConfig.llmProvider}
+                        onValueChange={(val) => {
+                          const presets = LLM_MODEL_PRESETS[val];
+                          const defaultModel = presets && presets[0] ? presets[0].id : "";
+                          setPipelineConfig({
+                            ...pipelineConfig,
+                            llmProvider: val,
+                            llmModel: defaultModel || pipelineConfig.llmModel,
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gemini">Google Gemini (Recommended • Flash 2.0)</SelectItem>
+                          <SelectItem value="groq">Groq LPU (Sub-160ms Inference)</SelectItem>
+                          <SelectItem value="deepseek">DeepSeek (V3 / R1)</SelectItem>
+                          <SelectItem value="anthropic">Anthropic Claude (Sonnet / Haiku)</SelectItem>
+                          <SelectItem value="openai">OpenAI (GPT-4o / Mini)</SelectItem>
+                          <SelectItem value="cerebras">Cerebras LPU (Ultra Fast)</SelectItem>
+                          <SelectItem value="sarvam">Sarvam AI (Indic Regional)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Model Name</Label>
+                      <Input
+                        value={pipelineConfig.llmModel}
+                        onChange={(e) => setPipelineConfig({ ...pipelineConfig, llmModel: e.target.value })}
+                        placeholder="e.g. gemini-2.0-flash, llama-3.3-70b-versatile"
+                      />
+                      {LLM_MODEL_PRESETS[pipelineConfig.llmProvider] && (
+                        <div className="flex flex-wrap gap-1 pt-1">
+                          {LLM_MODEL_PRESETS[pipelineConfig.llmProvider].map((preset) => (
+                            <button
+                              key={preset.id}
+                              type="button"
+                              onClick={() => setPipelineConfig({ ...pipelineConfig, llmModel: preset.id })}
+                              className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
+                                pipelineConfig.llmModel === preset.id
+                                  ? "bg-primary text-primary-foreground border-primary font-medium"
+                                  : "bg-muted/50 hover:bg-muted text-muted-foreground border-border"
+                              }`}
+                            >
+                              {preset.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <Label className="text-xs">API Key</Label>
+                        <button
+                          type="button"
+                          onClick={() => handleTestKey(pipelineConfig.llmProvider, pipelineConfig.llmApiKey)}
+                          disabled={testingKeyFor === pipelineConfig.llmProvider}
+                          className="text-[11px] text-primary hover:underline"
+                        >
+                          {testingKeyFor === pipelineConfig.llmProvider ? "Testing..." : "Test Key"}
+                        </button>
+                      </div>
+                      <Input
+                        type="password"
+                        value={pipelineConfig.llmApiKey}
+                        onChange={(e) => setPipelineConfig({ ...pipelineConfig, llmApiKey: e.target.value })}
+                        placeholder="Enter provider API key"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Text-to-Speech (TTS) */}
+                <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Volume2 className="w-4 h-4 text-emerald-500" />
+                      <span className="font-semibold text-sm">2. Text-to-Speech (TTS Synthesizer)</span>
+                    </div>
+                    <Badge variant="outline">Voice Output</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Provider</Label>
+                      <Select
+                        value={pipelineConfig.ttsProvider}
+                        onValueChange={(val) => setPipelineConfig({ ...pipelineConfig, ttsProvider: val })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cartesia">Cartesia Sonic (90ms PCM)</SelectItem>
+                          <SelectItem value="navana">Navana Indic Bodhi</SelectItem>
+                          <SelectItem value="sarvam">Sarvam Bulbul</SelectItem>
+                          <SelectItem value="deepgram">Deepgram Aura</SelectItem>
+                          <SelectItem value="elevenlabs">ElevenLabs Turbo v2.5</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Voice ID / Token</Label>
+                      <Input
+                        value={pipelineConfig.ttsVoiceId}
+                        onChange={(e) => setPipelineConfig({ ...pipelineConfig, ttsVoiceId: e.target.value })}
+                        placeholder="e.g. sonic-katie, bodhi-aarav, bulbul:v1"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <Label className="text-xs">API Key</Label>
+                        <button
+                          type="button"
+                          onClick={() => handleTestKey(pipelineConfig.ttsProvider, pipelineConfig.ttsApiKey)}
+                          disabled={testingKeyFor === pipelineConfig.ttsProvider}
+                          className="text-[11px] text-primary hover:underline"
+                        >
+                          {testingKeyFor === pipelineConfig.ttsProvider ? "Testing..." : "Test Key"}
+                        </button>
+                      </div>
+                      <Input
+                        type="password"
+                        value={pipelineConfig.ttsApiKey}
+                        onChange={(e) => setPipelineConfig({ ...pipelineConfig, ttsApiKey: e.target.value })}
+                        placeholder="Enter provider API key"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Speech-to-Text (STT) */}
+                <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mic className="w-4 h-4 text-purple-500" />
+                      <span className="font-semibold text-sm">3. Speech-to-Text (STT Transcriber)</span>
+                    </div>
+                    <Badge variant="outline">Ear Input</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Provider</Label>
+                      <Select
+                        value={pipelineConfig.sttProvider}
+                        onValueChange={(val) => setPipelineConfig({ ...pipelineConfig, sttProvider: val })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="deepgram">Deepgram Nova-2 / Nova-3 (Telephony)</SelectItem>
+                          <SelectItem value="sarvam">Sarvam AI Saaras (Indic Real-Time)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">STT Model</Label>
+                      <Input
+                        value={pipelineConfig.sttModel}
+                        onChange={(e) => setPipelineConfig({ ...pipelineConfig, sttModel: e.target.value })}
+                        placeholder="e.g. nova-2-phonecall"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between items-center">
+                        <Label className="text-xs">API Key</Label>
+                        <button
+                          type="button"
+                          onClick={() => handleTestKey(pipelineConfig.sttProvider, pipelineConfig.sttApiKey)}
+                          disabled={testingKeyFor === pipelineConfig.sttProvider}
+                          className="text-[11px] text-primary hover:underline"
+                        >
+                          {testingKeyFor === pipelineConfig.sttProvider ? "Testing..." : "Test Key"}
+                        </button>
+                      </div>
+                      <Input
+                        type="password"
+                        value={pipelineConfig.sttApiKey}
+                        onChange={(e) => setPipelineConfig({ ...pipelineConfig, sttApiKey: e.target.value })}
+                        placeholder="Enter provider API key"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. RAG Knowledge Base Embeddings */}
+                <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-500" />
+                      <span className="font-semibold text-sm">4. Knowledge Base Vector Embeddings</span>
+                    </div>
+                    <Badge variant="outline">RAG Search</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Embedding Provider</Label>
+                      <Select
+                        value={pipelineConfig.embeddingProvider}
+                        onValueChange={(val) => setPipelineConfig({ ...pipelineConfig, embeddingProvider: val })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="openai">OpenAI (text-embedding-3-small)</SelectItem>
+                          <SelectItem value="cohere">Cohere Embed v3</SelectItem>
+                          <SelectItem value="local">Self-Hosted BGE (Platform Default)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">API Key (Optional if using Platform Default)</Label>
+                      <Input
+                        type="password"
+                        value={pipelineConfig.embeddingApiKey}
+                        onChange={(e) => setPipelineConfig({ ...pipelineConfig, embeddingApiKey: e.target.value })}
+                        placeholder="sk-••••••••••••••••"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-purple-500" />
+                  <CardTitle className="text-base">Realtime Speech-to-Speech (End-to-End WebSocket)</CardTitle>
+                </div>
+                <CardDescription className="text-xs">
+                  Direct full-duplex neural voice-to-voice streaming. Connects the caller's live audio stream directly into OpenAI Realtime or Gemini Multimodal Live with zero intermediate STT transcription steps.
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Realtime Provider</Label>
                     <Select
-                      value={pipelineConfig.llmProvider}
+                      value={realtimeConfig.provider}
                       onValueChange={(val) => {
-                        const presets = LLM_MODEL_PRESETS[val];
-                        const defaultModel = presets && presets[0] ? presets[0].id : "";
-                        setPipelineConfig({
-                          ...pipelineConfig,
-                          llmProvider: val,
-                          llmModel: defaultModel || pipelineConfig.llmModel,
+                        const defaultModel = val === "gemini" ? "gemini-2.0-flash-exp" : "gpt-4o-realtime-preview";
+                        const defaultVoice = val === "gemini" ? "Puck" : "alloy";
+                        setRealtimeConfig({
+                          ...realtimeConfig,
+                          provider: val,
+                          model: defaultModel,
+                          voice: defaultVoice,
                         });
                       }}
                     >
@@ -725,379 +1281,126 @@ export default function ModelConfigurationPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="gemini">Google Gemini (Recommended • Flash 2.0)</SelectItem>
-                        <SelectItem value="groq">Groq (Ultra-Fast &lt;180ms)</SelectItem>
-                        <SelectItem value="openai">OpenAI (GPT-4o / Mini)</SelectItem>
-                        <SelectItem value="anthropic">Anthropic Claude (Sonnet / Haiku)</SelectItem>
-                        <SelectItem value="deepseek">DeepSeek (V3 / R1)</SelectItem>
-                        <SelectItem value="cerebras">Cerebras (LPU Speed)</SelectItem>
+                        <SelectItem value="gemini">Google Gemini Live Multimodal (Recommended)</SelectItem>
+                        <SelectItem value="openai">OpenAI Realtime API</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Model Name</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Model</Label>
+                    <Select
+                      value={realtimeConfig.model}
+                      onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, model: val })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {realtimeConfig.provider === "gemini" ? (
+                          <>
+                            <SelectItem value="gemini-2.0-flash-exp">
+                              gemini-2.0-flash-exp (Gemini Live Audio • Recommended)
+                            </SelectItem>
+                            <SelectItem value="gemini-2.0-flash-realtime">
+                              gemini-2.0-flash-realtime (Low Latency Audio Stream)
+                            </SelectItem>
+                          </>
+                        ) : (
+                          <>
+                            <SelectItem value="gpt-4o-realtime-preview">
+                              gpt-4o-realtime-preview (OpenAI Full Realtime)
+                            </SelectItem>
+                            <SelectItem value="gpt-4o-mini-realtime-preview">
+                              gpt-4o-mini-realtime-preview (OpenAI Lightweight)
+                            </SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label className="text-sm font-medium">API Key</Label>
+                      <button
+                        type="button"
+                        onClick={() => handleTestKey(realtimeConfig.provider, realtimeConfig.apiKey)}
+                        disabled={testingKeyFor === realtimeConfig.provider}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        {testingKeyFor === realtimeConfig.provider ? "Verifying..." : "Verify Key"}
+                      </button>
+                    </div>
                     <Input
-                      value={pipelineConfig.llmModel}
-                      onChange={(e) => setPipelineConfig({ ...pipelineConfig, llmModel: e.target.value })}
-                      placeholder="e.g. gemini-2.0-flash, llama-3.3-70b-versatile"
+                      type="password"
+                      value={realtimeConfig.apiKey}
+                      onChange={(e) => setRealtimeConfig({ ...realtimeConfig, apiKey: e.target.value })}
+                      placeholder="Enter provider API key"
                     />
-                    {LLM_MODEL_PRESETS[pipelineConfig.llmProvider] && (
-                      <div className="flex flex-wrap gap-1 pt-1">
-                        {LLM_MODEL_PRESETS[pipelineConfig.llmProvider].map((preset) => (
-                          <button
-                            key={preset.id}
-                            type="button"
-                            onClick={() => setPipelineConfig({ ...pipelineConfig, llmModel: preset.id })}
-                            className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
-                              pipelineConfig.llmModel === preset.id
-                                ? "bg-primary text-primary-foreground border-primary font-medium"
-                                : "bg-muted/50 hover:bg-muted text-muted-foreground border-border"
-                            }`}
-                          >
-                            {preset.label}
-                          </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Voice Character</Label>
+                    <Select
+                      value={realtimeConfig.voice}
+                      onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, voice: val })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(REALTIME_VOICES[realtimeConfig.provider] || REALTIME_VOICES.gemini).map((v) => (
+                          <SelectItem key={v.id} value={v.id}>
+                            <span className="font-medium">{v.name}</span>
+                            <span className="text-muted-foreground ml-2 text-xs">({v.desc})</span>
+                          </SelectItem>
                         ))}
-                      </div>
-                    )}
+                      </SelectContent>
+                    </Select>
                   </div>
+                </div>
 
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-xs">API Key</Label>
-                      <button
-                        type="button"
-                        onClick={() => handleTestKey(pipelineConfig.llmProvider, pipelineConfig.llmApiKey)}
-                        className="text-[11px] text-primary hover:underline"
-                      >
-                        Test Key
-                      </button>
-                    </div>
-                    <Input
-                      type="password"
-                      value={pipelineConfig.llmApiKey}
-                      onChange={(e) => setPipelineConfig({ ...pipelineConfig, llmApiKey: e.target.value })}
-                      placeholder="Enter provider API key"
+                {/* VAD Settings */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Voice Activity Detection (VAD) Sensitivity</Label>
+                    <Slider
+                      min={0.1}
+                      max={0.9}
+                      step={0.05}
+                      value={[realtimeConfig.vadThreshold]}
+                      onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, vadThreshold: val[0] })}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Current: {realtimeConfig.vadThreshold}. Higher values reduce accidental interruptions in noisy environments.
+                    </p>
                   </div>
-                </div>
-              </div>
 
-              {/* 2. Text-to-Speech (TTS) */}
-              <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-emerald-500" />
-                    <span className="font-semibold text-sm">2. Text-to-Speech (TTS Synthesizer)</span>
-                  </div>
-                  <Badge variant="outline">Voice Output</Badge>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Provider</Label>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Silence Turn Detection Delay</Label>
                     <Select
-                      value={pipelineConfig.ttsProvider}
-                      onValueChange={(val) => setPipelineConfig({ ...pipelineConfig, ttsProvider: val })}
+                      value={String(realtimeConfig.silenceDurationMs)}
+                      onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, silenceDurationMs: Number(val) })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="cartesia">Cartesia Sonic (90ms PCM)</SelectItem>
-                        <SelectItem value="navana">Navana Indic Bodhi</SelectItem>
-                        <SelectItem value="elevenlabs">ElevenLabs Turbo v2.5</SelectItem>
-                        <SelectItem value="sarvam">Sarvam Bulbul</SelectItem>
-                        <SelectItem value="deepgram">Deepgram Aura</SelectItem>
-
+                        <SelectItem value="300">300ms (Fast Interruption)</SelectItem>
+                        <SelectItem value="500">500ms (Balanced Natural Conversation)</SelectItem>
+                        <SelectItem value="750">750ms (Patient Listener)</SelectItem>
+                        <SelectItem value="1000">1000ms (Slow Thoughtful)</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Voice ID / Token</Label>
-                    <Input
-                      value={pipelineConfig.ttsVoiceId}
-                      onChange={(e) => setPipelineConfig({ ...pipelineConfig, ttsVoiceId: e.target.value })}
-                      placeholder="e.g. sonic-katie, 21m00Tcm4TlvDq8ikWAM"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-xs">API Key</Label>
-                      <button
-                        type="button"
-                        onClick={() => handleTestKey(pipelineConfig.ttsProvider, pipelineConfig.ttsApiKey)}
-                        className="text-[11px] text-primary hover:underline"
-                      >
-                        Test Key
-                      </button>
-                    </div>
-                    <Input
-                      type="password"
-                      value={pipelineConfig.ttsApiKey}
-                      onChange={(e) => setPipelineConfig({ ...pipelineConfig, ttsApiKey: e.target.value })}
-                      placeholder="Enter provider API key"
-                    />
+                    <p className="text-xs text-muted-foreground">
+                      Duration of silence required before AI begins speaking.
+                    </p>
                   </div>
                 </div>
-              </div>
-
-              {/* 3. Speech-to-Text (STT) */}
-              <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Mic className="w-4 h-4 text-purple-500" />
-                    <span className="font-semibold text-sm">3. Speech-to-Text (STT Transcriber)</span>
-                  </div>
-                  <Badge variant="outline">Ear Input</Badge>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Provider</Label>
-                    <Select
-                      value={pipelineConfig.sttProvider}
-                      onValueChange={(val) => setPipelineConfig({ ...pipelineConfig, sttProvider: val })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="deepgram">Deepgram Nova-2 / Nova-3 (Telephony)</SelectItem>
-                        <SelectItem value="sarvam">Sarvam AI Saaras (Indic Real-Time)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">STT Model</Label>
-                    <Input
-                      value={pipelineConfig.sttModel}
-                      onChange={(e) => setPipelineConfig({ ...pipelineConfig, sttModel: e.target.value })}
-                      placeholder="e.g. nova-2-phonecall"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center">
-                      <Label className="text-xs">API Key</Label>
-                      <button
-                        type="button"
-                        onClick={() => handleTestKey(pipelineConfig.sttProvider, pipelineConfig.sttApiKey)}
-                        className="text-[11px] text-primary hover:underline"
-                      >
-                        Test Key
-                      </button>
-                    </div>
-                    <Input
-                      type="password"
-                      value={pipelineConfig.sttApiKey}
-                      onChange={(e) => setPipelineConfig({ ...pipelineConfig, sttApiKey: e.target.value })}
-                      placeholder="Enter provider API key"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* 4. RAG Knowledge Base Embeddings */}
-              <div className="p-4 rounded-lg border bg-muted/20 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span className="font-semibold text-sm">4. Knowledge Base Vector Embeddings</span>
-                  </div>
-                  <Badge variant="outline">RAG Search</Badge>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Embedding Provider</Label>
-                    <Select
-                      value={pipelineConfig.embeddingProvider}
-                      onValueChange={(val) => setPipelineConfig({ ...pipelineConfig, embeddingProvider: val })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="openai">OpenAI (text-embedding-3-small)</SelectItem>
-                        <SelectItem value="cohere">Cohere Embed v3</SelectItem>
-                        <SelectItem value="local">Self-Hosted BGE (Platform Default)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">API Key (Optional if using Platform Default)</Label>
-                    <Input
-                      type="password"
-                      value={pipelineConfig.embeddingApiKey}
-                      onChange={(e) => setPipelineConfig({ ...pipelineConfig, embeddingApiKey: e.target.value })}
-                      placeholder="sk-••••••••••••••••"
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ========================================================================= */}
-        {/* TAB 3: BYOK REALTIME SPEECH-TO-SPEECH */}
-        {/* ========================================================================= */}
-        <TabsContent value="byok-realtime" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="w-5 h-5 text-purple-500" />
-                Realtime Speech-to-Speech (End-to-End WebSocket)
-              </CardTitle>
-              <CardDescription>
-                Direct audio-to-audio neural streaming without intermediate text transcription steps. Sub-300ms natural conversational latency.
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Realtime Provider</Label>
-                  <Select
-                    value={realtimeConfig.provider}
-                    onValueChange={(val) => {
-                      const defaultModel = val === "gemini" ? "gemini-2.0-flash-exp" : "gpt-4o-realtime-preview";
-                      const defaultVoice = val === "gemini" ? "Puck" : "alloy";
-                      setRealtimeConfig({
-                        ...realtimeConfig,
-                        provider: val,
-                        model: defaultModel,
-                        voice: defaultVoice,
-                      });
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gemini">Google Gemini Live Multimodal (Recommended)</SelectItem>
-                      <SelectItem value="openai">OpenAI Realtime API</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Model</Label>
-                  <Select
-                    value={realtimeConfig.model}
-                    onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, model: val })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {realtimeConfig.provider === "gemini" ? (
-                        <>
-                          <SelectItem value="gemini-2.0-flash-exp">
-                            gemini-2.0-flash-exp (Gemini Live Audio • Recommended)
-                          </SelectItem>
-                          <SelectItem value="gemini-2.0-flash-realtime">
-                            gemini-2.0-flash-realtime (Low Latency Audio Stream)
-                          </SelectItem>
-                        </>
-                      ) : (
-                        <>
-                          <SelectItem value="gpt-4o-realtime-preview">
-                            gpt-4o-realtime-preview (OpenAI Full Realtime)
-                          </SelectItem>
-                          <SelectItem value="gpt-4o-mini-realtime-preview">
-                            gpt-4o-mini-realtime-preview (OpenAI Lightweight)
-                          </SelectItem>
-                        </>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-sm font-medium">API Key</Label>
-                    <button
-                      type="button"
-                      onClick={() => handleTestKey(realtimeConfig.provider, realtimeConfig.apiKey)}
-                      className="text-xs text-primary hover:underline"
-                    >
-                      Verify Key
-                    </button>
-                  </div>
-                  <Input
-                    type="password"
-                    value={realtimeConfig.apiKey}
-                    onChange={(e) => setRealtimeConfig({ ...realtimeConfig, apiKey: e.target.value })}
-                    placeholder="Enter API key"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Voice Character</Label>
-                  <Select
-                    value={realtimeConfig.voice}
-                    onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, voice: val })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(REALTIME_VOICES[realtimeConfig.provider] || REALTIME_VOICES.gemini).map((v) => (
-                        <SelectItem key={v.id} value={v.id}>
-                          <span className="font-medium">{v.name}</span>
-                          <span className="text-muted-foreground ml-2 text-xs">({v.desc})</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* VAD Settings */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Voice Activity Detection (VAD) Sensitivity</Label>
-                  <Slider
-                    min={0.1}
-                    max={0.9}
-                    step={0.05}
-                    value={[realtimeConfig.vadThreshold]}
-                    onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, vadThreshold: val[0] })}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Current: {realtimeConfig.vadThreshold}. Higher values reduce accidental interruptions in noisy environments.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Silence Turn Detection Delay</Label>
-                  <Select
-                    value={String(realtimeConfig.silenceDurationMs)}
-                    onValueChange={(val) => setRealtimeConfig({ ...realtimeConfig, silenceDurationMs: Number(val) })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="300">300ms (Fast Interruption)</SelectItem>
-                      <SelectItem value="500">500ms (Balanced Natural Conversation)</SelectItem>
-                      <SelectItem value="750">750ms (Patient Listener)</SelectItem>
-                      <SelectItem value="1000">1000ms (Slow Thoughtful)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Duration of silence required before AI begins speaking.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

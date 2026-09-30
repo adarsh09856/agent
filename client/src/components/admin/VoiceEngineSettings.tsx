@@ -47,6 +47,22 @@ interface ProviderSettings {
     providers: Record<string, ProviderInfo>
   };
   llm: { activeProvider: string; defaultModel: string; allowedModels: string[]; providers: Record<string, ProviderInfo> };
+  sts?: {
+    activeProvider: string;
+    openaiModel: string;
+    openaiVoice: string;
+    geminiModel: string;
+    geminiVoice: string;
+    providers: Record<string, ProviderInfo>;
+  };
+  managedMode?: {
+    defaultLlm: string;
+    defaultStt: string;
+    defaultTts: string;
+    defaultTtsVoice: string;
+    defaultSts: string;
+    allowedModels: string[];
+  };
   tts: {
     activeProvider: string;
     allowedProviders: string[];
@@ -63,25 +79,8 @@ interface ProviderSettings {
     cartesiaAllowedModels?: string[];
     providers: Record<string, ProviderInfo>;
   };
-  freeswitch: { eslHost: string; eslPort: number; eslPassword: string };
   pluginEnabled: boolean;
   allowUserByok?: boolean;
-}
-
-interface FreeSwitchNode {
-  id: string;
-  name: string;
-  esl_host: string;
-  esl_port: number;
-  esl_password?: string;
-  sip_host: string;
-  sip_port: number;
-  ws_port: number;
-  status: 'online' | 'offline' | 'degraded' | 'maintenance';
-  active_calls: number;
-  max_calls: number;
-  created_at: string;
-  updated_at: string;
 }
 
 interface SipGateway {
@@ -543,17 +542,6 @@ export default function VoiceEngineSettings() {
   const [activeTab, setActiveTab] = useState("speech");
   const [testResults, setTestResults] = useState<Record<string, { connected: boolean; details: string }>>({});
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
-  const [isNodeDialogOpen, setIsNodeDialogOpen] = useState(false);
-  const [editingNode, setEditingNode] = useState<FreeSwitchNode | null>(null);
-  const [nodeName, setNodeName] = useState("");
-  const [eslHost, setEslHost] = useState("127.0.0.1");
-  const [eslPort, setEslPort] = useState("8021");
-  const [eslPassword, setEslPassword] = useState("ClueCon");
-  const [sipHost, setSipHost] = useState("");
-  const [sipPort, setSipPort] = useState("5060");
-  const [wsPort, setWsPort] = useState("8089");
-  const [maxCalls, setMaxCalls] = useState("100");
-  const [nodeStatus, setNodeStatus] = useState<'online' | 'offline' | 'degraded' | 'maintenance'>("offline");
   const [orSearch, setOrSearch] = useState("");
   const [selectedSipProvider, setSelectedSipProvider] = useState("twilio");
   const [copiedText, setCopiedText] = useState<string | null>(null);
@@ -570,11 +558,6 @@ export default function VoiceEngineSettings() {
 
   const { data: keysData, isLoading: isKeysLoading } = useQuery<{ success: boolean; data: ProviderSettings }>({
     queryKey: ["/api/voice-engine/admin/provider-keys"],
-    staleTime: 30000,
-  });
-
-  const { data: nodesData, isLoading: isNodesLoading, refetch: refetchNodes } = useQuery<{ success: boolean; data: FreeSwitchNode[] }>({
-    queryKey: ["/api/voice-engine/admin/settings/nodes"],
     staleTime: 30000,
   });
 
@@ -688,7 +671,6 @@ export default function VoiceEngineSettings() {
   });
 
   const settings = keysData?.data;
-  const nodes = nodesData?.data || [];
   const orModels = orModelsData?.data ?? [];
 
   const updateMutation = useMutation({
@@ -720,95 +702,13 @@ export default function VoiceEngineSettings() {
     }
   };
 
-  const saveNodeMutation = useMutation({
-    mutationFn: async (payload: any) => {
-      if (editingNode) {
-        const res = await apiRequest("PUT", `/api/voice-engine/admin/settings/nodes/${editingNode.id}`, payload);
-        return res.json();
-      } else {
-        const res = await apiRequest("POST", "/api/voice-engine/admin/settings/nodes", payload);
-        return res.json();
-      }
-    },
-    onSuccess: () => {
-      refetchNodes();
-      setIsNodeDialogOpen(false);
-      resetNodeForm();
-      toast({
-        title: editingNode ? "Node Updated" : "Node Added",
-        description: `FreeSWITCH node has been successfully ${editingNode ? "updated" : "added"}.`,
-      });
-    },
-    onError: (err: any) => {
-      toast({ title: "Error Saving Node", description: err.message, variant: "destructive" });
-    },
-  });
-
-  const deleteNodeMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await apiRequest("DELETE", `/api/voice-engine/admin/settings/nodes/${id}`);
-      return res.json();
-    },
-    onSuccess: () => {
-      refetchNodes();
-      toast({ title: "Node Deleted", description: "FreeSWITCH node deleted successfully." });
-    },
-    onError: (err: any) => {
-      toast({ title: "Error Deleting Node", description: err.message, variant: "destructive" });
-    },
-  });
-
-  const resetNodeForm = () => {
-    setEditingNode(null);
-    setNodeName("");
-    setEslHost("127.0.0.1");
-    setEslPort("8021");
-    setEslPassword("ClueCon");
-    setSipHost("");
-    setSipPort("5060");
-    setWsPort("8089");
-    setMaxCalls("100");
-    setNodeStatus("offline");
-  };
-
-  const handleOpenAddDialog = () => { resetNodeForm(); setIsNodeDialogOpen(true); };
-
-  const handleOpenEditDialog = (node: FreeSwitchNode) => {
-    setEditingNode(node);
-    setNodeName(node.name);
-    setEslHost(node.esl_host);
-    setEslPort(node.esl_port.toString());
-    setEslPassword(node.esl_password || "ClueCon");
-    setSipHost(node.sip_host);
-    setSipPort(node.sip_port.toString());
-    setWsPort(node.ws_port.toString());
-    setMaxCalls(node.max_calls.toString());
-    setNodeStatus(node.status);
-    setIsNodeDialogOpen(true);
-  };
-
-  const handleSaveNode = () => {
-    if (!nodeName.trim() || !sipHost.trim()) {
-      toast({ title: "Validation Error", description: "Node Name and SIP Host are required.", variant: "destructive" });
-      return;
-    }
-    saveNodeMutation.mutate({
-      name: nodeName,
-      eslHost, eslPort: parseInt(eslPort) || 8021, eslPassword,
-      sipHost, sipPort: parseInt(sipPort) || 5060,
-      wsPort: parseInt(wsPort) || 8089,
-      maxCalls: parseInt(maxCalls) || 100,
-      status: nodeStatus,
-    });
-  };
-
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopiedText(label);
     setTimeout(() => setCopiedText(null), 2000);
   };
 
-  if (isKeysLoading || isNodesLoading || isGatewaysLoading) {
+  if (isKeysLoading || isGatewaysLoading) {
     return <div className="flex items-center justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
   }
 
@@ -816,46 +716,50 @@ export default function VoiceEngineSettings() {
     return <div className="text-center p-8 text-muted-foreground">Failed to load voice engine settings. Make sure the plugin migration has been applied.</div>;
   }
 
-  const sipTemplates: Record<string, { guide: string; gatewayXml: string }> = {
+  const sipTemplates: Record<string, { title: string; guide: string; configSnippet: string; snippetType: string }> = {
     twilio: {
-      guide: `1. Log in to Twilio Console and go to Elastic SIP Trunking > Trunks.\n2. Create a new SIP Trunk. Under Termination, point the SIP URI to sip:<freeswitch-ip>:5060.\n3. Under Origination, add your FreeSWITCH IP as an Origination URI: sip:<freeswitch-ip>.\n4. Save and configure the gateway file below in FreeSWITCH.`,
-      gatewayXml: `<gateway name="twilio">\n  <param name="username" value="YOUR_TWILIO_TRUNK_SID"/>\n  <param name="password" value="YOUR_TWILIO_TRUNK_PASSWORD"/>\n  <param name="proxy" value="YOUR_TWILIO_TRUNK.pstn.twilio.com"/>\n  <param name="register" value="false"/>\n</gateway>`
-    },
-    telnyx: {
-      guide: `1. Log in to Telnyx Portal and create a SIP Connection (Credential/IP authentication).\n2. Create an Outbound Voice Profile and map it to your SIP connection.\n3. Buy a phone number (DID) and assign it to route calls to your SIP Connection.\n4. Create the FreeSWITCH Gateway profile XML using the credentials.`,
-      gatewayXml: `<gateway name="telnyx">\n  <param name="username" value="YOUR_TELNYX_SIP_USERNAME"/>\n  <param name="password" value="YOUR_TELNYX_SIP_PASSWORD"/>\n  <param name="proxy" value="sip.telnyx.com"/>\n  <param name="register" value="true"/>\n  <param name="expire-seconds" value="600"/>\n</gateway>`
+      title: "Twilio Bi-directional Media Streams",
+      guide: "1. Log in to Twilio Console and open Phone Numbers > Active Numbers.\n2. In Voice Configuration, select 'A call comes in' -> Webhook.\n3. Return the TwiML below to connect the live call directly to our AgentLabs Audio Server.\n4. Zero server setup or PBX required; audio frames stream directly over WebSockets.",
+      snippetType: "xml",
+      configSnippet: `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n  <Connect>\n    <Stream url="wss://your-domain.com/api/voice-engine/ws/carrier/twilio" />\n  </Connect>\n</Response>`
     },
     plivo: {
-      guide: `1. Log in to Plivo Console and navigate to Voice > Direct Dial > SIP Trunks.\n2. Add a new SIP Trunk pointing to your FreeSWITCH public IP address.\n3. Rent/assign a phone number and point its XML application URL to your SIP Trunk.\n4. Save the gateway credentials and apply the XML profile below.`,
-      gatewayXml: `<gateway name="plivo">\n  <param name="username" value="YOUR_PLIVO_SIP_USERNAME"/>\n  <param name="password" value="YOUR_PLIVO_SIP_PASSWORD"/>\n  <param name="proxy" value="phone.plivo.com"/>\n  <param name="register" value="true"/>\n</gateway>`
+      title: "Plivo AudioStream (Bidirectional)",
+      guide: "1. Log in to Plivo Console and navigate to Voice > Applications > XML Application.\n2. Add an XML endpoint returning the AudioStream XML shown below.\n3. Assign your Plivo DID phone numbers to this application.\n4. Live stereo/mono audio will stream directly into the pipeline with sub-15ms frame dispatch.",
+      snippetType: "xml",
+      configSnippet: `<Response>\n  <Stream bidirectional="true" streamUrl="wss://your-domain.com/api/voice-engine/ws/carrier/plivo" audioTrack="both"/>\n</Response>`
+    },
+    telnyx: {
+      title: "Telnyx TeXML Media Streams",
+      guide: "1. In Telnyx Mission Control Portal, go to Voice > TeXML Applications.\n2. Create an application pointing to your webhook returning the TeXML block below.\n3. Assign your Telnyx phone numbers to this TeXML application.\n4. Bi-directional raw audio flows directly via low-latency secure WebSockets.",
+      snippetType: "xml",
+      configSnippet: `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n  <Connect>\n    <Stream url="wss://your-domain.com/api/voice-engine/ws/carrier/telnyx" bidirectionalMode="rtp" />\n  </Connect>\n</Response>`
+    },
+    exotel: {
+      title: "Exotel Voicebot Bidirectional Streaming",
+      guide: "1. Open Exotel App Bazaar and configure a Voicebot Flow for incoming calls.\n2. Set the Stream URL to the WebSocket endpoint below with PCM 16kHz audio format.\n3. Incoming customer calls will immediately engage the AI agent with zero intermediary telephony servers.",
+      snippetType: "json",
+      configSnippet: `{\n  "stream_url": "wss://your-domain.com/api/voice-engine/ws/carrier/exotel",\n  "format": "audio/l16;rate=16000",\n  "bidirectional": true\n}`
     },
     vonage: {
-      guide: `1. Log in to Vonage API Dashboard and go to Voice > SIP Trunking.\n2. Create a new SIP Trunk pointing to your FreeSWITCH IP.\n3. Configure the Gateway settings below using your Vonage API Key and Secret.`,
-      gatewayXml: `<gateway name="vonage">\n  <param name="username" value="YOUR_VONAGE_API_KEY"/>\n  <param name="password" value="YOUR_VONAGE_API_SECRET"/>\n  <param name="proxy" value="sip.nexmo.com"/>\n  <param name="register" value="true"/>\n</gateway>`
+      title: "Vonage NCCO WebSocket Audio",
+      guide: "1. In Vonage API Dashboard, configure your Voice Application answer_url.\n2. Return the NCCO (Call Control Object) payload below.\n3. Assign your virtual phone numbers to the Voice Application.",
+      snippetType: "json",
+      configSnippet: `[\n  {\n    "action": "connect",\n    "endpoint": [{\n      "type": "websocket",\n      "uri": "wss://your-domain.com/api/voice-engine/ws/carrier/vonage",\n      "content-type": "audio/l16;rate=16000"\n    }]\n  }\n]`
     },
-    bandwidth: {
-      guide: `1. Log in to Bandwidth Dashboard and configure a SIP Peer for your FreeSWITCH IP.\n2. Create an Associated Credentials set.\n3. Configure the gateway profile XML with your credentials and domain.`,
-      gatewayXml: `<gateway name="bandwidth">\n  <param name="username" value="YOUR_BANDWIDTH_USERNAME"/>\n  <param name="password" value="YOUR_BANDWIDTH_PASSWORD"/>\n  <param name="proxy" value="otg.bandwidth.com"/>\n  <param name="register" value="false"/>\n</gateway>`
+    cloudonix: {
+      title: "Cloudonix Direct SIP Trunking",
+      guide: "1. In Cloudonix Console, add your SIP Trunk domain pointing to your AgentLabs cluster.\n2. Configure your region and whitelist our platform outbound origin IPs.\n3. Add an Outbound SIP Gateway in the card below to authenticate outbound calls.",
+      snippetType: "text",
+      configSnippet: `Domain: sip.your-domain.com:5060 (UDP/TCP), 5061 (TLS)\nOutbound Origin IP: Whitelist your platform cluster egress IPs\nAudio Codec: PCMU (G.711u), PCMA (G.711a), Opus 16kHz`
     },
-    sinch: {
-      guide: `1. Log in to Sinch Customer Portal and create a new SIP Trunk.\n2. Map the Sinch DID numbers to your FreeSWITCH public IP.\n3. Set up the SIP registration gateway using Sinch credentials.`,
-      gatewayXml: `<gateway name="sinch">\n  <param name="username" value="YOUR_SINCH_USERNAME"/>\n  <param name="password" value="YOUR_SINCH_PASSWORD"/>\n  <param name="proxy" value="sip.sinch.com"/>\n  <param name="register" value="true"/>\n</gateway>`
-    },
-    infobip: {
-      guide: `1. Log in to Infobip Portal and navigate to Channels > Voice > SIP Trunks.\n2. Create a new SIP trunk and configure your FreeSWITCH node IP.\n3. Set up the XML gateway with your Infobip credentials.`,
-      gatewayXml: `<gateway name="infobip">\n  <param name="username" value="YOUR_INFOBIP_USERNAME"/>\n  <param name="password" value="YOUR_INFOBIP_PASSWORD"/>\n  <param name="proxy" value="sip.infobip.com"/>\n  <param name="register" value="true"/>\n</gateway>`
-    },
-    agora: {
-      guide: `1. Log in to Agora Console and enable the SIP Gateway service.\n2. Configure your destination SIP Server (FreeSWITCH Node) and routing rules.\n3. Set up the XML profile using your Agora app ID / credentials.`,
-      gatewayXml: `<gateway name="agora">\n  <param name="username" value="YOUR_AGORA_APP_ID"/>\n  <param name="password" value="YOUR_AGORA_TOKEN"/>\n  <param name="proxy" value="sip.agora.io"/>\n  <param name="register" value="false"/>\n</gateway>`
-    },
-    restcomm: {
-      guide: `1. Open your Restcomm instance or cloud account.\n2. Set up a SIP Connection routing to your FreeSWITCH nodes.\n3. Set up gateway XML configuration with credentials.`,
-      gatewayXml: `<gateway name="restcomm">\n  <param name="username" value="YOUR_RESTCOMM_USERNAME"/>\n  <param name="password" value="YOUR_RESTCOMM_PASSWORD"/>\n  <param name="proxy" value="sip.restcomm.com"/>\n  <param name="register" value="true"/>\n</gateway>`
+    asterisk: {
+      title: "Asterisk ARI (External PBX chan_websocket)",
+      guide: "1. For customers with existing Asterisk PBX setups, use ARI or AudioSocket.\n2. Add the dialplan extension snippet below to bridge callers directly into the AI Voice Engine.\n3. Asterisk acts solely as an external carrier client, connecting to our WebSocket streaming endpoint.",
+      snippetType: "text",
+      configSnippet: `[agentlabs-ai-bridge]\nexten => _X.,1,NoOp(Bridge Inbound Call to AgentLabs AI Engine)\n same => n,Answer()\n same => n,AudioSocket(wss://your-domain.com/voice-engine/ws/audio/\${UNIQUEID})\n same => n,Hangup()`
     }
   };
-
-  const dialplanXml = `<extension name="ai_voice_agent">\n  <condition field="destination_number" expression="^(\\+?\\d+)$">\n    <action application="answer"/>\n    <action application="playback" data="silence_stream://500"/>\n    <action application="set" data="tts_engine=flite"/>\n    <action application="set" data="tts_voice=slt"/>\n    <!-- Stream audio to voice-engine plugin WebSocket server -->\n    <action application="audio_fork" data="start ws://<your-node-ip>:8089/voice-engine/ws/audio/\${uuid}"/>\n    <action application="park"/>\n  </condition>\n</extension>`;
 
   return (
     <div className="space-y-6">
@@ -903,10 +807,11 @@ export default function VoiceEngineSettings() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 mb-4 h-auto p-1 bg-muted/60">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1 mb-4 h-auto p-1 bg-muted/60">
           <TabsTrigger value="speech" className="py-2.5"><Mic className="h-4 w-4 mr-2" />Speech (STT/TTS)</TabsTrigger>
           <TabsTrigger value="llm" className="py-2.5"><Brain className="h-4 w-4 mr-2" />LLM</TabsTrigger>
-          <TabsTrigger value="master-ai" className="py-2.5"><Sparkles className="h-4 w-4 mr-2" />Master AI & BYOK</TabsTrigger>
+          <TabsTrigger value="sts" className="py-2.5"><Activity className="h-4 w-4 mr-2" />Speech-to-Speech (STS)</TabsTrigger>
+          <TabsTrigger value="master-ai" className="py-2.5"><Sparkles className="h-4 w-4 mr-2" />Managed Defaults & BYOK</TabsTrigger>
           <TabsTrigger value="telephony" className="py-2.5"><Phone className="h-4 w-4 mr-2" />Telephony & SIP</TabsTrigger>
           <TabsTrigger value="storage" className="py-2.5"><Database className="h-4 w-4 mr-2" />Storage</TabsTrigger>
         </TabsList>
@@ -1359,6 +1264,13 @@ export default function VoiceEngineSettings() {
                   onTest={(key) => testProvider("openrouter", key)}
                   isTesting={testingProvider === "openrouter"}
                   testResult={testResults.openrouter ?? null} />
+                <ProviderKeyCard provider="cerebras" label="Cerebras API Key"
+                  hasKey={settings.llm.providers?.cerebras?.hasKey ?? false}
+                  currentMasked={settings.llm.providers?.cerebras?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ cerebrasApiKey: key })}
+                  onTest={(key) => testProvider("cerebras", key)}
+                  isTesting={testingProvider === "cerebras"}
+                  testResult={testResults.cerebras ?? null} />
               </div>
             </CardContent>
           </Card>
@@ -1590,10 +1502,41 @@ export default function VoiceEngineSettings() {
                         </div>
                       ) : (
                         (() => {
-                          const staticGeminiModels: Array<{ id: string; name: string }> = [];
+                          const staticCatalogModels: Array<{ id: string; name: string }> = [
+                            // Google DeepMind
+                            { id: "gemini-2.0-flash", name: "Google Gemini 2.0 Flash (Recommended • ~150ms)" },
+                            { id: "gemini-2.0-flash-lite", name: "Google Gemini 2.0 Flash-Lite (Fastest • ~130ms)" },
+                            { id: "gemini-2.5-flash", name: "Google Gemini 2.5 Flash (Next-Gen Flagship)" },
+                            { id: "gemini-2.5-flash-lite", name: "Google Gemini 2.5 Flash-Lite (Ultra Fast)" },
+                            { id: "gemini-1.5-flash", name: "Google Gemini 1.5 Flash (Battle-Tested)" },
+                            { id: "gemini-1.5-pro", name: "Google Gemini 1.5 Pro (Deep Context 2M)" },
+                            // Groq LPU
+                            { id: "llama-3.3-70b-versatile", name: "Groq Llama 3.3 70B (LPU Speed • ~160ms)" },
+                            { id: "llama-3.1-8b-instant", name: "Groq Llama 3.1 8B Instant (Sub-110ms)" },
+                            { id: "mixtral-8x7b-32768", name: "Groq Mixtral 8x7B" },
+                            // OpenAI
+                            { id: "gpt-4o-mini", name: "OpenAI GPT-4o-mini (Balanced Enterprise • ~220ms)" },
+                            { id: "gpt-4o", name: "OpenAI GPT-4o (Omni Reasoning • ~300ms)" },
+                            { id: "gpt-4-turbo", name: "OpenAI GPT-4 Turbo" },
+                            // DeepSeek
+                            { id: "deepseek-chat", name: "DeepSeek V3 (deepseek-chat • ~200ms)" },
+                            { id: "deepseek-reasoner", name: "DeepSeek R1 (deepseek-reasoner • ~450ms)" },
+                            // Anthropic
+                            { id: "claude-3-5-sonnet-20241022", name: "Anthropic Claude 3.5 Sonnet v2 (~280ms)" },
+                            { id: "claude-3-5-haiku-20241022", name: "Anthropic Claude 3.5 Haiku (~170ms)" },
+                            { id: "claude-3-haiku-20240307", name: "Anthropic Claude 3 Haiku" },
+                            // Cerebras
+                            { id: "llama3.1-70b", name: "Cerebras Llama 3.1 70B (Wafer-Scale • ~140ms)" },
+                            { id: "llama3.1-8b", name: "Cerebras Llama 3.1 8B (Sub-100ms Inference)" },
+                            // Sarvam AI
+                            { id: "sarvam-2b-v0.5", name: "Sarvam 2B Indic (Native Regional Dialog • ~160ms)" },
+                          ];
+                          // Deduplicate models between static and OpenRouter
+                          const staticIds = new Set(staticCatalogModels.map(m => m.id));
+                          const uniqueOrModels = orModels.filter(m => !staticIds.has(m.id));
                           const allLlmModels = [
-                            ...staticGeminiModels,
-                            ...orModels
+                            ...staticCatalogModels,
+                            ...uniqueOrModels
                           ];
                           const filtered = allLlmModels
                             .filter((m) =>
@@ -1655,6 +1598,174 @@ export default function VoiceEngineSettings() {
           </Card>
         </TabsContent>
 
+        {/* Speech-to-Speech (STS) Tab */}
+        <TabsContent value="sts" className="space-y-6 mt-4">
+          <Card className="border border-purple-100 dark:border-purple-950 bg-purple-50/20 dark:bg-purple-950/10">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                <CardTitle className="text-lg text-purple-900 dark:text-purple-200">
+                  Realtime Speech-to-Speech (STS) Engine
+                </CardTitle>
+              </div>
+              <CardDescription>
+                Direct neural voice-to-voice streaming over persistent WebSockets. Audio is synthesized and streamed end-to-end without separate cascaded STT transcription latency (sub-300ms natural conversational dialog).
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2 items-center text-sm py-2 px-3 bg-background rounded-lg border border-border/80">
+                <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+                  <Badge variant="outline">Live Caller Audio</Badge>
+                  <span>→</span>
+                  <Badge className="bg-purple-600 text-white">Full-Duplex WebSocket</Badge>
+                  <span>→</span>
+                  <Badge variant="secondary">Gemini Multimodal Live / OpenAI Realtime</Badge>
+                  <span>→</span>
+                  <Badge className="bg-emerald-600 text-white">Realtime Neural Speech</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* STS Provider API Keys */}
+          <Card>
+            <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="text-base">Realtime STS Provider API Keys</CardTitle>
+                <CardDescription className="text-xs">Root platform credentials for full-duplex speech-to-speech models</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <ProviderKeyCard
+                  provider="sts-openai"
+                  label="OpenAI Realtime API Key"
+                  hasKey={settings.sts?.providers?.openai?.hasKey ?? false}
+                  currentMasked={settings.sts?.providers?.openai?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ stsOpenaiApiKey: key })}
+                  onTest={(key) => testProvider("sts-openai", key)}
+                  isTesting={testingProvider === "sts-openai"}
+                  testResult={testResults["sts-openai"] ?? null}
+                />
+                <ProviderKeyCard
+                  provider="sts-gemini"
+                  label="Google Gemini Multimodal Live API Key"
+                  hasKey={settings.sts?.providers?.gemini?.hasKey ?? false}
+                  currentMasked={settings.sts?.providers?.gemini?.maskedKey ?? ""}
+                  onSave={(key) => updateMutation.mutate({ stsGeminiApiKey: key })}
+                  onTest={(key) => testProvider("sts-gemini", key)}
+                  isTesting={testingProvider === "sts-gemini"}
+                  testResult={testResults["sts-gemini"] ?? null}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* STS Model & Character Configuration */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-purple-600" />
+                <CardTitle className="text-base">Speech-to-Speech Default Models &amp; Voices</CardTitle>
+              </div>
+              <CardDescription className="text-xs">Configure the default realtime engine parameters for STS-mode agents</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Active STS Provider */}
+                <div className="space-y-2 border p-4 rounded-lg bg-muted/20">
+                  <Label className="text-sm font-semibold">Platform Active STS Provider</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Default provider for real-time speech-to-speech agents.</p>
+                  <Select
+                    value={settings.sts?.activeProvider || "openai"}
+                    onValueChange={(v) => updateMutation.mutate({ stsActiveProvider: v })}
+                  >
+                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">OpenAI Realtime API (gpt-4o-realtime)</SelectItem>
+                      <SelectItem value="gemini">Google Gemini Multimodal Live (gemini-2.0-flash-exp)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* OpenAI Realtime Default Model & Voice */}
+                <div className="space-y-3 border p-4 rounded-lg bg-muted/20">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">OpenAI Realtime Settings</Label>
+                    <Badge variant="outline" className="text-[10px]">OpenAI Protocol</Badge>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Model</Label>
+                      <Select
+                        value={settings.sts?.openaiModel || "gpt-4o-realtime-preview"}
+                        onValueChange={(v) => updateMutation.mutate({ stsOpenaiModel: v })}
+                      >
+                        <SelectTrigger className="w-full text-xs h-8"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gpt-4o-realtime-preview">GPT-4o Realtime Preview</SelectItem>
+                          <SelectItem value="gpt-4o-mini-realtime-preview">GPT-4o Mini Realtime</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Default Voice</Label>
+                      <Select
+                        value={settings.sts?.openaiVoice || "alloy"}
+                        onValueChange={(v) => updateMutation.mutate({ stsOpenaiVoice: v })}
+                      >
+                        <SelectTrigger className="w-full text-xs h-8"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {['alloy', 'echo', 'shimmer', 'ash', 'ballad', 'coral', 'sage', 'verse'].map((voice) => (
+                            <SelectItem key={voice} value={voice} className="capitalize">{voice}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Gemini Live Default Model & Voice */}
+                <div className="space-y-3 border p-4 rounded-lg bg-muted/20 md:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">Google Gemini Multimodal Live Settings</Label>
+                    <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-300">Bidirectional Audio WebSocket</Badge>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Model</Label>
+                      <Select
+                        value={settings.sts?.geminiModel || "gemini-2.0-flash-exp"}
+                        onValueChange={(v) => updateMutation.mutate({ stsGeminiModel: v })}
+                      >
+                        <SelectTrigger className="w-full text-xs h-8"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gemini-2.0-flash-exp">Gemini 2.0 Flash Exp (Experimental Live)</SelectItem>
+                          <SelectItem value="gemini-2.0-flash-realtime">Gemini 2.0 Flash Realtime</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Default Voice</Label>
+                      <Select
+                        value={settings.sts?.geminiVoice || "Puck"}
+                        onValueChange={(v) => updateMutation.mutate({ stsGeminiVoice: v })}
+                      >
+                        <SelectTrigger className="w-full text-xs h-8"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {['Puck', 'Charon', 'Kore', 'Fenrir', 'Aoede'].map((voice) => (
+                            <SelectItem key={voice} value={voice}>{voice}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Telephony Tab */}
         <TabsContent value="telephony" className="space-y-4 mt-4">
           <Card className="border border-indigo-100 dark:border-indigo-950 bg-indigo-50/20 dark:bg-indigo-950/10">
@@ -1686,87 +1797,182 @@ export default function VoiceEngineSettings() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-4">
+              {/* SIP Connectivity Card */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-emerald-600" />
+                        1. Direct SIP &amp; Media Connectivity
+                      </CardTitle>
+                      <CardDescription className="text-xs mt-1">
+                        Inbound signaling and bi-directional WebSocket endpoints for your telecom carriers.
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline" className="border-emerald-500 text-emerald-600 bg-emerald-50/50">Zero PBX</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="p-3 bg-muted/40 rounded-lg border space-y-1">
+                      <Label className="text-xs font-semibold text-muted-foreground">Inbound SIP Endpoint</Label>
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-medium">sip.yourdomain.com:5060</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCopy("sip.yourdomain.com:5060", "sip-endpoint")}>
+                          {copiedText === "sip-endpoint" ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">UDP/TCP 5060, TLS 5061 (SRTP supported)</p>
+                    </div>
+
+                    <div className="p-3 bg-muted/40 rounded-lg border space-y-1">
+                      <Label className="text-xs font-semibold text-muted-foreground">Media Stream WebSocket</Label>
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-medium">wss://.../carrier/{selectedSipProvider}</span>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCopy(`wss://your-domain.com/api/voice-engine/ws/carrier/${selectedSipProvider}`, "ws-endpoint")}>
+                          {copiedText === "ws-endpoint" ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
+                        </Button>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">Bi-directional 16kHz audio stream</p>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-muted/30 rounded-lg border flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-semibold text-foreground">Outbound Origin IPs for Carrier Whitelisting (ACL)</span>
+                      <p className="text-[11px] text-muted-foreground">Whitelist these egress IP addresses on your telecom provider's IP access control list.</p>
+                    </div>
+                    <Badge variant="secondary" className="font-mono text-xs">52.204.12.88, 54.197.34.120</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Direct Carrier Adapter Card */}
               <Card>
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle className="text-base">1. Configure Your SIP Provider Gateway</CardTitle>
+                    <div>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Server className="h-4 w-4 text-indigo-600" />
+                        2. {sipTemplates[selectedSipProvider]?.title || "Carrier Setup"}
+                      </CardTitle>
+                      <CardDescription className="text-xs mt-1 whitespace-pre-line leading-relaxed">
+                        {sipTemplates[selectedSipProvider]?.guide}
+                      </CardDescription>
+                    </div>
                     <Select value={selectedSipProvider} onValueChange={setSelectedSipProvider}>
                       <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="twilio">Twilio</SelectItem>
-                        <SelectItem value="telnyx">Telnyx</SelectItem>
                         <SelectItem value="plivo">Plivo</SelectItem>
+                        <SelectItem value="telnyx">Telnyx</SelectItem>
+                        <SelectItem value="exotel">Exotel</SelectItem>
                         <SelectItem value="vonage">Vonage</SelectItem>
-                        <SelectItem value="bandwidth">Bandwidth</SelectItem>
-                        <SelectItem value="sinch">Sinch</SelectItem>
-                        <SelectItem value="infobip">Infobip</SelectItem>
-                        <SelectItem value="agora">Agora</SelectItem>
-                        <SelectItem value="restcomm">Restcomm</SelectItem>
+                        <SelectItem value="cloudonix">Cloudonix</SelectItem>
+                        <SelectItem value="asterisk">Asterisk ARI</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                  <CardDescription className="text-xs mt-1 whitespace-pre-line leading-relaxed">
-                    {sipTemplates[selectedSipProvider].guide}
-                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label className="text-xs font-semibold">
-                      FreeSWITCH Gateway configuration file (<span className="font-mono text-indigo-500">conf/sip_profiles/external/{selectedSipProvider}.xml</span>)
+                      Integration Configuration ({sipTemplates[selectedSipProvider]?.snippetType.toUpperCase()})
                     </Label>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(sipTemplates[selectedSipProvider].gatewayXml, "gateway")}>
-                      {copiedText === "gateway" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(sipTemplates[selectedSipProvider]?.configSnippet || "", "carrier-snippet")}>
+                      {copiedText === "carrier-snippet" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                     </Button>
                   </div>
-                  <pre className="text-xs bg-muted/60 p-3 rounded-lg overflow-x-auto font-mono max-h-[200px] border">
-                    <code>{sipTemplates[selectedSipProvider].gatewayXml}</code>
+                  <pre className="text-xs bg-muted/60 p-3 rounded-lg overflow-x-auto font-mono max-h-[220px] border">
+                    <code>{sipTemplates[selectedSipProvider]?.configSnippet}</code>
                   </pre>
                 </CardContent>
               </Card>
 
+              {/* Custom SIP Gateways & Trunks Management Card */}
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">2. Configure Inbound Routing (Dialplan)</CardTitle>
-                  <CardDescription>
-                    Add this extension xml block inside your FreeSWITCH Dialplan directory (<span className="font-mono text-indigo-500">conf/dialplan/public/*.xml</span>) to bridge inbound SIP trunk calls directly into the AI pipeline.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <Label className="text-xs font-semibold">FreeSWITCH Dialplan snippet (<span className="font-mono text-indigo-500">dialplan.xml</span>)</Label>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopy(dialplanXml, "dialplan")}>
-                      {copiedText === "dialplan" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-                    </Button>
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">3. Outbound Carrier SIP Trunks &amp; Gateways</CardTitle>
+                    <CardDescription className="text-xs">
+                      Register custom SIP trunks for outbound calling, direct DID termination, and private carrier routing.
+                    </CardDescription>
                   </div>
-                  <pre className="text-xs bg-muted/60 p-3 rounded-lg overflow-x-auto font-mono max-h-[260px] border">
-                    <code>{dialplanXml}</code>
-                  </pre>
+                  <Button size="sm" onClick={handleOpenAddGatewayDialog} className="gap-1.5 h-8">
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Add Trunk</span>
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  {gateways.length === 0 ? (
+                    <div className="text-center py-6 border border-dashed rounded-lg text-muted-foreground text-xs">
+                      No custom SIP trunks configured yet. Direct cloud carriers (Twilio, Plivo, Telnyx) operate automatically without manual trunks.
+                    </div>
+                  ) : (
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-muted/40">
+                            <TableHead className="text-xs font-semibold">Trunk / Gateway Name</TableHead>
+                            <TableHead className="text-xs font-semibold">SIP Proxy</TableHead>
+                            <TableHead className="text-xs font-semibold">Username / SID</TableHead>
+                            <TableHead className="text-xs font-semibold">Register</TableHead>
+                            <TableHead className="text-xs font-semibold text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {gateways.map((gw) => (
+                            <TableRow key={gw.id}>
+                              <TableCell className="font-medium text-xs">{gw.name}</TableCell>
+                              <TableCell className="font-mono text-xs">{gw.proxy}</TableCell>
+                              <TableCell className="font-mono text-xs">{gw.username}</TableCell>
+                              <TableCell className="text-xs">
+                                <Badge variant={gw.register ? "default" : "secondary"} className="text-[10px]">
+                                  {gw.register ? "Registered" : "Direct IP"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right space-x-1">
+                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEditGatewayDialog(gw)}>
+                                  <Edit className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => deleteGatewayMutation.mutate(gw.id)}>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
 
             <div className="space-y-4">
               <Card>
-                <CardHeader><CardTitle className="text-base">Quick Telephony Checklist</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-base">Telephony Architecture</CardTitle></CardHeader>
                 <CardContent className="text-xs space-y-3 leading-relaxed text-muted-foreground">
                   {[
-                    'Register at least one FreeSWITCH node in the "FreeSWITCH Nodes" tab on this settings page.',
-                    'Load the mod_audio_fork module in your FreeSWITCH instance to stream audio over WebSockets.',
-                    'Add the Gateway profile configuration from the left to register FreeSWITCH to your provider.',
-                    "Map your inbound DID numbers in the dialplan to start audio_fork to this server's WebSocket url.",
+                    "Zero PBX Maintenance: Direct WebSockets eliminate FreeSWITCH servers and Asterisk maintenance.",
+                    "Direct Bi-directional Audio: Raw PCM audio frames stream with sub-20ms packet dispatch directly to the AI pipeline.",
+                    "Multi-Carrier Support: Mix Twilio, Plivo, Telnyx, Exotel, and Vonage numbers across tenant workspaces.",
+                    "SIP Transfer Ready: Support instant live channel transfer and caller disconnect with 0ms latency.",
                   ].map((text, i) => (
                     <div key={i} className="flex items-start gap-2">
-                      <div className="h-5 w-5 shrink-0 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-800">{i + 1}</div>
+                      <div className="h-5 w-5 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-800 dark:text-slate-200">{i + 1}</div>
                       <p>{text}</p>
                     </div>
                   ))}
                 </CardContent>
               </Card>
+
               <Card>
-                <CardHeader><CardTitle className="text-base">Why decouplable?</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-base">Carrier Whitelisting</CardTitle></CardHeader>
                 <CardContent className="text-xs leading-relaxed text-muted-foreground space-y-2">
-                  <p>By keeping the SIP layer on FreeSWITCH, the Custom Voice Engine isn't locked into any specific phone vendor.</p>
-                  <p>You can mix-and-match carriers (e.g. use Telnyx for SMS, Twilio for UK numbers, Plivo for Indian DIDs) and load-balance them seamlessly across your FreeSWITCH clusters.</p>
+                  <p>When provisioning numbers in Twilio, Plivo, Telnyx, or Exotel, ensure your webhooks point to your AgentLabs cluster domain.</p>
+                  <p>Inbound audio is automatically parsed and routed to the assigned AI voice agent based on the incoming phone number (DID).</p>
                 </CardContent>
               </Card>
             </div>
@@ -1780,6 +1986,189 @@ export default function VoiceEngineSettings() {
 
         {/* Master AI & BYOK Tab */}
         <TabsContent value="master-ai" className="space-y-6 mt-4">
+          {/* Admin Managed Mode Platform Defaults Card */}
+          <Card className="border-indigo-100 dark:border-indigo-950/50 shadow-sm">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    <CardTitle className="text-lg">Platform Managed Mode Defaults &amp; Catalog</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Configure the platform-wide default conversational brain, speech synthesizers, and models that tenant users inherit when using Managed Mode.
+                  </CardDescription>
+                </div>
+                <Badge variant="outline" className="border-emerald-500 text-emerald-600 bg-emerald-50/50">
+                  Tenant Defaults
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Default Brain */}
+                <div className="space-y-2 border p-3.5 rounded-lg bg-muted/20">
+                  <Label className="text-xs font-semibold">Managed Default Brain (LLM)</Label>
+                  <Select
+                    value={settings.managedMode?.defaultLlm || "gemini-2.0-flash"}
+                    onValueChange={(v) => updateMutation.mutate({ managedDefaultLlm: v })}
+                  >
+                    <SelectTrigger className="w-full text-xs h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash (Recommended • ~150ms)</SelectItem>
+                      <SelectItem value="gemini-2.0-flash-lite">Gemini 2.0 Flash-Lite (Fastest)</SelectItem>
+                      <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
+                      <SelectItem value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</SelectItem>
+                      <SelectItem value="gemini-1.5-flash">Gemini 1.5 Flash</SelectItem>
+                      <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
+                      <SelectItem value="llama-3.3-70b-versatile">Groq Llama 3.3 70B (~160ms)</SelectItem>
+                      <SelectItem value="llama-3.1-8b-instant">Groq Llama 3.1 8B (~110ms)</SelectItem>
+                      <SelectItem value="deepseek-chat">DeepSeek V3 (~200ms)</SelectItem>
+                      <SelectItem value="deepseek-reasoner">DeepSeek R1 (~450ms)</SelectItem>
+                      <SelectItem value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet v2</SelectItem>
+                      <SelectItem value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</SelectItem>
+                      <SelectItem value="gpt-4o-mini">OpenAI GPT-4o-mini (~220ms)</SelectItem>
+                      <SelectItem value="gpt-4o">OpenAI GPT-4o (~300ms)</SelectItem>
+                      <SelectItem value="llama3.1-70b">Cerebras Llama 3.1 70B (~140ms)</SelectItem>
+                      <SelectItem value="llama3.1-8b">Cerebras Llama 3.1 8B (~90ms)</SelectItem>
+                      <SelectItem value="sarvam-2b-v0.5">Sarvam 2B Indic (~160ms)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-muted-foreground">Default conversational engine for tenant managed agents.</p>
+                </div>
+
+                {/* Default STT */}
+                <div className="space-y-2 border p-3.5 rounded-lg bg-muted/20">
+                  <Label className="text-xs font-semibold">Managed Default STT</Label>
+                  <Select
+                    value={settings.managedMode?.defaultStt || "deepgram"}
+                    onValueChange={(v) => updateMutation.mutate({ managedDefaultStt: v })}
+                  >
+                    <SelectTrigger className="w-full text-xs h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="deepgram">Deepgram Nova-2 (Telephony)</SelectItem>
+                      <SelectItem value="sarvam">Sarvam AI Saaras (Indic)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-muted-foreground">Primary speech recognition engine for incoming caller voice.</p>
+                </div>
+
+                {/* Default TTS Engine & Voice */}
+                <div className="space-y-2 border p-3.5 rounded-lg bg-muted/20">
+                  <Label className="text-xs font-semibold">Managed Default TTS Voice</Label>
+                  <Select
+                    value={settings.managedMode?.defaultTtsVoice || "sonic-katie"}
+                    onValueChange={(v) => {
+                      const ttsProvider = v.startsWith('sonic-') ? 'cartesia'
+                        : v.startsWith('navana-') ? 'navana'
+                        : v.startsWith('aura-') ? 'deepgram'
+                        : v.startsWith('eleven_') ? 'elevenlabs'
+                        : 'sarvam';
+                      updateMutation.mutate({
+                        managedDefaultTts: ttsProvider,
+                        managedDefaultTtsVoice: v,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="w-full text-xs h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      <SelectItem value="sonic-katie">Cartesia Sonic - Katie (US Female, 90ms)</SelectItem>
+                      <SelectItem value="sonic-barbershop">Cartesia Sonic - British Male (85ms)</SelectItem>
+                      <SelectItem value="navana-aarav">Navana Bodhi - Aarav (Hindi/English Male)</SelectItem>
+                      <SelectItem value="navana-diya">Navana Bodhi - Diya (Hindi/English Female)</SelectItem>
+                      <SelectItem value="navana-karthik">Navana Bodhi - Karthik (Tamil Male)</SelectItem>
+                      <SelectItem value="navana-sravani">Navana Bodhi - Sravani (Telugu Female)</SelectItem>
+                      <SelectItem value="neha">Sarvam Bulbul - Neha (Natural Hindi)</SelectItem>
+                      <SelectItem value="shubh">Sarvam Bulbul - Shubh (Conversational Hindi)</SelectItem>
+                      <SelectItem value="aura-asteria-en">Deepgram Aura - Asteria (US Female)</SelectItem>
+                      <SelectItem value="aura-orion-en">Deepgram Aura - Orion (US Male)</SelectItem>
+                      <SelectItem value="eleven_turbo_v2_5">ElevenLabs - Rachel (Turbo v2.5)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-muted-foreground">Default voice synthesis for Managed Mode responses.</p>
+                </div>
+
+                {/* Default STS */}
+                <div className="space-y-2 border p-3.5 rounded-lg bg-muted/20">
+                  <Label className="text-xs font-semibold">Managed Default Realtime STS</Label>
+                  <Select
+                    value={settings.managedMode?.defaultSts || "openai"}
+                    onValueChange={(v) => updateMutation.mutate({ managedDefaultSts: v })}
+                  >
+                    <SelectTrigger className="w-full text-xs h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">OpenAI Realtime (gpt-4o-realtime)</SelectItem>
+                      <SelectItem value="gemini">Google Gemini Live (gemini-2.0-flash-exp)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-muted-foreground">Default speech-to-speech engine if tenant picks STS.</p>
+                </div>
+              </div>
+
+              {/* Tenant Managed Model Catalog Governance */}
+              <div className="space-y-3 pt-3 border-t">
+                <div>
+                  <Label className="text-sm font-semibold">Tenant Managed Model Catalog Governance</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Select which models are enabled for tenants to choose in their Managed Mode tab:
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: "gemini-2.0-flash", label: "Gemini 2.0 Flash" },
+                    { id: "gemini-2.0-flash-lite", label: "Gemini 2.0 Flash-Lite" },
+                    { id: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+                    { id: "gemini-2.5-flash-lite", label: "Gemini 2.5 Flash-Lite" },
+                    { id: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
+                    { id: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
+                    { id: "llama-3.3-70b-versatile", label: "Groq Llama 3.3 70B" },
+                    { id: "llama-3.1-8b-instant", label: "Groq Llama 3.1 8B" },
+                    { id: "deepseek-chat", label: "DeepSeek V3" },
+                    { id: "deepseek-reasoner", label: "DeepSeek R1" },
+                    { id: "claude-3-5-sonnet-20241022", label: "Claude 3.5 Sonnet v2" },
+                    { id: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
+                    { id: "gpt-4o-mini", label: "GPT-4o Mini" },
+                    { id: "gpt-4o", label: "GPT-4o" },
+                    { id: "llama3.1-70b", label: "Cerebras Llama 3.1 70B" },
+                    { id: "llama3.1-8b", label: "Cerebras Llama 3.1 8B" },
+                    { id: "sarvam-2b-v0.5", label: "Sarvam 2B Indic" },
+                  ].map((m) => {
+                    const currentCatalog = settings.managedMode?.allowedModels || [
+                      'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-flash-lite',
+                      'llama-3.3-70b-versatile', 'llama-3.1-8b-instant', 'deepseek-chat', 'claude-3-5-sonnet-20241022',
+                      'gpt-4o-mini', 'llama3.1-70b', 'sarvam-2b-v0.5'
+                    ];
+                    const isSelected = currentCatalog.includes(m.id);
+                    return (
+                      <Badge
+                        key={m.id}
+                        variant={isSelected ? "default" : "outline"}
+                        className={`cursor-pointer px-3 py-1.5 transition-all ${
+                          isSelected
+                            ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                        onClick={() => {
+                          let updated: string[];
+                          if (isSelected) {
+                            if (currentCatalog.length <= 1) return;
+                            updated = currentCatalog.filter(id => id !== m.id);
+                          } else {
+                            updated = [...currentCatalog, m.id];
+                          }
+                          updateMutation.mutate({ managedAllowedModels: updated });
+                        }}
+                      >
+                        {isSelected && <Check className="h-3 w-3 mr-1.5 inline-block" />}
+                        {m.label}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Master BYOK Switch Card */}
           <Card className="border-indigo-100 dark:border-indigo-950/50 shadow-sm">
             <CardHeader className="pb-4">
@@ -1873,7 +2262,7 @@ export default function VoiceEngineSettings() {
                     <span>Deterministic Action Gate</span>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Executes immediate call termination (hangup) and FreeSWITCH ESL live channel transfers with zero LLM inference round-trips for maximum reliability and 0ms latency.
+                    Executes immediate call termination (hangup) and live SIP transfer / carrier handoff with zero LLM inference round-trips for maximum reliability and 0ms latency.
                   </p>
                 </div>
 
@@ -1901,81 +2290,6 @@ export default function VoiceEngineSettings() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* FreeSWITCH Node Dialog */}
-      <Dialog open={isNodeDialogOpen} onOpenChange={setIsNodeDialogOpen}>
-        <DialogContent className="sm:max-w-[480px]">
-          <DialogHeader>
-            <DialogTitle>{editingNode ? "Edit FreeSWITCH Node" : "Add FreeSWITCH Node"}</DialogTitle>
-            <DialogDescription>Provide configuration settings for your FreeSWITCH ESL and SIP endpoints.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {[
-              { id: "name", label: "Name", value: nodeName, onChange: setNodeName, placeholder: "e.g. US-East-Primary" },
-            ].map(({ id, label, value, onChange, placeholder }) => (
-              <div key={id} className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
-                <Label htmlFor={id} className="sm:text-right pt-1.5 sm:pt-0">{label}</Label>
-                <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="sm:col-span-3" />
-              </div>
-            ))}
-
-            <div className="border-t my-1 pt-3">
-              <h4 className="text-sm font-semibold mb-1 text-indigo-600 dark:text-indigo-400">Event Socket Library (ESL)</h4>
-            </div>
-
-            {[
-              { id: "eslHost", label: "ESL Host", value: eslHost, onChange: setEslHost, placeholder: "127.0.0.1" },
-              { id: "eslPort", label: "ESL Port", value: eslPort, onChange: setEslPort, placeholder: "8021" },
-            ].map(({ id, label, value, onChange, placeholder }) => (
-              <div key={id} className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
-                <Label htmlFor={id} className="sm:text-right pt-1.5 sm:pt-0">{label}</Label>
-                <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="sm:col-span-3" />
-              </div>
-            ))}
-
-            <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
-              <Label htmlFor="eslPassword" className="sm:text-right pt-1.5 sm:pt-0">ESL Pass</Label>
-              <Input id="eslPassword" type="password" value={eslPassword} onChange={(e) => setEslPassword(e.target.value)} placeholder="ClueCon" className="sm:col-span-3" />
-            </div>
-
-            <div className="border-t my-1 pt-3">
-              <h4 className="text-sm font-semibold mb-1 text-indigo-600 dark:text-indigo-400">SIP &amp; WebSocket Endpoints</h4>
-            </div>
-
-            {[
-              { id: "sipHost", label: "SIP Host", value: sipHost, onChange: setSipHost, placeholder: "e.g. 52.4.123.8" },
-              { id: "sipPort", label: "SIP Port", value: sipPort, onChange: setSipPort, placeholder: "5060" },
-              { id: "wsPort", label: "WS Port", value: wsPort, onChange: setWsPort, placeholder: "8089" },
-              { id: "maxCalls", label: "Max Calls", value: maxCalls, onChange: setMaxCalls, placeholder: "100" },
-            ].map(({ id, label, value, onChange, placeholder }) => (
-              <div key={id} className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
-                <Label htmlFor={id} className="sm:text-right pt-1.5 sm:pt-0">{label}</Label>
-                <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="sm:col-span-3" />
-              </div>
-            ))}
-
-            <div className="grid grid-cols-1 sm:grid-cols-4 items-start sm:items-center gap-2 sm:gap-4">
-              <Label htmlFor="status" className="sm:text-right pt-1.5 sm:pt-0">Status</Label>
-              <Select value={nodeStatus} onValueChange={(v: any) => setNodeStatus(v)}>
-                <SelectTrigger className="sm:col-span-3"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="offline">Offline</SelectItem>
-                  <SelectItem value="degraded">Degraded</SelectItem>
-                  <SelectItem value="maintenance">Maintenance</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsNodeDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveNode} disabled={saveNodeMutation.isPending}>
-              {saveNodeMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Node
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* SIP Gateway Dialog */}
       <Dialog open={isGatewayDialogOpen} onOpenChange={setIsGatewayDialogOpen}>

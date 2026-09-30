@@ -615,6 +615,9 @@ verify_installation() {
     echo -e "3. ${CYAN}Open Platform In Your Browser:${NC}"
     echo -e "   Navigate to: ${BOLD}${PROTOCOL}://${DOMAIN_NAME}${NC}"
     echo ""
+    echo -e "4. ${CYAN}To Uninstall / Clean Up Platform:${NC}"
+    echo -e "   Run: ${BOLD}sudo bash uninstall.sh${NC} (or ${BOLD}sudo bash install.sh --uninstall${NC})"
+    echo ""
     echo -e "${GREEN}${BOLD}Ultra-low latency, uncapped AI Voice Calling ready on your VPS!${NC}"
     echo ""
 }

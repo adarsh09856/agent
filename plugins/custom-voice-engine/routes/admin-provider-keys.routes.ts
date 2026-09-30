@@ -99,6 +99,26 @@ const SETTINGS_KEYS = {
 
   // Master BYOK Switch
   allowUserByok: 'allow_user_byok',
+
+  // Cerebras LLM
+  cerebrasApiKey: 've_cerebras_api_key',
+
+  // Speech-to-Speech (STS) Realtime Settings
+  stsActiveProvider: 've_sts_active_provider',
+  stsOpenaiApiKey: 've_sts_openai_api_key',
+  stsOpenaiModel: 've_sts_openai_model',
+  stsOpenaiVoice: 've_sts_openai_voice',
+  stsGeminiApiKey: 've_sts_gemini_api_key',
+  stsGeminiModel: 've_sts_gemini_model',
+  stsGeminiVoice: 've_sts_gemini_voice',
+
+  // Admin Managed Mode Platform Defaults
+  managedDefaultLlm: 've_managed_default_llm',
+  managedDefaultStt: 've_managed_default_stt',
+  managedDefaultTts: 've_managed_default_tts',
+  managedDefaultTtsVoice: 've_managed_default_tts_voice',
+  managedDefaultSts: 've_managed_default_sts',
+  managedAllowedModels: 've_managed_allowed_models',
 };
 
 /** Strict boolean parser for database-stored values */
@@ -306,7 +326,47 @@ export function createAdminProviderKeysRouter(): Router {
               hasKey: !!settingsMap[SETTINGS_KEYS.openrouterApiKey],
               maskedKey: maskKey(settingsMap[SETTINGS_KEYS.openrouterApiKey] as string),
             },
+            cerebras: {
+              name: 'Cerebras',
+              hasKey: !!settingsMap[SETTINGS_KEYS.cerebrasApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.cerebrasApiKey] as string),
+            },
           },
+        },
+        sts: {
+          activeProvider: settingsMap[SETTINGS_KEYS.stsActiveProvider] || 'openai',
+          openaiModel: settingsMap[SETTINGS_KEYS.stsOpenaiModel] || 'gpt-4o-realtime-preview',
+          openaiVoice: settingsMap[SETTINGS_KEYS.stsOpenaiVoice] || 'alloy',
+          geminiModel: settingsMap[SETTINGS_KEYS.stsGeminiModel] || 'gemini-2.0-flash-exp',
+          geminiVoice: settingsMap[SETTINGS_KEYS.stsGeminiVoice] || 'Puck',
+          providers: {
+            openai: {
+              name: 'OpenAI Realtime API',
+              hasKey: !!settingsMap[SETTINGS_KEYS.stsOpenaiApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.stsOpenaiApiKey] as string),
+            },
+            gemini: {
+              name: 'Google Gemini Multimodal Live API',
+              hasKey: !!settingsMap[SETTINGS_KEYS.stsGeminiApiKey],
+              maskedKey: maskKey(settingsMap[SETTINGS_KEYS.stsGeminiApiKey] as string),
+            },
+          },
+        },
+        managedMode: {
+          defaultLlm: settingsMap[SETTINGS_KEYS.managedDefaultLlm] || 'gemini-2.0-flash',
+          defaultStt: settingsMap[SETTINGS_KEYS.managedDefaultStt] || 'deepgram',
+          defaultTts: settingsMap[SETTINGS_KEYS.managedDefaultTts] || 'cartesia',
+          defaultTtsVoice: settingsMap[SETTINGS_KEYS.managedDefaultTtsVoice] || 'sonic-katie',
+          defaultSts: settingsMap[SETTINGS_KEYS.managedDefaultSts] || 'openai',
+          allowedModels: parseAllowedArray(SETTINGS_KEYS.managedAllowedModels, [
+            'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash', 'gemini-1.5-pro',
+            'llama-3.3-70b-versatile', 'llama-3.1-8b-instant',
+            'deepseek-chat', 'deepseek-reasoner',
+            'claude-3-5-sonnet-20241022', 'claude-3-5-haiku-20241022',
+            'gpt-4o-mini', 'gpt-4o', 'gpt-4-turbo',
+            'llama3.1-70b', 'llama3.1-8b',
+            'sarvam-2b-v0.5'
+          ]),
         },
         tts: {
           activeProvider: settingsMap[SETTINGS_KEYS.ttsActiveProvider] || 'deepgram',
@@ -425,6 +485,20 @@ export function createAdminProviderKeysRouter(): Router {
         freeswitchEslPassword,
         pluginEnabled,
         allowUserByok,
+        cerebrasApiKey,
+        stsActiveProvider,
+        stsOpenaiApiKey,
+        stsOpenaiModel,
+        stsOpenaiVoice,
+        stsGeminiApiKey,
+        stsGeminiModel,
+        stsGeminiVoice,
+        managedDefaultLlm,
+        managedDefaultStt,
+        managedDefaultTts,
+        managedDefaultTtsVoice,
+        managedDefaultSts,
+        managedAllowedModels,
       } = req.body;
 
       const updates: Array<{ key: string; value: any; description: string }> = [];
@@ -724,6 +798,104 @@ export function createAdminProviderKeysRouter(): Router {
           description: 'Voice Engine: Plugin enabled state',
         });
       }
+      if (cerebrasApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.cerebrasApiKey,
+          value: cerebrasApiKey || '',
+          description: 'Voice Engine: Cerebras API key',
+        });
+      }
+      if (stsActiveProvider !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.stsActiveProvider,
+          value: stsActiveProvider,
+          description: 'Voice Engine: Active STS Provider',
+        });
+      }
+      if (stsOpenaiApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.stsOpenaiApiKey,
+          value: stsOpenaiApiKey || '',
+          description: 'Voice Engine: Speech-to-Speech OpenAI Realtime API key',
+        });
+      }
+      if (stsOpenaiModel !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.stsOpenaiModel,
+          value: stsOpenaiModel,
+          description: 'Voice Engine: Speech-to-Speech OpenAI Realtime model',
+        });
+      }
+      if (stsOpenaiVoice !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.stsOpenaiVoice,
+          value: stsOpenaiVoice,
+          description: 'Voice Engine: Speech-to-Speech OpenAI Realtime voice',
+        });
+      }
+      if (stsGeminiApiKey !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.stsGeminiApiKey,
+          value: stsGeminiApiKey || '',
+          description: 'Voice Engine: Speech-to-Speech Gemini Live API key',
+        });
+      }
+      if (stsGeminiModel !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.stsGeminiModel,
+          value: stsGeminiModel,
+          description: 'Voice Engine: Speech-to-Speech Gemini Live model',
+        });
+      }
+      if (stsGeminiVoice !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.stsGeminiVoice,
+          value: stsGeminiVoice,
+          description: 'Voice Engine: Speech-to-Speech Gemini Live voice',
+        });
+      }
+      if (managedDefaultLlm !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.managedDefaultLlm,
+          value: managedDefaultLlm,
+          description: 'Voice Engine: Platform Managed Mode default LLM model',
+        });
+      }
+      if (managedDefaultStt !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.managedDefaultStt,
+          value: managedDefaultStt,
+          description: 'Voice Engine: Platform Managed Mode default STT provider',
+        });
+      }
+      if (managedDefaultTts !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.managedDefaultTts,
+          value: managedDefaultTts,
+          description: 'Voice Engine: Platform Managed Mode default TTS provider',
+        });
+      }
+      if (managedDefaultTtsVoice !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.managedDefaultTtsVoice,
+          value: managedDefaultTtsVoice,
+          description: 'Voice Engine: Platform Managed Mode default TTS voice',
+        });
+      }
+      if (managedDefaultSts !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.managedDefaultSts,
+          value: managedDefaultSts,
+          description: 'Voice Engine: Platform Managed Mode default STS provider',
+        });
+      }
+      if (managedAllowedModels !== undefined) {
+        updates.push({
+          key: SETTINGS_KEYS.managedAllowedModels,
+          value: JSON.stringify(managedAllowedModels),
+          description: 'Voice Engine: Platform Managed Mode allowed models for tenants',
+        });
+      }
 
       if (updates.length === 0) {
         return res.status(400).json({ success: false, error: 'No settings to update' });
@@ -847,6 +1019,17 @@ router.get('/openrouter-models', async (_req: Request, res: Response) => {
           case 'cartesia':
             keyName = SETTINGS_KEYS.cartesiaApiKey;
             break;
+          case 'cerebras':
+            keyName = SETTINGS_KEYS.cerebrasApiKey;
+            break;
+          case 'sts-openai':
+          case 'openai-realtime':
+            keyName = SETTINGS_KEYS.stsOpenaiApiKey;
+            break;
+          case 'sts-gemini':
+          case 'gemini-live':
+            keyName = SETTINGS_KEYS.stsGeminiApiKey;
+            break;
           default:
             return res.status(400).json({ success: false, error: `Unknown provider: ${provider}` });
         }
@@ -954,6 +1137,22 @@ router.get('/openrouter-models', async (_req: Request, res: Response) => {
           });
           connected = response.ok;
           details = connected ? 'Connected to Cartesia Sonic' : `HTTP ${response.status}`;
+        } else if (provider === 'cerebras') {
+          const response = await fetch('https://api.cerebras.ai/v1/models', {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
+          connected = response.ok;
+          details = connected ? 'Connected to Cerebras' : `HTTP ${response.status}`;
+        } else if (provider === 'sts-openai' || provider === 'openai-realtime') {
+          const response = await fetch('https://api.openai.com/v1/models', {
+            headers: { Authorization: `Bearer ${apiKey}` },
+          });
+          connected = response.ok;
+          details = connected ? 'Connected to OpenAI Realtime' : `HTTP ${response.status}`;
+        } else if (provider === 'sts-gemini' || provider === 'gemini-live') {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+          connected = response.ok;
+          details = connected ? 'Connected to Google Gemini Live API' : `HTTP ${response.status}`;
         }
       } catch (fetchErr: any) {
         details = `Connection failed: ${fetchErr.message}`;

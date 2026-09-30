@@ -1022,10 +1022,9 @@ async function placeFlowTestCall({
           language: veAgent.language,
           llmModel: veAgent.llm_model,
           temperature: veAgent.temperature,
-          openaiVoice: veAgent.tts_voice,
+          ttsVoice: veAgent.tts_voice,
           maxDurationSeconds: veAgent.max_duration_seconds,
           isActive: veAgent.is_active,
-          openaiModel: 'gpt-realtime-1.5',
           knowledgeBaseIds: veAgent.knowledge_base_ids || [],
           transferPhoneNumber: null,
           transferEnabled: false,
@@ -1835,12 +1834,119 @@ async function placeFlowTestCall({
             ...(activeGateway?.password && { sip_auth_password: activeGateway.password }),
           };
 
-          await esl.originate(dialString, destination, options);
-          await esl.disconnect();
-
-          console.log(`✅ [Flow Test] Outbound call initiated via node ${node.name}`);
+          try {
+            await esl.originate(dialString, destination, options);
+            await db.execute(sql`
+              UPDATE ve_sessions SET status = 'active', channel_uuid = ${sessionUuid} WHERE id = ${sessionUuid}
+            `);
+            console.log(`✅ [Flow Test] Outbound call initiated via node ${node.name}`);
+          } catch (originateErr: any) {
+            await db.execute(sql`
+              UPDATE ve_sessions SET status = 'failed' WHERE id = ${sessionUuid}
+            `);
+            throw originateErr;
+          } finally {
+            await esl.disconnect().catch(() => {});
+          }
         } else {
-          console.log(`✅ [Flow Test] Cloud Voice Engine outbound call initiated for session ${sessionUuid}`);
+          // No online nodes available - check if fallback environment host is configured
+          const fallbackHost = process.env.FREESWITCH_ESL_HOST;
+          if (fallbackHost) {
+            const { importPlugin } = await import('../utils/plugin-import');
+            const { EslConnection } = await importPlugin('plugins/custom-voice-engine/services/freeswitch/esl-connection');
+            const esl = new EslConnection({
+              host: fallbackHost,
+              port: parseInt(process.env.FREESWITCH_ESL_PORT || '8021'),
+              password: process.env.FREESWITCH_ESL_PASSWORD || 'ClueCon',
+              reconnect: false,
+            });
+
+            esl.on('error', (err: any) => {
+              console.error('[ESL] Client error during fallback test call:', err.message);
+            });
+
+            await esl.connect();
+
+            let activeGateway: any = null;
+            if (userId) {
+              const userGatewayResult = await db.execute(sql`
+                SELECT name, proxy, username, password FROM user_sip_gateways WHERE user_id = ${userId} AND is_active = true LIMIT 1
+              `);
+              activeGateway = (userGatewayResult.rows as any[])[0];
+            }
+
+            const gatewayProxy = activeGateway ? activeGateway.proxy : 'testhr.pstn.twilio.com';
+            const isTwilio = !activeGateway || gatewayProxy.includes('twilio.com');
+
+            let formattedTo = !phoneNumber.startsWith('+') ? `+${phoneNumber}` : phoneNumber;
+            if (!isTwilio && formattedTo.startsWith('+')) {
+              formattedTo = formattedTo.substring(1);
+            }
+            const dialString = `sofia/external/${formattedTo}@${gatewayProxy}`;
+            const destination = `${formattedTo} XML public`;
+
+            const os = await import('os');
+            const getContainerIp = () => {
+              if (process.env.VE_AUDIO_WS_IP) return process.env.VE_AUDIO_WS_IP;
+              if (process.env.PUBLIC_IP) return process.env.PUBLIC_IP;
+              const interfaces = os.networkInterfaces();
+              for (const name of Object.keys(interfaces)) {
+                for (const net of interfaces[name] || []) {
+                  if (net.family === 'IPv4' && !net.internal) {
+                    if (net.address.startsWith('10.') || net.address.startsWith('172.') || net.address.startsWith('192.168.')) {
+                      return net.address;
+                    }
+                  }
+                }
+              }
+              return '127.0.0.1';
+            };
+            const containerIp = getContainerIp();
+
+            const rawPhone = fromPhone.phoneNumber || 'CloudEngine';
+            let callerId = (rawPhone !== 'CloudEngine' && !rawPhone.startsWith('+')) ? `+${rawPhone}` : rawPhone;
+            if (!isTwilio && callerId.startsWith('+')) {
+              callerId = callerId.substring(1);
+            }
+
+            const options = {
+              origination_uuid: sessionUuid,
+              origination_caller_id_number: callerId,
+              origination_caller_id_name: callerId,
+              effective_caller_id_number: callerId,
+              effective_caller_id_name: callerId,
+              sip_from_uri: `sip:${callerId}@${gatewayProxy}`,
+              sip_invite_req_uri: `sip:${formattedTo}@${gatewayProxy}`,
+              ve_audio_ws_url: `ws://${containerIp}:${process.env.PORT || '5000'}/voice-engine/ws/audio`,
+              ...(activeGateway?.username && { sip_auth_username: activeGateway.username }),
+              ...(activeGateway?.password && { sip_auth_password: activeGateway.password }),
+            };
+
+            try {
+              await esl.originate(dialString, destination, options);
+              await db.execute(sql`
+                UPDATE ve_sessions SET status = 'active', channel_uuid = ${sessionUuid} WHERE id = ${sessionUuid}
+              `);
+              console.log(`✅ [Flow Test] Outbound call initiated via fallback host ${fallbackHost}`);
+            } catch (originateErr: any) {
+              await db.execute(sql`
+                UPDATE ve_sessions SET status = 'failed' WHERE id = ${sessionUuid}
+              `);
+              throw originateErr;
+            } finally {
+              await esl.disconnect().catch(() => {});
+            }
+          } else {
+            // No telephony node or gateway is online - fail fast with descriptive error instead of silently hanging at 15%
+            await db.execute(sql`
+              UPDATE ve_sessions SET status = 'failed' WHERE id = ${sessionUuid}
+            `);
+            await failQueue("No active telephony gateway available for Custom Voice Engine");
+            throw new FlowTestHttpError(400, {
+              error: "Telephony gateway unavailable",
+              message: "No active telephony gateway node is online to place outbound phone calls for this Custom Voice Engine agent. Please connect and activate a SIP gateway or telephony node in Settings / Voice Engine.",
+            });
+          }
         }
 
         await completeQueue(sessionUuid);

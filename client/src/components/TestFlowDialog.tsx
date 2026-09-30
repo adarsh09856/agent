@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ============================================================
  * © 2026 KodeWaves. All rights reserved.
  * Original Author: BTPL Engineering Team
@@ -97,6 +97,8 @@ export function TestFlowDialog({ open, onOpenChange, flowId, flowName }: TestFlo
   const { toast } = useToast();
   const [phoneNumber, setPhoneNumber] = useState("");
   const [testCallId, setTestCallId] = useState<string | null>(null);
+  const [callStartTime, setCallStartTime] = useState<number | null>(null);
+  const [isTimedOut, setIsTimedOut] = useState<boolean>(false);
   const [queueEntryId, setQueueEntryId] = useState<string | null>(null);
   const [conflictDialog, setConflictDialog] = useState<PhoneConflictState>(initialPhoneConflictState);
 
@@ -167,6 +169,8 @@ export function TestFlowDialog({ open, onOpenChange, flowId, flowName }: TestFlo
 
       // Call placed immediately (phone was available)
       setTestCallId(data.callId);
+      setCallStartTime(Date.now());
+      setIsTimedOut(false);
 
       if (data.warning) {
         toast({ title: "Warning: Phone Number in Use", description: data.warning.message, variant: "destructive", duration: 8000 });
@@ -207,6 +211,22 @@ export function TestFlowDialog({ open, onOpenChange, flowId, flowName }: TestFlo
     },
   });
 
+  // Watch for call setup timeout (e.g. gateway unreachable)
+  useEffect(() => {
+    if (!testCallId || !callStartTime || isTimedOut) return;
+    const status = callDetails?.status || "initializing";
+    if (["completed", "failed", "busy", "no-answer", "canceled", "done", "ended"].includes(status)) {
+      return;
+    }
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - callStartTime;
+      if (elapsed > 35000 && (status === "initializing" || status === "connecting" || status === "initiated")) {
+        setIsTimedOut(true);
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [testCallId, callStartTime, callDetails?.status, isTimedOut]);
+
   // React to queue status transitions (server places call; we poll until terminal)
   useEffect(() => {
     if (!queueStatus || testCallId) return;
@@ -215,6 +235,8 @@ export function TestFlowDialog({ open, onOpenChange, flowId, flowName }: TestFlo
     if (queueStatus.status === 'completed' && queueStatus.callId) {
       setQueueEntryId(null);
       setTestCallId(queueStatus.callId);
+      setCallStartTime(Date.now());
+      setIsTimedOut(false);
       toast({
         title: "Test call initiated",
         description: "Your test call has been started. Check the Calls page to see the results.",
@@ -258,6 +280,8 @@ export function TestFlowDialog({ open, onOpenChange, flowId, flowName }: TestFlo
     }
     setPhoneNumber("");
     setTestCallId(null);
+    setCallStartTime(null);
+    setIsTimedOut(false);
     setQueueEntryId(null);
     onOpenChange(false);
   };
@@ -350,13 +374,21 @@ export function TestFlowDialog({ open, onOpenChange, flowId, flowName }: TestFlo
               <div className="space-y-4 py-4">
                 {(() => {
                   const status = callDetails?.status || "initiated";
-                  const progress = getCallProgress(status, callDetails?.metadata);
+                  const progress = isTimedOut ? {
+                    label: "Call Setup Timed Out",
+                    progress: 100,
+                    description: "The telephony gateway did not connect within 35 seconds. Please check that your telephony gateway or carrier node is online.",
+                    isComplete: true,
+                    isError: true,
+                  } : getCallProgress(status, callDetails?.metadata);
 
                   // Extract diagnostic information for failures
                   const metadata = callDetails?.metadata || {};
-                  const errorDetail = metadata.error || metadata.terminationReason || metadata.failureReason || callDetails?.errorMessage;
-                  const hasAiSummary = !!callDetails?.aiSummary;
-                  const hasTranscript = !!callDetails?.transcript;
+                  const errorDetail = isTimedOut
+                    ? "Telephony gateway response timeout. The outbound call could not be completed."
+                    : (metadata.error || metadata.terminationReason || metadata.failureReason || callDetails?.errorMessage);
+                  const hasAiSummary = !isTimedOut && !!callDetails?.aiSummary;
+                  const hasTranscript = !isTimedOut && !!callDetails?.transcript;
 
                   return (
                     <div className="space-y-6">
@@ -548,9 +580,24 @@ export function TestFlowDialog({ open, onOpenChange, flowId, flowName }: TestFlo
                 </Button>
               </>
             ) : (
-              <Button onClick={handleClose} className="w-full" data-testid="button-close-success">
-                Done
-              </Button>
+              <div className="flex items-center justify-end gap-2 w-full">
+                {(isTimedOut || callDetails?.status === 'failed' || callDetails?.status === 'busy' || callDetails?.status === 'no-answer') && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setTestCallId(null);
+                      setCallStartTime(null);
+                      setIsTimedOut(false);
+                    }}
+                    data-testid="button-retry-test"
+                  >
+                    Try Another Number / Retry
+                  </Button>
+                )}
+                <Button onClick={handleClose} data-testid="button-close-success">
+                  {isTimedOut || callDetails?.status === 'failed' ? "Close" : "Done"}
+                </Button>
+              </div>
             )}
           </DialogFooter>
         </DialogContent>
